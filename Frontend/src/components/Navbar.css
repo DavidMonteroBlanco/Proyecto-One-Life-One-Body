@@ -1,0 +1,568 @@
+/* ================================================================
+   OLOB NAVBAR — CSS completo
+   Añade este bloque a tu src/index.css (al final)
+   ================================================================ */
+
+/* ── Google Fonts ─────────────────────────────────────────────────
+   Añade esto en tu index.html <head> si no lo tienes:
+   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+   ──────────────────────────────────────────────────────────────── */
+
+/* ── Variables nav ────────────────────────────────────────────── */
+:root {
+  --nav-h: 64px;
+  --nav-bg-dark: rgba(4, 10, 22, 0.88);
+  --nav-border-dark: rgba(255, 255, 255, 0.06);
+  --nav-glow: #2563eb;
+  --nav-accent: #3b82f6;
+  --nav-admin: #f59e0b;
+  --nav-particle: rgba(59, 130, 246, 0.5);
+}
+
+/* ── Wrapper principal ────────────────────────────────────────── */
+.olob-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--nav-bg-dark);
+  border-bottom: 1px solid var(--nav-border-dark);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  font-family: "DM Sans", system-ui, sans-serif;
+
+  /* Entrada: empieza invisible y desplazada */
+  opacity: 0;
+  transform: translateY(-100%);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Línea inferior de acento animada */
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--nav-glow), var(--nav-accent), transparent);
+    transition: width 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.5s;
+  }
+}
+
+.olob-nav--in {
+  opacity: 1;
+  transform: translateY(0);
+
+  &::after {
+    width: 100%;
+  }
+}
+
+/* ── Partículas ───────────────────────────────────────────────── */
+.nav-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.nav-particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--nav-particle);
+  top: 50%;
+  left: calc(var(--i) * 7.5%);
+  animation: particle-float 4s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.28s);
+  opacity: 0;
+}
+
+@keyframes particle-float {
+  0%   { opacity: 0; transform: translateY(0) scale(1); }
+  30%  { opacity: 0.8; }
+  100% { opacity: 0; transform: translateY(-28px) scale(0.3); }
+}
+
+/* ── Barra interna ────────────────────────────────────────────── */
+.olob-nav__bar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  height: var(--nav-h);
+  gap: 1rem;
+}
+
+/* ── Brand / Logo ─────────────────────────────────────────────── */
+.olob-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.olob-nav__logo-wrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.olob-nav__logo-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: white;
+  padding: 4px;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
+
+.olob-nav__brand:hover .olob-nav__logo-img {
+  transform: scale(1.08) rotate(-2deg);
+}
+
+.olob-nav__logo-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 13px;
+  border: 1.5px solid var(--nav-accent);
+  opacity: 0;
+  transition: opacity 0.3s, box-shadow 0.3s;
+}
+
+.olob-nav__brand:hover .olob-nav__logo-ring {
+  opacity: 1;
+  box-shadow: 0 0 14px rgba(59, 130, 246, 0.5);
+}
+
+.olob-nav__brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.olob-nav__brand-name {
+  font-family: "Bebas Neue", "DM Sans", sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.12em;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.olob-nav__brand-sub {
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+/* ── Acciones ─────────────────────────────────────────────────── */
+.olob-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Chip de usuario */
+.olob-nav__user-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 99px;
+  padding: 0.25rem 0.8rem 0.25rem 0.55rem;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.olob-nav__user-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  flex-shrink: 0;
+  animation: pulse-dot 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 4px #10b981; }
+  50%       { box-shadow: 0 0 10px #10b981, 0 0 20px rgba(16,185,129,0.3); }
+}
+
+.olob-nav__user-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.olob-nav__role-badge {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: #000;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+/* Botón icono */
+.olob-nav__icon-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.olob-nav__icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.olob-nav__theme-icon {
+  display: inline-block;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.olob-nav__theme-icon--dark {
+  transform: rotate(-20deg);
+}
+
+/* Botón ghost */
+.olob-nav__ghost-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.78rem;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.olob-nav__ghost-btn:hover {
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.07);
+}
+
+/* Botón CTA */
+.olob-nav__cta-btn {
+  background: linear-gradient(135deg, var(--nav-accent), #1d4ed8);
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 1rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.olob-nav__cta-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.55);
+}
+
+/* Botón menú */
+.olob-nav__menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--nav-accent), #1d4ed8);
+  border: none;
+  border-radius: 10px;
+  padding: 0.4rem 1rem 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  font-family: "DM Sans", sans-serif;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.olob-nav__menu-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.5);
+}
+
+.olob-nav__menu-btn--active {
+  background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+/* ── Hamburguesa animada ──────────────────────────────────────── */
+.nav-hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 18px;
+}
+
+.nav-hamburger span {
+  display: block;
+  height: 1.5px;
+  background: white;
+  border-radius: 2px;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.3s,
+              width 0.3s;
+}
+
+.nav-hamburger span:nth-child(1) { width: 100%; }
+.nav-hamburger span:nth-child(2) { width: 70%; }
+.nav-hamburger span:nth-child(3) { width: 100%; }
+
+.nav-hamburger--open span:nth-child(1) {
+  transform: translateY(5.5px) rotate(45deg);
+  width: 100%;
+}
+.nav-hamburger--open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.nav-hamburger--open span:nth-child(3) {
+  transform: translateY(-5.5px) rotate(-45deg);
+  width: 100%;
+}
+
+/* ── Dropdown ─────────────────────────────────────────────────── */
+.olob-nav__dropdown {
+  position: absolute;
+  top: calc(var(--nav-h) + 1px);
+  left: 0;
+  right: 0;
+  background: rgba(4, 10, 22, 0.96);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  /* Estado cerrado */
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: max-height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.35s ease,
+              transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.olob-nav__dropdown--open {
+  max-height: 600px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.olob-nav__dropdown-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Sección del menú ─────────────────────────────────────────── */
+.olob-nav__section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+  margin-bottom: 0.6rem;
+}
+
+.olob-nav__section-label--admin {
+  color: rgba(245, 158, 11, 0.7);
+}
+
+.olob-nav__admin-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--nav-admin);
+  box-shadow: 0 0 8px var(--nav-admin);
+}
+
+.olob-nav__links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.4rem;
+}
+
+/* ── Nav item ─────────────────────────────────────────────────── */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+
+  /* Animación stagger al abrir */
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+/* Activa la animación cuando el dropdown está abierto */
+.olob-nav__dropdown--open .nav-item {
+  animation: item-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) var(--delay, 0ms) both;
+}
+
+@keyframes item-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.nav-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.nav-item:hover {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.25);
+  transform: translateX(4px);
+}
+
+.nav-item:hover::before {
+  opacity: 1;
+}
+
+.nav-item--admin:hover {
+  background: rgba(245, 158, 11, 0.07);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.nav-item--admin:hover::before {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), transparent);
+}
+
+.nav-item__icon {
+  font-size: 1.1rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.12);
+  border-radius: 8px;
+  flex-shrink: 0;
+  color: var(--nav-accent);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.nav-item--admin .nav-item__icon {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--nav-admin);
+}
+
+.nav-item:hover .nav-item__icon {
+  transform: scale(1.15);
+}
+
+.nav-item__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+}
+
+.nav-item__label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.nav-item__sub {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.nav-item__arrow {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.15);
+  transition: transform 0.2s, color 0.2s;
+}
+
+.nav-item:hover .nav-item__arrow {
+  transform: translateX(4px);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Footer dropdown ──────────────────────────────────────────── */
+.olob-nav__dropdown-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.05em;
+}
+
+.olob-nav__version {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  color: rgba(59, 130, 246, 0.6);
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .olob-nav__user-chip { display: none; }
+  .olob-nav__brand-sub { display: none; }
+  .olob-nav__links { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 420px) {
+  .olob-nav__links { grid-template-columns: 1fr; }
+}
