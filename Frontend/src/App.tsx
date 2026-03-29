@@ -5,7 +5,8 @@ import PublicLayout from "./components/ui/PublicLayout";
 
 // Páginas públicas
 import Home from "./pages/Home/Home";
-import Auth from "./pages/Auth/Auth";
+import Login from "./pages/Auth/Login";
+import Register from "./pages/Auth/Register";
 
 // Páginas privadas usuario
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -25,12 +26,14 @@ import AdminRoute from "./components/AdminRoute";
 
 export default function App() {
   return (
+    
     <Routes>
 
       {/* ── RUTAS PÚBLICAS (web nueva con su propio layout) ── */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Auth />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Route>
 
       {/* ── RUTAS PRIVADAS USUARIO ── */}

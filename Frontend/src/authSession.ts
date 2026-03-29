@@ -1,5 +1,5 @@
-import { api, setAuthToken } from "./api";
-import { clearToken } from "./auth";
+import { api, setAuthToken } from "./services/api";
+import { clearToken } from "./services/auth";
 
 export type MeUser = {
   id: number;

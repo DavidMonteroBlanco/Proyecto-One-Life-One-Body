@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import PageShell from "../components/PageShell";
-import { api } from "../api";
+import  api  from "../services/api";
 import type { WgerExercise, WgerListResponse } from "../types";
 
 function stripHtml(html: string) {

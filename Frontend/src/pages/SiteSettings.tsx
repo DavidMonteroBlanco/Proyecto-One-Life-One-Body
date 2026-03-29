@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import PageShell from "../components/PageShell";
-import { api } from "../api";
+import  api  from "../services/api";
 import type { SiteSetting } from "../types";
 
 type SettingKey = "phone" | "email" | "address" | "instagram";

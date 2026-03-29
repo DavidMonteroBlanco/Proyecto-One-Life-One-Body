@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getToken, clearToken, saveUser, clearUser } from "../auth";
-import { setAuthToken } from "../api";
+import { getToken, clearToken, saveUser, clearUser } from "../services/auth";
+import { setAuthToken } from "../services/api";
 import { fetchMe } from "../authSession";
 import "./Navbar.css";
 
