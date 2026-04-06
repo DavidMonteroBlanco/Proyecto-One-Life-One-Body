@@ -138,6 +138,23 @@
 .auth-field input:focus { border-color: var(--accent); background: rgba(22, 32, 32, 0.95); }
 .auth-field input[type="date"] { color-scheme: dark; }
 
+/* Forgot password */
+.auth-forgot {
+  font-family: var(--font-condensed);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-decoration: none;
+  text-align: right;
+  transition: color 0.2s;
+  margin-top: 0.2rem;
+}
+
+.auth-forgot:hover {
+  color: var(--primary);
+}
+
 /* ══ PASSWORD STRENGTH ══ */
 .pw-strength {
   margin-top: 0.6rem;
@@ -259,6 +276,94 @@
   transition: color 0.2s;
 }
 .auth-back:hover { color: var(--primary); }
+
+/* ══ CODE INPUTS (Forgot Password) ══ */
+.auth-code-inputs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.3rem;
+}
+
+.auth-code-input {
+  width: 44px;
+  height: 52px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  background: rgba(13, 21, 21, 0.85);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  color: var(--primary);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  caret-color: var(--primary);
+}
+
+.auth-code-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(126, 232, 232, 0.15);
+}
+
+.auth-code-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.auth-code-countdown {
+  font-family: var(--font-condensed);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.auth-code-resend {
+  background: none;
+  border: none;
+  font-family: var(--font-condensed);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: opacity 0.2s;
+}
+
+.auth-code-resend:hover { opacity: 0.7; }
+
+/* Success message */
+.auth-success {
+  font-family: var(--font-condensed);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.1);
+  border-left: 2px solid #10b981;
+  padding: 0.6rem 0.9rem;
+}
+
+/* Success icon */
+.auth-success-icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.12);
+  border: 2px solid rgba(16, 185, 129, 0.3);
+  font-size: 1.6rem;
+  color: #10b981;
+  margin: 1rem 0;
+  animation: successPop 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes successPop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
 
 /* ══ RESPONSIVE ══ */
 @media (max-width: 580px) {

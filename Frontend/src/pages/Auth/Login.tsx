@@ -72,6 +72,7 @@ export default function Login() {
               <label htmlFor="password">Contraseña</label>
               <input id="password" name="password" type="password" autoComplete="current-password"
                 placeholder="••••••••" value={form.password} onChange={handleChange} required />
+              <Link to="/forgot-password" className="auth-forgot">¿Has olvidado tu contraseña?</Link>
             </div>
 
             {error && <p className="auth-error">{error}</p>}

@@ -1,4 +1,3 @@
-// src/pages/user/Profile.tsx
 
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/Authcontext";

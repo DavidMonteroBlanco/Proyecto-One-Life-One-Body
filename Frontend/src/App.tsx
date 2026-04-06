@@ -10,10 +10,12 @@ import UserLayout from "./layouts/UserLayout";
 import Home from "./pages/Home/Home";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
 
 // Páginas privadas de Usuario
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Profile from "./user/Profile";
+import Tracking from "./user/Tracking";
 
 // Páginas privadas de Admin
 import Workouts from "./pages/Workouts";
@@ -36,6 +38,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Route>
 
       {/* ── RUTAS PRIVADAS (con Sidebar) ── */}
@@ -47,7 +50,7 @@ export default function App() {
         {/* ── Usuario ── */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/my-profile" element={<Profile />} />
-        {/* <Route path="/my-tracking" element={<Tracking />} /> */}
+        <Route path="/my-tracking" element={<Tracking />} />
 
         {/* ── Admin ── */}
         <Route path="/admin/workouts" element={

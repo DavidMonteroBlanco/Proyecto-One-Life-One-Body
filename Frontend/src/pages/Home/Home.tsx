@@ -4,6 +4,8 @@ import { OrbitControls, Sphere, MeshDistortMaterial, Float, Stars } from "@react
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import * as THREE from "three";
+import { useState, useEffect, useCallback } from "react";
+import api from "../../services/api";
 import gymPhoto from "../../assets/icons/gym-hero.jpeg";
 import logoImg from "../../assets/icons/logo-bw.jpg";
 import "./Home.css";
@@ -73,6 +75,107 @@ const fadeUp: Variants = {
     transition: { delay: i * 0.12, duration: 0.65, ease: "easeOut" },
   }),
 };
+
+/* ── CHATBOT COMPONENT ── */
+type ChatMsg = { role: "user" | "bot"; text: string };
+
+function ChatBot() {
+  const [messages, setMessages] = useState<ChatMsg[]>([
+    { role: "bot", text: "¡Hola! Soy el asistente de One Life One Body. ¿En qué puedo ayudarte?" },
+    { role: "bot", text: "Puedo informarte sobre servicios, precios o ponerte en contacto con David." },
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
+
+  const handleSend = async () => {
+    const text = input.trim();
+    if (!text || loading) return;
+
+    const userMsg: ChatMsg = { role: "user", text };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setLoading(true);
+
+    try {
+      // Build history for context (skip initial bot messages)
+      const history = messages
+        .slice(2)
+        .concat(userMsg)
+        .map((m) => ({ role: m.role === "user" ? "user" : "model", text: m.text }));
+
+      const { data } = await api.post("/chatbot", {
+        message: text,
+        history: history.slice(-16), // Last 16 messages max
+      });
+
+      setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "bot", text: "Perdona, ha habido un error. Inténtalo de nuevo o contacta con David por Instagram." },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  return (
+    <>
+      <div className="bot__header">
+        <span className="bot__dot" />
+        <strong>Asistente One Life One Body</strong>
+        <span className="bot__badge">IA</span>
+      </div>
+      <div className="bot__messages">
+        {messages.map((msg, i) => (
+          <div key={i} className={`bot__msg bot__msg--${msg.role === "user" ? "user" : "bot"}`}>
+            {msg.text}
+          </div>
+        ))}
+        {loading && (
+          <div className="bot__msg bot__msg--bot bot__msg--typing">
+            <span className="bot__typing-dot" />
+            <span className="bot__typing-dot" />
+            <span className="bot__typing-dot" />
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+      <div className="bot__input">
+        <input
+          type="text"
+          placeholder="Escribe tu pregunta..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={loading}
+          maxLength={500}
+        />
+        <button
+          className="btn-primary"
+          onClick={handleSend}
+          disabled={loading || !input.trim()}
+        >
+          {loading ? "..." : "→"}
+        </button>
+      </div>
+    </>
+  );
+}
 
 /* ── COMPONENTE ── */
 export default function Home() {
@@ -303,22 +406,7 @@ export default function Home() {
 
           <motion.div className="contacto__bot"
             variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1}>
-            <div className="bot__header">
-              <span className="bot__dot" />
-              <strong>Asistente One Life One Body</strong>
-            </div>
-            <div className="bot__messages">
-              <div className="bot__msg bot__msg--bot">
-                ¡Hola! Soy el asistente de One Life One Body. ¿En qué puedo ayudarte?
-              </div>
-              <div className="bot__msg bot__msg--bot">
-                Puedo informarte sobre servicios, precios o ponerte en contacto con David.
-              </div>
-            </div>
-            <div className="bot__input">
-              <input type="text" placeholder="Escribe tu pregunta..." />
-              <button className="btn-primary">→</button>
-            </div>
+            <ChatBot />
           </motion.div>
         </div>
       </section>

@@ -1,4 +1,3 @@
-// src/pages/user/Dashboard.tsx
 import { useAuth } from '../context/Authcontext';
 
 export default function Dashboard() {
