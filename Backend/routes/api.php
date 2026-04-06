@@ -13,6 +13,9 @@ use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminUserWorkoutController;
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WeightRecordController;
+use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\ChatbotController;
 
 Route::get('/_ping', fn() => response()->json(['ok' => true]));
 Route::get('/ping',  fn() => response()->json(['status' => 'ok', 'message' => 'API funcionando']));
@@ -20,6 +23,13 @@ Route::get('/ping',  fn() => response()->json(['status' => 'ok', 'message' => 'A
 // ── AUTH PÚBLICA ──────────────────────────────────────────────
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
+
+// ── RECUPERAR CONTRASEÑA (público) ───────────────────────────
+Route::post('/forgot-password/request-code', [ForgotPasswordController::class, 'requestCode']);
+Route::post('/forgot-password/reset',        [ForgotPasswordController::class, 'reset']);
+
+// ── CHATBOT IA (público) ────────────────────────────────────
+Route::post('/chatbot', [ChatbotController::class, 'chat']);
 
 // ── RUTAS PÚBLICAS ────────────────────────────────────────────
 Route::get('/public/external/wger/exercises',          [ExternalWgerController::class, 'exercises']);
@@ -45,6 +55,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/workouts',           [WorkoutController::class, 'store']);
     Route::put('/workouts/{workout}',  [WorkoutController::class, 'update']);
     Route::delete('/workouts/{workout}', [WorkoutController::class, 'destroy']);
+
+    // Seguimiento de peso
+    Route::get('/weight-records',                    [WeightRecordController::class, 'index']);
+    Route::get('/weight-records/stats',              [WeightRecordController::class, 'stats']);
+    Route::post('/weight-records',                   [WeightRecordController::class, 'store']);
+    Route::delete('/weight-records/{weightRecord}',  [WeightRecordController::class, 'destroy']);
 
     // Ejercicios guardados
     Route::get('/saved-exercises',                   [SavedExerciseController::class, 'index']);
