@@ -177,6 +177,47 @@ function ChatBot() {
   );
 }
 
+/* ── FLOATING CHAT WIDGET ── */
+function FloatingChat() {
+  const [open, setOpen] = useState(false);
+  const [hasOpened, setHasOpened] = useState(false);
+  const [pulse, setPulse] = useState(true);
+
+  // Stop pulsing after first open
+  const handleToggle = () => {
+    setOpen((v) => !v);
+    if (!hasOpened) {
+      setHasOpened(true);
+      setPulse(false);
+    }
+  };
+
+  return (
+    <div className="floating-chat">
+      {/* Chat panel */}
+      <div className={`floating-chat__panel ${open ? "floating-chat__panel--open" : ""}`}>
+        <div className="floating-chat__window">
+          <ChatBot />
+        </div>
+      </div>
+
+      {/* Toggle button */}
+      <button
+        className={`floating-chat__btn ${open ? "floating-chat__btn--open" : ""} ${pulse ? "floating-chat__btn--pulse" : ""}`}
+        onClick={handleToggle}
+        aria-label={open ? "Cerrar chat" : "Abrir asistente"}
+      >
+        <span className={`floating-chat__icon ${open ? "floating-chat__icon--close" : ""}`}>
+          {open ? "✕" : "💬"}
+        </span>
+        {!open && !hasOpened && (
+          <span className="floating-chat__tooltip">¿Necesitas ayuda?</span>
+        )}
+      </button>
+    </div>
+  );
+}
+
 /* ── COMPONENTE ── */
 export default function Home() {
   return (
@@ -386,15 +427,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ CONTACTO / BOT ══ */}
+      {/* ══ CONTACTO ══ */}
       <section className="section-contacto" id="contacto">
-        <div className="container contacto__inner">
+        <div className="container contacto__inner contacto__inner--centered">
           <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
             <p className="section-label">Contacto</p>
             <h2 className="section-title">Empieza hoy</h2>
             <div className="cyan-line" />
             <p className="contacto__desc">
-              ¿Tienes dudas? Escríbeme directamente o usa el asistente. Te respondo en menos de 24h.
+              ¿Tienes dudas? Escríbeme directamente o usa el asistente virtual que tienes en la esquina inferior derecha. Te respondo en menos de 24h.
             </p>
             <div className="contacto__links">
               <a href="https://www.instagram.com/one.life.one.body.benidorm/" target="_blank" rel="noreferrer" className="btn-ghost">
@@ -402,11 +443,6 @@ export default function Home() {
               </a>
               <a href="mailto:info@onelifeonebody.es" className="btn-primary">Enviar email</a>
             </div>
-          </motion.div>
-
-          <motion.div className="contacto__bot"
-            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1}>
-            <ChatBot />
           </motion.div>
         </div>
       </section>
@@ -441,6 +477,9 @@ export default function Home() {
           <p className="footer__copy">© {new Date().getFullYear()} One Life One Body · Fitness Center · Todos los derechos reservados</p>
         </div>
       </footer>
+
+      {/* ══ FLOATING CHAT WIDGET ══ */}
+      <FloatingChat />
 
     </div>
   );

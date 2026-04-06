@@ -501,13 +501,191 @@
   gap: 1rem;
   flex-wrap: wrap;
 }
-.contacto__bot {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+.contacto__inner--centered {
+  grid-template-columns: 1fr;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+.contacto__inner--centered .cyan-line { margin: 0 auto 1.5rem; }
+.contacto__inner--centered .contacto__links { justify-content: center; }
+
+/* ══ FLOATING CHAT WIDGET ══ */
+.floating-chat {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+/* ── Toggle button ── */
+.floating-chat__btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--primary-dim));
+  color: var(--bg-deep);
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 20px rgba(126, 232, 232, 0.3),
+    0 0 0 0 rgba(126, 232, 232, 0.4);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s;
+  position: relative;
+}
+
+.floating-chat__btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(126, 232, 232, 0.45);
+}
+
+.floating-chat__btn--open {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.floating-chat__btn--open:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Pulse animation */
+.floating-chat__btn--pulse {
+  animation: fabPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes fabPulse {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(126, 232, 232, 0.3), 0 0 0 0 rgba(126, 232, 232, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(126, 232, 232, 0.3), 0 0 0 14px rgba(126, 232, 232, 0);
+  }
+}
+
+/* Icon transition */
+.floating-chat__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.floating-chat__icon--close {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+}
+
+/* Tooltip */
+.floating-chat__tooltip {
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: var(--font-condensed);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.5rem 0.85rem;
+  border-radius: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: tooltipIn 0.4s ease 2s both;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.floating-chat__tooltip::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 10px;
+  height: 10px;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+@keyframes tooltipIn {
+  from { opacity: 0; transform: translateY(-50%) translateX(8px); }
+  to   { opacity: 1; transform: translateY(-50%) translateX(0); }
+}
+
+/* ── Chat panel ── */
+.floating-chat__panel {
+  position: absolute;
+  bottom: calc(100% + 0.75rem);
+  right: 0;
+  width: 380px;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(10px) scale(0.95);
+  transform-origin: bottom right;
+  transition: max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.3s ease,
+              transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
   overflow: hidden;
-  max-height: 480px;
+}
+
+.floating-chat__panel--open {
+  max-height: 520px;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+.floating-chat__window {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5),
+              0 0 0 1px rgba(126, 232, 232, 0.05);
+}
+
+/* Override bot styles inside floating widget */
+.floating-chat__window .bot__messages {
+  max-height: 300px;
+  min-height: 200px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .floating-chat {
+    bottom: 1rem;
+    right: 1rem;
+  }
+
+  .floating-chat__btn {
+    width: 54px;
+    height: 54px;
+    font-size: 1.3rem;
+  }
+
+  .floating-chat__panel {
+    width: calc(100vw - 2rem);
+    right: 0;
+  }
+
+  .floating-chat__tooltip {
+    display: none;
+  }
 }
 .bot__header {
   display: flex;
