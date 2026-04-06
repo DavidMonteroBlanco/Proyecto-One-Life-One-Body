@@ -12,6 +12,8 @@ use App\Http\Controllers\SavedExerciseController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminUserWorkoutController;
 
+use App\Http\Controllers\ProfileController;
+
 Route::get('/_ping', fn() => response()->json(['ok' => true]));
 Route::get('/ping',  fn() => response()->json(['status' => 'ok', 'message' => 'API funcionando']));
 
@@ -32,6 +34,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/me',      [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Perfil del usuario
+    Route::put('/me/profile',                [ProfileController::class, 'updateProfile']);
+    Route::post('/me/password/request-code', [ProfileController::class, 'requestPasswordCode']);
+    Route::post('/me/password/change',       [ProfileController::class, 'changePassword']);
 
     // Workouts / pesajes
     Route::get('/workouts',            [WorkoutController::class, 'index']);

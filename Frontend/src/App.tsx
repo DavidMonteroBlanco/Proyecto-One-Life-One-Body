@@ -4,7 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 // Layouts
 import PublicLayout from "./components/ui/PublicLayout";
-import UserLayout from "./layouts/UserLayout";        // ← Añade esta importación
+import UserLayout from "./layouts/UserLayout";
 
 // Páginas públicas
 import Home from "./pages/Home/Home";
@@ -13,8 +13,9 @@ import Register from "./pages/Auth/Register";
 
 // Páginas privadas de Usuario
 import Dashboard from "./pages/Dashboard/Dashboard";
+import Profile from "./user/Profile";
 
-// Páginas privadas de Admin (las que ya tienes)
+// Páginas privadas de Admin
 import Workouts from "./pages/Workouts";
 import ExerciseLibrary from "./pages/ExerciseLibrary";
 import SavedExercises from "./pages/SavedExercises";
@@ -37,95 +38,42 @@ export default function App() {
         <Route path="/register" element={<Register />} />
       </Route>
 
-      {/* ── RUTAS PRIVADAS PARA USUARIOS NORMALES (con Sidebar) ── */}
+      {/* ── RUTAS PRIVADAS (con Sidebar) ── */}
       <Route element={
         <ProtectedRoute>
           <UserLayout />
         </ProtectedRoute>
       }>
+        {/* ── Usuario ── */}
         <Route path="/dashboard" element={<Dashboard />} />
-        {/* Aquí puedes añadir más rutas de usuario en el futuro */}
-        {/* Ejemplo: 
-        <Route path="/workouts" element={<UserWorkouts />} />
-        <Route path="/progress" element={<Progress />} />
-        <Route path="/saved-exercises" element={<SavedExercisesUser />} />
-        <Route path="/profile" element={<Profile />} />
-        */}
+        <Route path="/my-profile" element={<Profile />} />
+        {/* <Route path="/my-tracking" element={<Tracking />} /> */}
+
+        {/* ── Admin ── */}
+        <Route path="/admin/workouts" element={
+          <AdminRoute><Workouts /></AdminRoute>
+        } />
+        <Route path="/admin/exercises" element={
+          <AdminRoute><ExerciseLibrary /></AdminRoute>
+        } />
+        <Route path="/admin/saved-exercises" element={
+          <AdminRoute><SavedExercises /></AdminRoute>
+        } />
+        <Route path="/admin/services" element={
+          <AdminRoute><ServicesAdmin /></AdminRoute>
+        } />
+        <Route path="/admin/collaborators" element={
+          <AdminRoute><CollaboratorsAdmin /></AdminRoute>
+        } />
+        <Route path="/admin/method" element={
+          <AdminRoute><Method /></AdminRoute>
+        } />
+        <Route path="/admin/settings" element={
+          <AdminRoute><SiteSettingsPage /></AdminRoute>
+        } />
       </Route>
 
-      {/* ── RUTAS PRIVADAS PARA ADMIN ── */}
-      <Route
-        path="/admin/workouts"
-        element={
-          <ProtectedRoute>
-            <AdminRoute>
-              <Workouts />
-            </AdminRoute>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/exercises"
-        element={
-          <ProtectedRoute>
-            <AdminRoute>
-              <ExerciseLibrary />
-            </AdminRoute>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/saved-exercises"
-        element={
-          <ProtectedRoute>
-            <AdminRoute>
-              <SavedExercises />
-            </AdminRoute>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/services"
-        element={
-          <ProtectedRoute>
-            <AdminRoute>
-              <ServicesAdmin />
-            </AdminRoute>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/collaborators"
-        element={
-          <ProtectedRoute>
-            <AdminRoute>
-              <CollaboratorsAdmin />
-            </AdminRoute>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/method"
-        element={
-          <ProtectedRoute>
-            <AdminRoute>
-              <Method />
-            </AdminRoute>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/settings"
-        element={
-          <ProtectedRoute>
-            <AdminRoute>
-              <SiteSettingsPage />
-            </AdminRoute>
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Ruta por defecto */}
+      {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
