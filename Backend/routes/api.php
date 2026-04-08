@@ -16,6 +16,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WeightRecordController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\AdminWeightController;
 
 Route::get('/_ping', fn() => response()->json(['ok' => true]));
 Route::get('/ping',  fn() => response()->json(['status' => 'ok', 'message' => 'API funcionando']));
@@ -56,11 +57,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/workouts/{workout}',  [WorkoutController::class, 'update']);
     Route::delete('/workouts/{workout}', [WorkoutController::class, 'destroy']);
 
-    // Seguimiento de peso
-    Route::get('/weight-records',                    [WeightRecordController::class, 'index']);
-    Route::get('/weight-records/stats',              [WeightRecordController::class, 'stats']);
-    Route::post('/weight-records',                   [WeightRecordController::class, 'store']);
-    Route::delete('/weight-records/{weightRecord}',  [WeightRecordController::class, 'destroy']);
+    // Seguimiento de peso (usuario solo puede VER)
+    Route::get('/weight-records',       [WeightRecordController::class, 'index']);
+    Route::get('/weight-records/stats', [WeightRecordController::class, 'stats']);
 
     // Ejercicios guardados
     Route::get('/saved-exercises',                   [SavedExerciseController::class, 'index']);
@@ -80,5 +79,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/admin/reports/workouts.pdf',        [AdminReportController::class, 'workoutsPdf']);
         Route::post('/admin/users/{user}/workouts',      [AdminUserWorkoutController::class, 'store']);
+
+        // Gestión de usuarios y pesajes
+        Route::get('/admin/users',                             [AdminWeightController::class, 'users']);
+        Route::get('/admin/users/{user}/weight-records',       [AdminWeightController::class, 'records']);
+        Route::get('/admin/users/{user}/weight-records/stats', [AdminWeightController::class, 'stats']);
+        Route::post('/admin/users/{user}/weight-records',      [AdminWeightController::class, 'store']);
+        Route::put('/admin/weight-records/{weightRecord}',     [AdminWeightController::class, 'update']);
+        Route::delete('/admin/weight-records/{weightRecord}',  [AdminWeightController::class, 'destroy']);
     });
 });

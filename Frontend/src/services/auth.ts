@@ -53,6 +53,6 @@ export async function logout(): Promise<void> {
 
 // ── ME ─────────────────────────────────────────────────────────
 export async function getMe(): Promise<User> {
-  const { data } = await api.get<User>("/me");
-  return data;
+  const { data } = await api.get("/me");
+  return data.user ?? data;
 }

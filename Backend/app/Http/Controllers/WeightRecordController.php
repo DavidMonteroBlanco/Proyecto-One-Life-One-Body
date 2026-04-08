@@ -87,10 +87,10 @@ class WeightRecordController extends Controller
                 'total_records' => 0,
                 'current_weight' => null,
                 'start_weight' => null,
-                'min_weight' => null,
-                'max_weight' => null,
                 'total_change' => null,
                 'last_week_change' => null,
+                'current_fat' => null,
+                'current_muscle' => null,
             ]);
         }
 
@@ -102,12 +102,12 @@ class WeightRecordController extends Controller
             'total_records'   => $records->count(),
             'current_weight'  => (float) $current->weight_kg,
             'start_weight'    => (float) $first->weight_kg,
-            'min_weight'      => (float) $records->min('weight_kg'),
-            'max_weight'      => (float) $records->max('weight_kg'),
             'total_change'    => round((float) $current->weight_kg - (float) $first->weight_kg, 1),
             'last_week_change' => $oneWeekAgo
                 ? round((float) $current->weight_kg - (float) $oneWeekAgo->weight_kg, 1)
                 : null,
+            'current_fat'     => $current->fat_percentage ? (float) $current->fat_percentage : null,
+            'current_muscle'  => $current->muscle_percentage ? (float) $current->muscle_percentage : null,
         ]);
     }
 }

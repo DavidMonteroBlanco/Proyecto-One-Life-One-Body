@@ -155,6 +155,17 @@
   color: var(--primary);
 }
 
+/* Access code input */
+.access-code-input {
+  font-family: var(--font-display) !important;
+  font-size: 1.6rem !important;
+  text-align: center !important;
+  letter-spacing: 0.25em !important;
+  color: var(--primary) !important;
+  text-transform: uppercase;
+  padding: 1rem !important;
+}
+
 /* ══ PASSWORD STRENGTH ══ */
 .pw-strength {
   margin-top: 0.6rem;

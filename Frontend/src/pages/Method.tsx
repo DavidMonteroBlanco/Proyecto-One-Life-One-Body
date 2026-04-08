@@ -17,7 +17,7 @@ export default function Method() {
   const [eSortOrder, setESortOrder] = useState(0);
 
   async function load() {
-    const res = await api.get("/api/method-steps");
+    const res = await api.get("/method-steps");
     setItems(res.data || []);
   }
 
@@ -30,7 +30,7 @@ export default function Method() {
     setMsg(null);
 
     try {
-      await api.post("/api/method-steps", {
+      await api.post("/method-steps", {
         title: title.trim(),
         description: description.trim() || null,
         sort_order: sortOrder,
@@ -66,7 +66,7 @@ export default function Method() {
     }
 
     try {
-      await api.put(`/api/method-steps/${id}`, {
+      await api.put(`/method-steps/${id}`, {
         title: eTitle.trim(),
         description: eDescription.trim() || null,
         sort_order: eSortOrder,
@@ -86,7 +86,7 @@ export default function Method() {
 
     setMsg(null);
     try {
-      await api.delete(`/api/method-steps/${id}`);
+      await api.delete(`/method-steps/${id}`);
       setMsg("Paso eliminado");
       load();
     } catch {

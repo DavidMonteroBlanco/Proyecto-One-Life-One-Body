@@ -132,6 +132,20 @@
 
 .stat-card__value--positive { color: #6ee7b7; }
 .stat-card__value--negative { color: #fca5a5; }
+.stat-card__value--fat { color: #fbbf24; }
+.stat-card__value--muscle { color: #6ee7b7; }
+
+/* Body comp in records */
+.record-row__comp {
+  font-family: var(--font-condensed);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.record-row__comp--fat { background: rgba(245, 158, 11, 0.08); color: #fbbf24; }
+.record-row__comp--muscle { background: rgba(16, 185, 129, 0.08); color: #6ee7b7; }
 
 
 /* ── Chart card ── */

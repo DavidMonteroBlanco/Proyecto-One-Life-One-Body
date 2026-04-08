@@ -161,8 +161,7 @@ const userLinks = [
 ];
 
 const adminLinks = [
-  { to: "/admin/workouts",      icon: "◇", label: "Gestión Entrenos",  sub: "Asignar y editar" },
-  { to: "/admin/exercises",     icon: "◈", label: "Biblioteca",        sub: "Ejercicios API" },
+  { to: "/admin/users-weight",  icon: "⚖", label: "Usuarios & Pesajes", sub: "Gestionar clientes" },
   { to: "/admin/services",      icon: "▣", label: "Servicios",         sub: "Gestión de oferta" },
   { to: "/admin/collaborators", icon: "◉", label: "Colaboradores",     sub: "Equipo" },
   { to: "/admin/method",        icon: "◎", label: "Método OLOB",       sub: "Contenido editorial" },

@@ -34,7 +34,7 @@ export default function Login() {
     try {
       const { user } = await login(form);
       setUser(user);
-      navigate(user.role === "admin" ? "/admin/workouts" : "/dashboard", { replace: true });
+      navigate(user.role === "admin" ? "/admin/users-weight" : "/dashboard", { replace: true });
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? "Email o contraseña incorrectos.";
       setError(msg);

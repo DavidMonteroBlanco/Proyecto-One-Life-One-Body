@@ -60,7 +60,7 @@ export default function PublicLayout() {
                   <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
                 </svg>
               </a>
-              <NavLink to="/login" className="btn-primary navbar__cta">Área cliente</NavLink>
+              <NavLink to="/access" className="btn-primary navbar__cta">Área cliente</NavLink>
               <button
                 className={`navbar__burger ${menuOpen ? "open" : ""}`}
                 onClick={() => setMenuOpen((v) => !v)}
@@ -75,7 +75,7 @@ export default function PublicLayout() {
             {navLinks.map((l) => (
               <a key={l.href} href={l.href} className="navbar__mobile-link">{l.label}</a>
             ))}
-            <NavLink to="/login" className="btn-primary" style={{ marginTop: "1rem" }}>
+            <NavLink to="/access" className="btn-primary" style={{ marginTop: "1rem" }}>
               Área cliente
             </NavLink>
           </div>

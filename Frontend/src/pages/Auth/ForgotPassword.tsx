@@ -117,16 +117,22 @@ export default function ForgotPassword() {
             <img src={logoImg} alt="" aria-hidden="true" />
           </div>
 
-          <div className="auth-card__header">
+          <div className="auth-card__header" key={step}>
             <p className="section-label">Recuperar acceso</p>
-            <h1 className="auth-card__title">
-              {step === "success" ? "Listo" : "Recupera tu\ncuenta"}
-            </h1>
-            <p className="auth-card__sub">
-              {step === "email" && "Introduce tu email y te enviaremos un código para restablecer tu contraseña."}
-              {step === "code" && "Introduce el código que te hemos enviado y tu nueva contraseña."}
-              {step === "success" && "Tu contraseña ha sido cambiada correctamente."}
-            </p>
+            {step === "success" ? (
+              <h1 className="auth-card__title">Listo</h1>
+            ) : (
+              <h1 className="auth-card__title">Recupera tu<br />cuenta</h1>
+            )}
+            {step === "email" && (
+              <p className="auth-card__sub">Introduce tu email y te enviaremos un código para restablecer tu contraseña.</p>
+            )}
+            {step === "code" && (
+              <p className="auth-card__sub">Introduce el código que te hemos enviado y tu nueva contraseña.</p>
+            )}
+            {step === "success" && (
+              <p className="auth-card__sub">Tu contraseña ha sido cambiada correctamente.</p>
+            )}
           </div>
 
           {/* ── STEP 1: Email ── */}

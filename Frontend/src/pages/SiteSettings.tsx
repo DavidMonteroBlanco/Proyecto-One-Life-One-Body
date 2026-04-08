@@ -18,7 +18,7 @@ export default function SiteSettingsPage() {
   const [loading, setLoading] = useState(false);
 
   async function load() {
-    const res = await api.get("/api/site-settings");
+    const res = await api.get("/site-settings");
     const list: SiteSetting[] = res.data || [];
 
     const map: Record<string, string> = {};
@@ -34,7 +34,7 @@ export default function SiteSettingsPage() {
     setMsg(null);
     setLoading(true);
     try {
-      await api.post("/api/site-settings", { key, value: value.trim() || null });
+      await api.post("/site-settings", { key, value: value.trim() || null });
       setMsg("Guardado ");
       load();
     } catch {

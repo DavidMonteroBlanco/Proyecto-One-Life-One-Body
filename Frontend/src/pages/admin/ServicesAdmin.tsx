@@ -26,7 +26,7 @@ export default function ServicesAdmin() {
   const [eSortOrder, setESortOrder] = useState<number>(1);
 
   async function load() {
-    const res = await api.get<Service[]>("/api/services");
+    const res = await api.get<Service[]>("/services");
     setItems(res.data || []);
   }
 
@@ -45,7 +45,7 @@ export default function ServicesAdmin() {
 
     try {
       setLoading(true);
-      await api.post("/api/services", {
+      await api.post("/services", {
         title: title.trim(),
         description: description.trim(),
         sort_order: sortOrder,
@@ -85,7 +85,7 @@ export default function ServicesAdmin() {
 
     try {
       setLoading(true);
-      await api.put(`/api/services/${id}`, {
+      await api.put(`/services/${id}`, {
         title: eTitle.trim(),
         description: eDescription.trim(),
         sort_order: eSortOrder,
@@ -107,7 +107,7 @@ export default function ServicesAdmin() {
 
     try {
       setLoading(true);
-      await api.delete(`/api/services/${id}`);
+      await api.delete(`/services/${id}`);
       await load();
       setMsg("Servicio eliminado ");
     } catch {

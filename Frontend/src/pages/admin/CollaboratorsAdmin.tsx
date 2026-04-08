@@ -27,7 +27,7 @@ export default function CollaboratorsAdmin() {
   const [eImageUrl, setEImageUrl] = useState("");
 
   async function load() {
-    const res = await api.get<Collaborator[]>("/api/collaborators");
+    const res = await api.get<Collaborator[]>("/collaborators");
     setItems(res.data || []);
   }
 
@@ -46,7 +46,7 @@ export default function CollaboratorsAdmin() {
 
     try {
       setLoading(true);
-      await api.post("/api/collaborators", {
+      await api.post("/collaborators", {
         name: name.trim(),
         role_title: roleTitle.trim(),
         description: description.trim(),
@@ -89,7 +89,7 @@ export default function CollaboratorsAdmin() {
 
     try {
       setLoading(true);
-      await api.put(`/api/collaborators/${id}`, {
+      await api.put(`/collaborators/${id}`, {
         name: eName.trim(),
         role_title: eRoleTitle.trim(),
         description: eDescription.trim(),
@@ -112,7 +112,7 @@ export default function CollaboratorsAdmin() {
 
     try {
       setLoading(true);
-      await api.delete(`/api/collaborators/${id}`);
+      await api.delete(`/collaborators/${id}`);
       await load();
       setMsg("Colaborador eliminado ");
     } catch {
