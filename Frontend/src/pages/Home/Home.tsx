@@ -363,41 +363,47 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ ENTRENOS ONLINE ══ */}
+      {/* ══ MÉTODO ONE LIFE — PROMO ══ */}
       <section className="section-entrenos" id="entrenos">
-        <div className="container entrenos__inner">
-          <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-            <p className="section-label">Entrenos online</p>
-            <h2 className="section-title">Entrena donde<br />quieras</h2>
-            <div className="cyan-line" />
-            <p className="entrenos__desc">
-              Accede a rutinas diseñadas por David con vídeos HD, progresión semanal y seguimiento directo. Como tener un entrenador personal en el bolsillo, donde estés.
-            </p>
-            <div className="entrenos__features">
-              {["Vídeos HD explicados por David", "Progresión automática semana a semana", "Chat directo con tu entrenador", "Nuevas rutinas cada semana"].map((f) => (
-                <div key={f} className="entrenos__feature">
-                  <span className="entrenos__feature-dot" />{f}
-                </div>
-              ))}
-            </div>
-            <a href="#contacto" className="btn-primary" style={{ marginTop: "2rem" }}>Acceder ahora</a>
-          </motion.div>
-
-          <motion.div className="entrenos__preview"
-            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1}>
-            {["Día 1 · Pecho y tríceps", "Día 2 · Espalda y bíceps", "Día 3 · Pierna completa"].map((r, i) => (
-              <div key={r} className="entrenos__preview-card">
-                <div className="entrenos__preview-thumb" style={{ opacity: 1 - i * 0.15 }}>
-                  <span>{i + 1}</span>
-                </div>
-                <div>
-                  <strong>{r}</strong>
-                  <p>6 ejercicios · {45 + i * 5} min</p>
-                </div>
-                <span className="entrenos__preview-arrow">▶</span>
+        <div className="container">
+          <div className="onelife-promo">
+            <motion.div className="onelife-promo__content"
+              variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+              <p className="section-label">Nuevo</p>
+              <h2 className="onelife-promo__title">METODO<br /><span>ONE LIFE</span></h2>
+              <p className="onelife-promo__desc">
+                Tu transformación no depende de un lugar. Plan personalizado, seguimiento por videollamada, 
+                control de pesajes, nutrición y chat directo con David. Todo desde tu móvil.
+              </p>
+              <div className="onelife-promo__features">
+                {["Plan personalizado", "Videollamadas semanales", "Control de pesajes", "Chat directo", "Pautas de nutrición", "Informes mensuales"].map((f) => (
+                  <span key={f} className="onelife-promo__tag">{f}</span>
+                ))}
               </div>
-            ))}
-          </motion.div>
+              <div className="onelife-promo__ctas">
+                <a href="/entrenos-online" className="btn-primary">Descubrir método</a>
+                <a href="/entrenos-online#suplementos" className="btn-ghost">Ver suplementos</a>
+              </div>
+            </motion.div>
+            <motion.div className="onelife-promo__visual"
+              variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1}>
+              <div className="onelife-promo__card">
+                <div className="onelife-promo__card-glow" />
+                <span className="onelife-promo__card-badge">ONLINE</span>
+                <div className="onelife-promo__card-icon">⚡</div>
+                <h3>Entrena donde quieras</h3>
+                <p>Sin horarios. Sin excusas.<br />Solo resultados.</p>
+              </div>
+              <div className="onelife-promo__biotech">
+                <img src="/biotech-proteina.webp" alt="BioTech USA" className="onelife-promo__biotech-img" />
+                <div>
+                  <span className="onelife-promo__biotech-label">Colaborador oficial</span>
+                  <strong>BioTech USA</strong>
+                  <span className="onelife-promo__biotech-code">Código: DAVIDS15</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -435,13 +441,38 @@ export default function Home() {
             <h2 className="section-title">Empieza hoy</h2>
             <div className="cyan-line" />
             <p className="contacto__desc">
-              ¿Tienes dudas? Escríbeme directamente o usa el asistente virtual que tienes en la esquina inferior derecha. Te respondo en menos de 24h.
+              Escríbenos por WhatsApp, Instagram o usa el asistente virtual en la esquina inferior derecha. Te respondemos en menos de 24h.
             </p>
+
+            <div className="contacto__whatsapp-cards">
+              <a href="https://wa.me/34631986391?text=Hola%20Muky!%20Me%20interesa%20información%20sobre%20One%20Life%20One%20Body"
+                target="_blank" rel="noreferrer" className="contacto__wa-card">
+                <span className="contacto__wa-icon">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                </span>
+                <div className="contacto__wa-info">
+                  <strong>Muky</strong>
+                  <span>+34 631 98 63 91</span>
+                </div>
+              </a>
+
+              <a href="https://wa.me/34601387263?text=Hola%20Dabuky!%20Me%20interesa%20información%20sobre%20One%20Life%20One%20Body"
+                target="_blank" rel="noreferrer" className="contacto__wa-card">
+                <span className="contacto__wa-icon">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                </span>
+                <div className="contacto__wa-info">
+                  <strong>Dabuky</strong>
+                  <span>+34 601 38 72 63</span>
+                </div>
+              </a>
+            </div>
+
             <div className="contacto__links">
               <a href="https://www.instagram.com/one.life.one.body.benidorm/" target="_blank" rel="noreferrer" className="btn-ghost">
                 Instagram
               </a>
-              <a href="mailto:info@onelifeonebody.es" className="btn-primary">Enviar email</a>
+              <a href="mailto:info@onelifeonebody.es" className="btn-ghost">Enviar email</a>
             </div>
           </motion.div>
         </div>

@@ -1,98 +1,73 @@
+// src/pages/SiteSettings.tsx
 import { useEffect, useState } from "react";
-import PageShell from "../components/PageShell";
-import  api  from "../services/api";
-import type { SiteSetting } from "../types";
+import api from "../services/api";
+import "./admin/AdminPages.css";
 
-type SettingKey = "phone" | "email" | "address" | "instagram";
-
-const DEFAULT_KEYS: { key: SettingKey; label: string; placeholder: string }[] = [
-  { key: "phone", label: "Teléfono", placeholder: "+34 600 000 000" },
-  { key: "email", label: "Email", placeholder: "contacto@onelifeonebody.com" },
-  { key: "address", label: "Dirección", placeholder: "Calle ... / Ciudad" },
-  { key: "instagram", label: "Instagram", placeholder: "https://instagram.com/..." },
-];
+type Setting = { id: number; key: string; value: string | null };
 
 export default function SiteSettingsPage() {
-  const [items, setItems] = useState<Record<string, string>>({});
-  const [msg, setMsg] = useState<string | null>(null);
+  const [items, setItems] = useState<Setting[]>([]);
+  const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [key, setKey] = useState(""); const [value, setValue] = useState("");
 
-  async function load() {
-    const res = await api.get("/site-settings");
-    const list: SiteSetting[] = res.data || [];
+  const load = async () => { try { const r = await api.get("/site-settings"); setItems(r.data || []); } catch { setMsg({ type: "err", text: "Error cargando" }); } };
+  useEffect(() => { load(); }, []);
 
-    const map: Record<string, string> = {};
-    for (const it of list) map[it.key] = it.value ?? "";
-    setItems(map);
-  }
+  const upsert = async (e: React.FormEvent) => {
+    e.preventDefault(); if (!key.trim()) return; setLoading(true); setMsg(null);
+    try { await api.post("/site-settings", { key: key.trim(), value: value.trim() || null }); setKey(""); setValue(""); await load(); setMsg({ type: "ok", text: "Configuración guardada" }); }
+    catch (err: any) { setMsg({ type: "err", text: err?.response?.data?.message || "Error" }); } finally { setLoading(false); }
+  };
 
-  useEffect(() => {
-    load().catch(() => setMsg("No se pudo cargar la configuración"));
-  }, []);
-
-  async function saveOne(key: string, value: string) {
-    setMsg(null);
-    setLoading(true);
-    try {
-      await api.post("/site-settings", { key, value: value.trim() || null });
-      setMsg("Guardado ");
-      load();
-    } catch {
-      setMsg("Error guardando");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const remove = async (id: number) => {
+    if (!window.confirm("Eliminar esta configuración?")) return; setLoading(true);
+    try { await api.delete(`/site-settings/${id}`); await load(); setMsg({ type: "ok", text: "Eliminada" }); }
+    catch { setMsg({ type: "err", text: "Error" }); } finally { setLoading(false); }
+  };
 
   return (
-    <PageShell>
-      <div className="space-y-6">
-        <div className="olob-card">
-          <h1 className="text-2xl font-bold" style={{ color: "var(--blue-dark)" }}>
-            Contacto / Configuración (web pública)
-          </h1>
-          <p className="mt-1 text-sm opacity-80">
-            Esto se usa en la sección de Contacto del PHP.
-          </p>
+    <div className="admin-page">
+      <h1 className="admin-page__title">Configuracion</h1>
+      <p className="admin-page__sub">Ajustes generales del sistema</p>
 
-          {msg && <p className="mt-3 text-sm">{msg}</p>}
-        </div>
+      {msg && <div className={`admin-msg admin-msg--${msg.type}`}>{msg.text}</div>}
 
-        <div className="olob-card">
-          <h2 className="text-lg font-bold" style={{ color: "var(--blue-dark)" }}>
-            Datos de contacto
-          </h2>
+      <div className="admin-card">
+        <h2 className="admin-card__title"><span className="admin-card__title-icon">⊕</span> Nueva configuracion</h2>
+        <form className="admin-form" onSubmit={upsert}>
+          <div className="admin-form--row">
+            <div className="admin-field"><label>Clave</label><input value={key} onChange={e => setKey(e.target.value)} placeholder="Ej: site_name, phone..." required /></div>
+            <div className="admin-field"><label>Valor</label><input value={value} onChange={e => setValue(e.target.value)} placeholder="Valor de la configuración" /></div>
+          </div>
+          <div className="admin-btn-row"><button className="admin-btn admin-btn--primary" disabled={loading}>{loading ? "..." : "Guardar"}</button></div>
+        </form>
+        <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.8rem", opacity: 0.6 }}>
+          Si la clave ya existe, se actualiza el valor. Si no, se crea nueva.
+        </p>
+      </div>
 
-          <div className="mt-4 grid gap-4">
-            {DEFAULT_KEYS.map((f) => (
-              <div key={f.key} className="grid gap-2">
-                <label className="text-sm font-semibold">{f.label}</label>
-
-                <div className="flex gap-2">
-                  <input
-                    className="w-full rounded border p-2"
-                    placeholder={f.placeholder}
-                    value={items[f.key] ?? ""}
-                    onChange={(e) =>
-                      setItems((prev) => ({ ...prev, [f.key]: e.target.value }))
-                    }
-                  />
-
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={() => saveOne(f.key, items[f.key] ?? "")}
-                    className="rounded px-3 py-2 text-sm text-white"
-                    style={{ backgroundColor: "var(--blue-light)" }}
-                  >
-                    Guardar
-                  </button>
+      <div className="admin-card">
+        <h2 className="admin-card__title"><span className="admin-card__title-icon">◎</span> Configuraciones ({items.length})</h2>
+        {items.length === 0 ? (
+          <div className="admin-empty"><span className="admin-empty__icon">⊕</span>No hay configuraciones</div>
+        ) : (
+          <div className="admin-list">
+            {items.map(s => (
+              <div key={s.id} className="admin-item">
+                <div className="admin-item__body">
+                  <div className="admin-item__title" style={{ fontFamily: "monospace", fontSize: "0.85rem" }}>{s.key}</div>
+                  <div className="admin-item__desc">{s.value || <span style={{ opacity: 0.4 }}>sin valor</span>}</div>
+                </div>
+                <div className="admin-item__actions">
+                  <button className="admin-item__btn" onClick={() => { setKey(s.key); setValue(s.value || ""); }} title="Editar">✎</button>
+                  <button className="admin-item__btn admin-item__btn--del" onClick={() => remove(s.id)} title="Eliminar">✕</button>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        )}
       </div>
-    </PageShell>
+    </div>
   );
 }

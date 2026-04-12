@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import logoImg from "../../assets/icons/logo-bw.jpg";
 import "./PublicLayout.css";
 
-const AUTH_ROUTES = ["/login", "/register"];
+const AUTH_ROUTES = ["/login", "/register", "/access", "/forgot-password"];
 
 export default function PublicLayout() {
   const [scrolled, setScrolled] = useState(false);
@@ -21,11 +21,11 @@ export default function PublicLayout() {
   useEffect(() => setMenuOpen(false), [location]);
 
   const navLinks = [
-    { label: "Método",      href: "/#metodo" },
-    { label: "Servicios",   href: "/#servicios" },
-    { label: "Entrenos",    href: "/#entrenos" },
-    { label: "Testimonios", href: "/#testimonios" },
-    { label: "Contacto",    href: "/#contacto" },
+    { label: "Método",           href: "/#metodo" },
+    { label: "Servicios",        href: "/#servicios" },
+    { label: "Entrenos Online",  href: "/entrenos-online" },
+    { label: "Testimonios",      href: "/#testimonios" },
+    { label: "Contacto",         href: "/#contacto" },
   ];
 
   return (

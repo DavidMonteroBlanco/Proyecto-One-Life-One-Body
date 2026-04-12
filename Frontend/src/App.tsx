@@ -12,6 +12,7 @@ import AccessGate from "./pages/Auth/AccessGate";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import ForgotPassword from "./pages/Auth/ForgotPassword";
+import EntrenosOnline from "./pages/OnlineTraining/OnlineTraining";
 
 // Páginas privadas de Usuario
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -36,6 +37,7 @@ export default function App() {
       {/* ── RUTAS PÚBLICAS ── */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/entrenos-online" element={<EntrenosOnline />} />
 
         {/* Puerta de acceso — cualquiera puede verla */}
         <Route path="/access" element={<AccessGate />} />

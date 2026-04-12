@@ -1,263 +1,104 @@
+// src/pages/admin/ServicesAdmin.tsx
 import { useEffect, useState } from "react";
-import PageShell from "../../components/PageShell";
-import  api  from "../../services/api";
+import api from "../../services/api";
+import "./AdminPages.css";
 
-type Service = {
-  id: number;
-  title: string;
-  description: string;
-  sort_order: number;
-  created_at?: string;
-  updated_at?: string;
-};
+type Service = { id: number; title: string; description: string; sort_order: number };
 
 export default function ServicesAdmin() {
   const [items, setItems] = useState<Service[]>([]);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
   const [loading, setLoading] = useState(false);
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [sortOrder, setSortOrder] = useState<number>(1);
-
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [sortOrder, setSortOrder] = useState(1);
+  const [editId, setEditId] = useState<number | null>(null);
   const [eTitle, setETitle] = useState("");
-  const [eDescription, setEDescription] = useState("");
-  const [eSortOrder, setESortOrder] = useState<number>(1);
+  const [eDesc, setEDesc] = useState("");
+  const [eSort, setESort] = useState(1);
 
-  async function load() {
-    const res = await api.get<Service[]>("/services");
-    setItems(res.data || []);
-  }
+  const load = async () => { try { const r = await api.get("/services"); setItems(r.data || []); } catch { setMsg({ type: "err", text: "Error cargando servicios" }); } };
+  useEffect(() => { load(); }, []);
 
-  useEffect(() => {
-    load().catch(() => setMsg("No se pudieron cargar servicios"));
-  }, []);
+  const create = async (e: React.FormEvent) => {
+    e.preventDefault(); if (!title.trim()) return; setLoading(true); setMsg(null);
+    try { await api.post("/services", { title: title.trim(), description: description.trim(), sort_order: sortOrder }); setTitle(""); setDescription(""); setSortOrder(1); await load(); setMsg({ type: "ok", text: "Servicio creado" }); }
+    catch (err: any) { setMsg({ type: "err", text: err?.response?.data?.message || "Error" }); } finally { setLoading(false); }
+  };
 
-  async function create(e: React.FormEvent) {
-    e.preventDefault();
-    setMsg(null);
+  const save = async () => {
+    if (!editId || !eTitle.trim()) return; setLoading(true); setMsg(null);
+    try { await api.put(`/services/${editId}`, { title: eTitle.trim(), description: eDesc.trim(), sort_order: eSort }); setEditId(null); await load(); setMsg({ type: "ok", text: "Actualizado" }); }
+    catch { setMsg({ type: "err", text: "Error al actualizar" }); } finally { setLoading(false); }
+  };
 
-    if (!title.trim() || !description.trim()) {
-      setMsg("Rellena título y descripción");
-      return;
-    }
+  const remove = async (id: number) => {
+    if (!window.confirm("Eliminar servicio?")) return; setLoading(true);
+    try { await api.delete(`/services/${id}`); await load(); setMsg({ type: "ok", text: "Eliminado" }); }
+    catch { setMsg({ type: "err", text: "Error al eliminar" }); } finally { setLoading(false); }
+  };
 
-    try {
-      setLoading(true);
-      await api.post("/services", {
-        title: title.trim(),
-        description: description.trim(),
-        sort_order: sortOrder,
-      });
-
-      setTitle("");
-      setDescription("");
-      setSortOrder(1);
-
-      await load();
-      setMsg("Servicio creado ");
-    } catch (err: any) {
-      setMsg(err?.response?.data?.message ?? "Error creando servicio");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function startEdit(s: Service) {
-    setEditingId(s.id);
-    setETitle(s.title);
-    setEDescription(s.description);
-    setESortOrder(s.sort_order ?? 1);
-  }
-
-  function cancelEdit() {
-    setEditingId(null);
-  }
-
-  async function saveEdit(id: number) {
-    setMsg(null);
-
-    if (!eTitle.trim() || !eDescription.trim()) {
-      setMsg("El título y la descripción no pueden estar vacíos");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      await api.put(`/services/${id}`, {
-        title: eTitle.trim(),
-        description: eDescription.trim(),
-        sort_order: eSortOrder,
-      });
-
-      setEditingId(null);
-      await load();
-      setMsg("Servicio actualizado ");
-    } catch (err: any) {
-      setMsg(err?.response?.data?.message ?? "Error actualizando servicio");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function remove(id: number) {
-    const ok = confirm("¿Eliminar este servicio?");
-    if (!ok) return;
-
-    try {
-      setLoading(true);
-      await api.delete(`/services/${id}`);
-      await load();
-      setMsg("Servicio eliminado ");
-    } catch {
-      setMsg("Error eliminando servicio");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const startEdit = (s: Service) => { setEditId(s.id); setETitle(s.title); setEDesc(s.description); setESort(s.sort_order); };
 
   return (
-    <PageShell>
-      <div className="space-y-6">
-        <div className="olob-card">
-          <h1 className="text-2xl font-bold" style={{ color: "var(--blue-dark)" }}>
-            Servicios (Admin)
-          </h1>
-          <p className="mt-1 text-sm opacity-80">
-            Aquí el entrenador/admin puede crear, editar y borrar servicios.
-          </p>
-          {msg && <p className="mt-2 text-sm">{msg}</p>}
-        </div>
+    <div className="admin-page">
+      <h1 className="admin-page__title">Servicios</h1>
+      <p className="admin-page__sub">Gestiona los servicios que ofreces en One Life One Body</p>
 
-        <div className="olob-card">
-          <h2 className="text-lg font-bold" style={{ color: "var(--blue-dark)" }}>
-            Crear servicio
-          </h2>
+      {msg && <div className={`admin-msg admin-msg--${msg.type}`}>{msg.text}</div>}
 
-          <form onSubmit={create} className="mt-3 grid gap-3">
-            <input
-              className="rounded border p-2"
-              placeholder="Título (ej: Entrenamiento personal)"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-
-            <textarea
-              className="rounded border p-2"
-              placeholder="Descripción"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-            />
-
-            <input
-              className="w-32 rounded border p-2"
-              type="number"
-              min={1}
-              max={999}
-              value={sortOrder}
-              onChange={(e) => setSortOrder(Number(e.target.value))}
-            />
-
-            <button
-              className="rounded px-4 py-2 text-white"
-              style={{ backgroundColor: "var(--blue-light)" }}
-              disabled={loading}
-            >
-              {loading ? "Guardando..." : "Crear"}
-            </button>
-          </form>
-        </div>
-
-        <div className="olob-card">
-          <h2 className="text-lg font-bold" style={{ color: "var(--blue-dark)" }}>
-            Lista de servicios
-          </h2>
-
-          {items.length === 0 ? (
-            <p className="mt-3 text-sm opacity-80">No hay servicios todavía.</p>
-          ) : (
-            <ul className="mt-3 space-y-2">
-              {items.map((s) => (
-                <li key={s.id} className="rounded border p-3">
-                  {editingId === s.id ? (
-                    <div className="space-y-2">
-                      <input
-                        className="w-full rounded border p-2"
-                        value={eTitle}
-                        onChange={(e) => setETitle(e.target.value)}
-                      />
-
-                      <textarea
-                        className="w-full rounded border p-2"
-                        value={eDescription}
-                        onChange={(e) => setEDescription(e.target.value)}
-                        rows={3}
-                      />
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm opacity-70">Orden:</span>
-                        <input
-                          className="w-28 rounded border p-2"
-                          type="number"
-                          min={1}
-                          max={999}
-                          value={eSortOrder}
-                          onChange={(e) => setESortOrder(Number(e.target.value))}
-                        />
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => saveEdit(s.id)}
-                          className="rounded bg-green-600 px-3 py-1 text-sm text-white"
-                        >
-                          Guardar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={cancelEdit}
-                          className="rounded bg-gray-300 px-3 py-1 text-sm"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="font-semibold">
-                          {s.title} <span className="text-sm opacity-60">· #{s.sort_order}</span>
-                        </div>
-                        <div className="mt-1 text-sm opacity-80">{s.description}</div>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => startEdit(s)}
-                          className="rounded bg-blue-600 px-3 py-1 text-sm text-white"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => remove(s.id)}
-                          className="rounded bg-red-600 px-3 py-1 text-sm text-white"
-                        >
-                          Eliminar
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      <div className="admin-card">
+        <h2 className="admin-card__title"><span className="admin-card__title-icon">▣</span> Nuevo servicio</h2>
+        <form className="admin-form" onSubmit={create}>
+          <div className="admin-form--row">
+            <div className="admin-field"><label>Titulo</label><input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ej: Entrenamiento Personal" required /></div>
+            <div className="admin-field"><label>Orden</label><input type="number" min={1} max={999} value={sortOrder} onChange={e => setSortOrder(Number(e.target.value))} /></div>
+          </div>
+          <div className="admin-field"><label>Descripcion</label><textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe el servicio..." rows={3} /></div>
+          <div className="admin-btn-row">
+            <button className="admin-btn admin-btn--primary" disabled={loading}>{loading ? "..." : "Crear servicio"}</button>
+          </div>
+        </form>
       </div>
-    </PageShell>
+
+      <div className="admin-card">
+        <h2 className="admin-card__title"><span className="admin-card__title-icon">◎</span> Servicios ({items.length})</h2>
+        {items.length === 0 ? (
+          <div className="admin-empty"><span className="admin-empty__icon">▣</span>No hay servicios</div>
+        ) : (
+          <div className="admin-list">
+            {items.map(s => (
+              <div key={s.id} className={`admin-item ${editId === s.id ? "admin-item--editing" : ""}`}>
+                {editId === s.id ? (
+                  <div className="admin-form" style={{ width: "100%" }}>
+                    <div className="admin-form--row">
+                      <div className="admin-field"><label>Titulo</label><input value={eTitle} onChange={e => setETitle(e.target.value)} /></div>
+                      <div className="admin-field"><label>Orden</label><input type="number" min={1} value={eSort} onChange={e => setESort(Number(e.target.value))} /></div>
+                    </div>
+                    <div className="admin-field"><label>Descripcion</label><textarea value={eDesc} onChange={e => setEDesc(e.target.value)} rows={3} /></div>
+                    <div className="admin-btn-row">
+                      <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={save}>Guardar</button>
+                      <button className="admin-btn admin-btn--ghost admin-btn--sm" onClick={() => setEditId(null)}>Cancelar</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <span className="admin-item__order">{s.sort_order}</span>
+                    <div className="admin-item__body">
+                      <div className="admin-item__title">{s.title}</div>
+                      <div className="admin-item__desc">{s.description}</div>
+                    </div>
+                    <div className="admin-item__actions">
+                      <button className="admin-item__btn" onClick={() => startEdit(s)} title="Editar">✎</button>
+                      <button className="admin-item__btn admin-item__btn--del" onClick={() => remove(s.id)} title="Eliminar">✕</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
-}
+} 

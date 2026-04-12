@@ -11,28 +11,38 @@ use App\Http\Controllers\ExternalWgerController;
 use App\Http\Controllers\SavedExerciseController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminUserWorkoutController;
-
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WeightRecordController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\AdminWeightController;
 
+// ══════════════════════════════════════════════════════════════════
+// HEALTH CHECK
+// ══════════════════════════════════════════════════════════════════
 Route::get('/_ping', fn() => response()->json(['ok' => true]));
-Route::get('/ping',  fn() => response()->json(['status' => 'ok', 'message' => 'API funcionando']));
+Route::get('/ping',  fn() => response()->json(['status' => 'ok']));
 
-// ── AUTH PÚBLICA ──────────────────────────────────────────────
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login',    [AuthController::class, 'login']);
+// ══════════════════════════════════════════════════════════════════
+// AUTH PÚBLICA — Rate limit estricto: 5 intentos / 15 min
+// ══════════════════════════════════════════════════════════════════
+Route::middleware('throttle:auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login',    [AuthController::class, 'login']);
+    Route::post('/forgot-password/request-code', [ForgotPasswordController::class, 'requestCode']);
+    Route::post('/forgot-password/reset',        [ForgotPasswordController::class, 'reset']);
+});
 
-// ── RECUPERAR CONTRASEÑA (público) ───────────────────────────
-Route::post('/forgot-password/request-code', [ForgotPasswordController::class, 'requestCode']);
-Route::post('/forgot-password/reset',        [ForgotPasswordController::class, 'reset']);
+// ══════════════════════════════════════════════════════════════════
+// CHATBOT — Rate limit: 20/hora
+// ══════════════════════════════════════════════════════════════════
+Route::middleware('throttle:chatbot')->group(function () {
+    Route::post('/chatbot', [ChatbotController::class, 'chat']);
+});
 
-// ── CHATBOT IA (público) ────────────────────────────────────
-Route::post('/chatbot', [ChatbotController::class, 'chat']);
-
-// ── RUTAS PÚBLICAS ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+// RUTAS PÚBLICAS DE LECTURA — Rate limit general (100/min)
+// ══════════════════════════════════════════════════════════════════
 Route::get('/public/external/wger/exercises',          [ExternalWgerController::class, 'exercises']);
 Route::get('/public/external/wger/exerciseinfo/{id}',  [ExternalWgerController::class, 'exerciseInfo']);
 Route::get('/public/services',      [ServiceController::class,    'publicIndex']);
@@ -40,34 +50,40 @@ Route::get('/public/method',        [MethodStepController::class, 'publicIndex']
 Route::get('/public/collaborators', [CollaboratorController::class, 'publicIndex']);
 Route::get('/public/site',          [SiteSettingController::class, 'publicIndex']);
 
-// ── RUTAS PRIVADAS ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+// RUTAS PRIVADAS — Requieren token Sanctum
+// ══════════════════════════════════════════════════════════════════
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/me',      [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Perfil del usuario
-    Route::put('/me/profile',                [ProfileController::class, 'updateProfile']);
-    Route::post('/me/password/request-code', [ProfileController::class, 'requestPasswordCode']);
-    Route::post('/me/password/change',       [ProfileController::class, 'changePassword']);
-
-    // Workouts / pesajes
-    Route::get('/workouts',            [WorkoutController::class, 'index']);
-    Route::post('/workouts',           [WorkoutController::class, 'store']);
-    Route::put('/workouts/{workout}',  [WorkoutController::class, 'update']);
-    Route::delete('/workouts/{workout}', [WorkoutController::class, 'destroy']);
+    // Perfil del usuario — Rate limit sensible (10/15min)
+    Route::middleware('throttle:sensitive')->group(function () {
+        Route::put('/me/profile',                [ProfileController::class, 'updateProfile']);
+        Route::post('/me/password/request-code', [ProfileController::class, 'requestPasswordCode']);
+        Route::post('/me/password/change',       [ProfileController::class, 'changePassword']);
+    });
 
     // Seguimiento de peso (usuario solo puede VER)
     Route::get('/weight-records',       [WeightRecordController::class, 'index']);
     Route::get('/weight-records/stats', [WeightRecordController::class, 'stats']);
+
+    // Workouts (lectura)
+    Route::get('/workouts',            [WorkoutController::class, 'index']);
+    Route::post('/workouts',           [WorkoutController::class, 'store']);
+    Route::put('/workouts/{workout}',  [WorkoutController::class, 'update']);
+    Route::delete('/workouts/{workout}', [WorkoutController::class, 'destroy']);
 
     // Ejercicios guardados
     Route::get('/saved-exercises',                   [SavedExerciseController::class, 'index']);
     Route::post('/saved-exercises',                  [SavedExerciseController::class, 'store']);
     Route::delete('/saved-exercises/{savedExercise}',[SavedExerciseController::class, 'destroy']);
 
-    // ── ADMIN ─────────────────────────────────────────────────
-    Route::middleware('admin')->group(function () {
+    // ══════════════════════════════════════════════════════════
+    // ADMIN — Rate limit sensible + requiere rol admin
+    // ══════════════════════════════════════════════════════════
+    Route::middleware(['admin', 'throttle:sensitive'])->group(function () {
 
         Route::apiResource('services',     ServiceController::class)->except(['show']);
         Route::apiResource('method-steps', MethodStepController::class)->except(['show']);

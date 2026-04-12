@@ -6,6 +6,9 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
 {
+    /**
+     * Middleware global — se ejecuta en TODAS las peticiones.
+     */
     protected $middleware = [
         \App\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
@@ -13,6 +16,9 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+
+        // ── SEGURIDAD ──
+        \App\Http\Middleware\SecurityHeaders::class,  // Headers HTTP de seguridad
     ];
 
     protected $middlewareGroups = [
@@ -28,7 +34,10 @@ class Kernel extends HttpKernel
 
         'api' => [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            'throttle:api',
+            \App\Http\Middleware\ForceJsonResponse::class,  // Fuerza JSON en todas las respuestas API
+            \App\Http\Middleware\LogSecurity::class,         // Logging de seguridad
+            \App\Http\Middleware\ValidateEnv::class,         // Valida env vars en producción
+            'throttle:api',                                  // Rate limit general: 60/min
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -45,5 +54,8 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+
+        // ── Custom ──
+        'admin' => \App\Http\Middleware\IsAdmin::class,
     ];
 }
