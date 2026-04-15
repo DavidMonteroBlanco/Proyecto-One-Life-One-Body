@@ -169,6 +169,17 @@
 }
 .aw-add-btn:hover { background: var(--primary-dim); transform: translateY(-1px); }
 
+.aw-pdf-btn {
+  padding: 0.6rem 1.2rem;
+  background: transparent; color: var(--primary);
+  font-family: var(--font-condensed); font-size: 0.82rem;
+  font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  border: 1px solid rgba(126, 232, 232, 0.2); border-radius: 8px;
+  cursor: pointer; transition: all 0.2s; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+}
+.aw-pdf-btn:hover { background: rgba(126, 232, 232, 0.08); border-color: rgba(126, 232, 232, 0.4); }
+
 /* ── Stats ── */
 .aw-stats {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem;

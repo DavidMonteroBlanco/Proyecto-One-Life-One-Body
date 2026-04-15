@@ -1,0 +1,134 @@
+// src/styles/theme.scss
+// ══════════════════════════════════════════════════════════
+// SASS / SCSS — Preprocesador CSS
+// Variables SASS, mixins, nesting y funciones
+// ══════════════════════════════════════════════════════════
+
+// ── Variables SASS ──
+$primary: #7ee8e8;
+$primary-dim: #5bbcbc;
+$accent: #7ee8e8;
+$bg-deep: #070c0c;
+$bg-dark: #0a1010;
+$bg-card: #0e1919;
+$border: rgba(126, 232, 232, 0.08);
+$border-hover: rgba(126, 232, 232, 0.18);
+$text-primary: #e8f0f0;
+$text-secondary: #a0b4b4;
+$text-muted: #5a7070;
+$font-display: "Bebas Neue", sans-serif;
+$font-condensed: "Barlow Condensed", sans-serif;
+$font-body: "Barlow", sans-serif;
+
+$breakpoint-tablet: 768px;
+$breakpoint-mobile: 480px;
+
+// ── Mixins ──
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == mobile {
+    @media (max-width: $breakpoint-mobile) { @content; }
+  } @else if $breakpoint == tablet {
+    @media (max-width: $breakpoint-tablet) { @content; }
+  }
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin card-style {
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+
+  &:hover {
+    border-color: $border-hover;
+  }
+}
+
+@mixin label-style {
+  font-family: $font-condensed;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: $text-muted;
+}
+
+@mixin title-style($size: 2rem) {
+  font-family: $font-display;
+  font-size: $size;
+  letter-spacing: 0.04em;
+  color: $text-primary;
+  line-height: 1;
+}
+
+// ══════════════════════════════════════════════════════════
+// UTILIDADES GLOBALES SCSS
+// ══════════════════════════════════════════════════════════
+
+.scss-util {
+  // Status badges con nesting
+  &__badge {
+    font-family: $font-condensed;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+
+    &--success {
+      background: rgba(16, 185, 129, 0.1);
+      color: #6ee7b7;
+    }
+
+    &--warning {
+      background: rgba(245, 158, 11, 0.1);
+      color: #fbbf24;
+    }
+
+    &--danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: #fca5a5;
+    }
+  }
+
+  // Truncate text con funciones SASS
+  &__truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// ── Animations ──
+@keyframes scss-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.scss-animate-in {
+  animation: scss-fade-in 0.4s ease-out;
+}
+
+// ── Responsive grid util ──
+.scss-grid {
+  display: grid;
+  gap: 1.5rem;
+
+  &--2 { grid-template-columns: repeat(2, 1fr); }
+  &--3 { grid-template-columns: repeat(3, 1fr); }
+  &--4 { grid-template-columns: repeat(4, 1fr); }
+
+  @include respond-to(tablet) {
+    &--3, &--4 { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @include respond-to(mobile) {
+    &--2, &--3, &--4 { grid-template-columns: 1fr; }
+  }
+}

@@ -43,4 +43,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Workout::class);
     }
+
+    public function weightRecords()
+    {
+        return $this->hasMany(\App\Models\WeightRecord::class);
+    }
 }

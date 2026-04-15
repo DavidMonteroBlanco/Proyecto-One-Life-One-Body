@@ -192,10 +192,30 @@ export default function AdminUsersWeight() {
                   <h2 className="aw-detail__name">{selectedUser.name}</h2>
                   <p className="aw-detail__email">{selectedUser.email}</p>
                 </div>
-                <button className="aw-add-btn"
-                  onClick={() => { setShowAdd(true); setTimeout(() => addRef.current?.focus(), 100); }}>
-                  + Nuevo pesaje
-                </button>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                  {records.length > 0 && (
+                    <a
+                      href={`${api.defaults.baseURL}/admin/users/${selectedUser.id}/weight-records/pdf`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="aw-pdf-btn"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const token = localStorage.getItem("token");
+                        window.open(
+                          `${api.defaults.baseURL}/admin/users/${selectedUser.id}/weight-records/pdf?token=${token}`,
+                          "_blank"
+                        );
+                      }}
+                    >
+                      📄 PDF
+                    </a>
+                  )}
+                  <button className="aw-add-btn"
+                    onClick={() => { setShowAdd(true); setTimeout(() => addRef.current?.focus(), 100); }}>
+                    + Nuevo pesaje
+                  </button>
+                </div>
               </div>
 
               {/* Stats */}

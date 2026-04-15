@@ -62,6 +62,27 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // ── Validaciones con Expresiones Regulares ──
+    const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const PHONE_REGEX = /^(\+34\s?)?\d{3}\s?\d{2,3}\s?\d{2,3}\s?\d{0,2}$/;
+    const NAME_REGEX = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{2,60}$/;
+
+    if (!NAME_REGEX.test(form.name.trim())) {
+      setError("El nombre solo puede contener letras y espacios (2-60 caracteres).");
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(form.email)) {
+      setError("Introduce un email válido (ej: tu@email.com).");
+      return;
+    }
+
+    if (form.phone && !PHONE_REGEX.test(form.phone.replace(/\s/g, ""))) {
+      setError("Teléfono no válido. Usa formato español (ej: +34 600 000 000).");
+      return;
+    }
+
     if (form.password !== form.password_confirmation) { setError("Las contraseñas no coinciden."); return; }
     if (pwStrength.score < 3) { setError("La contraseña no es suficientemente segura."); return; }
     setLoading(true);

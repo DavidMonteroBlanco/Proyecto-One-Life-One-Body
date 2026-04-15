@@ -103,5 +103,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/users/{user}/weight-records',      [AdminWeightController::class, 'store']);
         Route::put('/admin/weight-records/{weightRecord}',     [AdminWeightController::class, 'update']);
         Route::delete('/admin/weight-records/{weightRecord}',  [AdminWeightController::class, 'destroy']);
+
+        // Exportar PDF de pesajes
+        Route::get('/admin/users/{user}/weight-records/pdf', [AdminWeightController::class, 'exportPdf']);
     });
 });
+
+// ══════════════════════════════════════════════════════════════════
+// PDF EXPORT — Fuera del middleware auth porque se abre en nueva pestaña
+// La autenticación se valida manualmente por query param ?token=
+// ══════════════════════════════════════════════════════════════════
+Route::get('/admin/users/{user}/weight-records/pdf', [AdminWeightController::class, 'exportPdf']);

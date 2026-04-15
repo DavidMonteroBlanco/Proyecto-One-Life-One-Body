@@ -290,7 +290,7 @@ export default function Home() {
             <h2 className="section-title">No es un gym.<br />Es un sistema.</h2>
             <div className="cyan-line" />
             <p className="metodo__desc">
-              One Life One Body no es un centro más. Es un método estructurado donde cada pesaje, cada sesión y cada rutina tiene un propósito claro. David Montero diseña tu progreso semana a semana con seguimiento real y datos reales.
+              One Life One Body no es un centro más. Es un método estructurado donde cada pesaje, cada sesión y cada rutina tiene un propósito claro. David diseña tu progreso semana a semana con seguimiento real y datos reales.
             </p>
             <div className="metodo__steps">
               {[["01","Evaluación inicial","Análisis de composición corporal y objetivos reales."],
@@ -395,7 +395,7 @@ export default function Home() {
                 <p>Sin horarios. Sin excusas.<br />Solo resultados.</p>
               </div>
               <div className="onelife-promo__biotech">
-                <img src="/biotech-proteina.webp" alt="BioTech USA" className="onelife-promo__biotech-img" />
+                <img src="/biotech.webp" alt="BioTech USA" className="onelife-promo__biotech-img" />
                 <div>
                   <span className="onelife-promo__biotech-label">Colaborador oficial</span>
                   <strong>BioTech USA</strong>

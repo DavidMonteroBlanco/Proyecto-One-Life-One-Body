@@ -5,20 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\WeightRecord;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminWeightController extends Controller
 {
     public function users()
     {
+        // EAGER LOADING — carga las relaciones de una vez, no N+1 queries
         $users = User::where('role', 'user')
+            ->with(['weightRecords' => fn($q) => $q->orderBy('recorded_at', 'desc')])
+            ->withCount('weightRecords')
             ->orderBy('name')
             ->get()
             ->map(function ($user) {
-                $lastRecord = WeightRecord::where('user_id', $user->id)
-                    ->orderBy('recorded_at', 'desc')
-                    ->first();
-
-                $totalRecords = WeightRecord::where('user_id', $user->id)->count();
+                $lastRecord = $user->weightRecords->first();
 
                 return [
                     'id'             => $user->id,
@@ -26,7 +26,7 @@ class AdminWeightController extends Controller
                     'email'          => $user->email,
                     'phone'          => $user->phone,
                     'created_at'     => $user->created_at,
-                    'total_records'  => $totalRecords,
+                    'total_records'  => $user->weight_records_count,
                     'last_weight'    => $lastRecord ? (float) $lastRecord->weight_kg : null,
                     'last_fat'       => $lastRecord ? $lastRecord->fat_percentage : null,
                     'last_muscle'    => $lastRecord ? $lastRecord->muscle_percentage : null,
@@ -125,5 +125,46 @@ class AdminWeightController extends Controller
     {
         $weightRecord->delete();
         return response()->json(['message' => 'Pesaje eliminado.']);
+    }
+
+    /**
+     * Generar PDF con el informe de pesajes de un usuario.
+     * Acepta auth por Bearer token o por query param ?token= (para descarga directa del navegador).
+     */
+    public function exportPdf(Request $request, User $user)
+    {
+        // Autenticar por query param ?token= (necesario porque se abre en nueva pestaña)
+        $authenticated = false;
+
+        // Intentar auth por Bearer (si viene del middleware)
+        if ($request->user() && $request->user()->role === 'admin') {
+            $authenticated = true;
+        }
+
+        // Intentar auth por query param
+        if (!$authenticated && $request->has('token')) {
+            $token = \Laravel\Sanctum\PersonalAccessToken::findToken($request->query('token'));
+            if ($token && $token->tokenable && $token->tokenable->role === 'admin') {
+                $authenticated = true;
+            }
+        }
+
+        if (!$authenticated) {
+            return response()->json(['message' => 'No autorizado'], 401);
+        }
+
+        $records = WeightRecord::where('user_id', $user->id)
+            ->orderBy('recorded_at', 'desc')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.weight-report', [
+            'user'        => $user,
+            'records'     => $records,
+            'generatedAt' => now()->format('d/m/Y H:i'),
+        ]);
+
+        $filename = 'informe-pesajes-' . str_replace(' ', '-', strtolower($user->name)) . '.pdf';
+
+        return $pdf->download($filename);
     }
 }
