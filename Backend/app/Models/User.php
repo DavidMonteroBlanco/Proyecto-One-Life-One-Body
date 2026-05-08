@@ -48,4 +48,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\WeightRecord::class);
     }
+
+    public function dietPlans()
+    {
+        return $this->hasMany(\App\Models\DietPlan::class);
+    }
 }

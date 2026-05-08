@@ -44,7 +44,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Endpoints sensibles (admin, cambio contraseña): 10 por IP cada 15 min
         RateLimiter::for('sensitive', function (Request $request) {
-            return Limit::perMinutes(15, 10)->by($request->ip())
+    return Limit::perMinutes(15, 60)->by($request->ip())
                 ->response(function () {
                     return response()->json([
                         'message' => 'Has realizado demasiadas operaciones. Espera unos minutos.',
