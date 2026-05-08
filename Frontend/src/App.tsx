@@ -3,19 +3,17 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
-// Layouts — se cargan siempre (son el shell)
+// Layouts
 import PublicLayout from "./components/ui/PublicLayout";
 import UserLayout from "./layouts/UserLayout";
 
-// Guards — se cargan siempre
+// Guards
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import AccessGuard from "./components/AccessGuard";
 
 // ══════════════════════════════════════════════════════════
-// LAZY LOADING — cada página se carga solo cuando se visita
-// Esto optimiza la carga inicial de la app (solo descarga
-// el JS de la página que el usuario está viendo)
+// LAZY LOADING
 // ══════════════════════════════════════════════════════════
 
 // Públicas
@@ -30,15 +28,17 @@ const ForgotPassword = lazy(() => import("./pages/Auth/ForgotPassword"));
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const Profile = lazy(() => import("./user/Profile"));
 const Tracking = lazy(() => import("./user/Tracking"));
+const MyDiet = lazy(() => import("./user/MyDiet"));
+const MyAppointments = lazy(() => import("./user/MyAppointments"));
 
 // Admin
 const AdminUsersWeight = lazy(() => import("./pages/admin/AdminUsersWeight"));
+const AdminDiets = lazy(() => import("./pages/admin/AdminDiets"));
 const ServicesAdmin = lazy(() => import("./pages/admin/ServicesAdmin"));
 const CollaboratorsAdmin = lazy(() => import("./pages/admin/CollaboratorsAdmin"));
 const Method = lazy(() => import("./pages/Method"));
 const SiteSettingsPage = lazy(() => import("./pages/SiteSettings"));
 
-// ── Loading spinner mientras carga la página ──
 function PageLoader() {
   return (
     <div style={{
@@ -73,11 +73,16 @@ export default function App() {
 
         {/* ── RUTAS PRIVADAS (con Sidebar) ── */}
         <Route element={<ProtectedRoute><UserLayout /></ProtectedRoute>}>
+          {/* Usuario */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/my-profile" element={<Profile />} />
           <Route path="/my-tracking" element={<Tracking />} />
+          <Route path="/my-diet" element={<MyDiet />} />
+          <Route path="/my-appointments" element={<MyAppointments />} />
 
+          {/* Admin */}
           <Route path="/admin/users-weight" element={<AdminRoute><AdminUsersWeight /></AdminRoute>} />
+          <Route path="/admin/diets" element={<AdminRoute><AdminDiets /></AdminRoute>} />
           <Route path="/admin/services" element={<AdminRoute><ServicesAdmin /></AdminRoute>} />
           <Route path="/admin/collaborators" element={<AdminRoute><CollaboratorsAdmin /></AdminRoute>} />
           <Route path="/admin/method" element={<AdminRoute><Method /></AdminRoute>} />
