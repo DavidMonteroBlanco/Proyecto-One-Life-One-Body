@@ -6,9 +6,6 @@ import { useAuth } from "../context/Authcontext";
 import logoImg from "../assets/icons/logo-bw.jpg";
 import "./UserLayout.css";
 
-/* ══════════════════════════════════════════════════════════════════
-   SHOOTING STARS
-   ══════════════════════════════════════════════════════════════════ */
 interface Star { x: number; y: number; vx: number; vy: number; size: number; opacity: number; life: number; maxLife: number; trail: { x: number; y: number }[]; }
 
 function SidebarStars() {
@@ -47,7 +44,7 @@ function AmbientParticles() {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   NAV LINKS
+   NAV LINKS — Solo lo que se usa
    ══════════════════════════════════════════════════════════════════ */
 const userLinks = [
   { to: "/dashboard",        icon: "◈", label: "Dashboard",     sub: "Vista general" },
@@ -58,12 +55,9 @@ const userLinks = [
 ];
 
 const adminLinks = [
-  { to: "/admin/users-weight",  icon: "⚖", label: "Usuarios & Pesajes", sub: "Gestionar clientes" },
-  { to: "/admin/diets",         icon: "🍽", label: "Dietas",             sub: "Planes de alimentación" },
-  { to: "/admin/services",      icon: "▣", label: "Servicios",          sub: "Gestión de oferta" },
-  { to: "/admin/collaborators", icon: "◉", label: "Colaboradores",      sub: "Equipo" },
-  { to: "/admin/method",        icon: "◎", label: "Método OLOB",        sub: "Contenido editorial" },
-  { to: "/admin/settings",      icon: "⊕", label: "Configuración",     sub: "Sistema & ajustes" },
+  { to: "/admin/users-weight", icon: "⚖", label: "Usuarios & Pesajes", sub: "Gestionar clientes" },
+  { to: "/admin/diets",        icon: "🍽", label: "Dietas",             sub: "Planes de alimentación" },
+  { to: "/admin/services",     icon: "▣", label: "Servicios",          sub: "Gestión de oferta" },
 ];
 
 function SidebarLink({ to, icon, label, sub, collapsed }: { to: string; icon: string; label: string; sub: string; collapsed: boolean }) {
@@ -74,9 +68,6 @@ function SidebarLink({ to, icon, label, sub, collapsed }: { to: string; icon: st
   </NavLink>);
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   MAIN LAYOUT
-   ══════════════════════════════════════════════════════════════════ */
 export default function UserLayout() {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();

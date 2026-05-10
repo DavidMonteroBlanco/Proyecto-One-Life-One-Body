@@ -1,22 +1,21 @@
 // src/App.tsx
 
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
-// Layouts
 import PublicLayout from "./components/ui/PublicLayout";
 import UserLayout from "./layouts/UserLayout";
 
-// Guards
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import AccessGuard from "./components/AccessGuard";
 
+import NotFound from "./pages/NotFound";
+import Forbidden from "./pages/Forbidden";
+
 // ══════════════════════════════════════════════════════════
 // LAZY LOADING
 // ══════════════════════════════════════════════════════════
-
-// Públicas
 const Home = lazy(() => import("./pages/Home/Home"));
 const EntrenosOnline = lazy(() => import("./pages/OnlineTraining/OnlineTraining"));
 const AccessGate = lazy(() => import("./pages/Auth/AccessGate"));
@@ -24,20 +23,15 @@ const Login = lazy(() => import("./pages/Auth/Login"));
 const Register = lazy(() => import("./pages/Auth/Register"));
 const ForgotPassword = lazy(() => import("./pages/Auth/ForgotPassword"));
 
-// Usuario
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const Profile = lazy(() => import("./user/Profile"));
 const Tracking = lazy(() => import("./user/Tracking"));
 const MyDiet = lazy(() => import("./user/MyDiet"));
 const MyAppointments = lazy(() => import("./user/MyAppointments"));
 
-// Admin
 const AdminUsersWeight = lazy(() => import("./pages/admin/AdminUsersWeight"));
 const AdminDiets = lazy(() => import("./pages/admin/AdminDiets"));
 const ServicesAdmin = lazy(() => import("./pages/admin/ServicesAdmin"));
-const CollaboratorsAdmin = lazy(() => import("./pages/admin/CollaboratorsAdmin"));
-const Method = lazy(() => import("./pages/Method"));
-const SiteSettingsPage = lazy(() => import("./pages/SiteSettings"));
 
 function PageLoader() {
   return (
@@ -71,25 +65,22 @@ export default function App() {
           <Route path="/forgot-password" element={<AccessGuard><ForgotPassword /></AccessGuard>} />
         </Route>
 
-        {/* ── RUTAS PRIVADAS (con Sidebar) ── */}
+        {/* ── RUTAS PRIVADAS ── */}
         <Route element={<ProtectedRoute><UserLayout /></ProtectedRoute>}>
-          {/* Usuario */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/my-profile" element={<Profile />} />
           <Route path="/my-tracking" element={<Tracking />} />
           <Route path="/my-diet" element={<MyDiet />} />
           <Route path="/my-appointments" element={<MyAppointments />} />
 
-          {/* Admin */}
           <Route path="/admin/users-weight" element={<AdminRoute><AdminUsersWeight /></AdminRoute>} />
           <Route path="/admin/diets" element={<AdminRoute><AdminDiets /></AdminRoute>} />
           <Route path="/admin/services" element={<AdminRoute><ServicesAdmin /></AdminRoute>} />
-          <Route path="/admin/collaborators" element={<AdminRoute><CollaboratorsAdmin /></AdminRoute>} />
-          <Route path="/admin/method" element={<AdminRoute><Method /></AdminRoute>} />
-          <Route path="/admin/settings" element={<AdminRoute><SiteSettingsPage /></AdminRoute>} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* ── ERRORES ── */}
+        <Route path="/forbidden" element={<Forbidden />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
   );

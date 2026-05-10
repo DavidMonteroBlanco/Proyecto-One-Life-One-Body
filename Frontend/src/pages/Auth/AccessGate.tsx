@@ -7,12 +7,6 @@ import type { Variants } from "framer-motion";
 import logoImg from "../../assets/icons/logo-bw.jpg";
 import "./Auth.css";
 
-/*
- * ═══════════════════════════════════════════════════════════
- * CÓDIGO DE ACCESO — 
- * David puede poner el que quiera. Es estático, solo frontend.
- * ═══════════════════════════════════════════════════════════
- */
 const ACCESS_CODE = "DIVA";
 
 const fadeUp: Variants = {
@@ -35,7 +29,7 @@ export default function AccessGate() {
 
     if (code.trim().toUpperCase() === ACCESS_CODE) {
       setSuccess(true);
-      sessionStorage.setItem("olob_access", "granted");
+      localStorage.setItem("olob_access", "granted");
       setTimeout(() => navigate("/login"), 600);
     } else {
       setError("Código incorrecto. Contacta con tu entrenador para obtenerlo.");

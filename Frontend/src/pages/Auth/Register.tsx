@@ -1,3 +1,5 @@
+// src/pages/Auth/Register.tsx
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -55,6 +57,14 @@ export default function Register() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
+    if (name === "phone") {
+      const onlyNumbers = value.replace(/\D/g, "").slice(0, 9);
+      setForm(prev => ({ ...prev, phone: onlyNumbers }));
+      setError("");
+      return;
+    }
+
     setForm(prev => ({ ...prev, [name]: value }));
     if (name === "password") setPwStrength(getPasswordStrength(value));
     setError("");
@@ -63,13 +73,12 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ── Validaciones con Expresiones Regulares ──
     const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const PHONE_REGEX = /^(\+34\s?)?\d{3}\s?\d{2,3}\s?\d{2,3}\s?\d{0,2}$/;
-    const NAME_REGEX = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{2,60}$/;
+    const PHONE_REGEX = /^[6789]\d{8}$/;
+    const NAME_REGEX = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{2,50}$/;
 
     if (!NAME_REGEX.test(form.name.trim())) {
-      setError("El nombre solo puede contener letras y espacios (2-60 caracteres).");
+      setError("El nombre solo puede contener letras y espacios (2-50 caracteres).");
       return;
     }
 
@@ -78,8 +87,13 @@ export default function Register() {
       return;
     }
 
-    if (form.phone && !PHONE_REGEX.test(form.phone.replace(/\s/g, ""))) {
-      setError("Teléfono no válido. Usa formato español (ej: +34 600 000 000).");
+    if (form.email.length > 80) {
+      setError("El email no puede tener más de 80 caracteres.");
+      return;
+    }
+
+    if (form.phone && !PHONE_REGEX.test(form.phone)) {
+      setError("Teléfono no válido. Debe tener exactamente 9 dígitos (ej: 612345678).");
       return;
     }
 
@@ -89,8 +103,8 @@ export default function Register() {
     setError("");
     try {
       const { user } = await register({
-        name: form.name,
-        email: form.email,
+        name: form.name.trim(),
+        email: form.email.trim(),
         password: form.password,
         password_confirmation: form.password_confirmation,
         phone: form.phone || undefined,
@@ -101,8 +115,15 @@ export default function Register() {
     } catch (err: any) {
       const errors = err?.response?.data?.errors;
       if (errors) {
-        const first = Object.values(errors)[0] as string[];
-        setError(first[0]);
+        const msgs = Object.values(errors).flat() as string[];
+        const translated = msgs.map(m => {
+          if (m.includes("name") && m.includes("already been taken")) return "Este nombre ya está registrado. Usa otro.";
+          if (m.includes("email") && m.includes("already been taken")) return "Este email ya está registrado. Inicia sesión o usa otro.";
+          if (m.includes("name") && m.includes("has already been taken")) return "Este nombre ya está registrado. Usa otro.";
+          if (m.includes("email") && m.includes("has already been taken")) return "Este email ya está registrado. Inicia sesión o usa otro.";
+          return m;
+        });
+        setError(translated[0]);
       } else {
         setError(err?.response?.data?.message ?? "Ha ocurrido un error. Inténtalo de nuevo.");
       }
@@ -135,19 +156,38 @@ export default function Register() {
             <div className="auth-field auth-field--full">
               <label htmlFor="name">Nombre completo</label>
               <input id="name" name="name" type="text" autoComplete="name"
-                placeholder="David Montero" value={form.name} onChange={handleChange} required />
+                placeholder="David Montero" value={form.name} onChange={handleChange}
+                required maxLength={50} />
+              {form.name.length > 40 && (
+                <span style={{ fontFamily: "var(--font-condensed)", fontSize: "0.72rem", color: form.name.length >= 50 ? "#e25555" : "var(--text-muted)", marginTop: "0.2rem" }}>
+                  {form.name.length}/50 caracteres
+                </span>
+              )}
             </div>
 
             <div className="auth-field">
               <label htmlFor="email">Email</label>
               <input id="email" name="email" type="email" autoComplete="email"
-                placeholder="tu@email.com" value={form.email} onChange={handleChange} required />
+                placeholder="tu@email.com" value={form.email} onChange={handleChange}
+                required maxLength={80} />
             </div>
 
             <div className="auth-field">
               <label htmlFor="phone">Teléfono</label>
               <input id="phone" name="phone" type="tel" autoComplete="tel"
-                placeholder="+34 600 000 000" value={form.phone} onChange={handleChange} />
+                placeholder="612345678" value={form.phone} onChange={handleChange}
+                maxLength={9} inputMode="numeric" />
+              {form.phone.length > 0 && form.phone.length < 9 && (
+                <span style={{ fontFamily: "var(--font-condensed)", fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+                  {form.phone.length}/9 dígitos
+                </span>
+              )}
+              {form.phone.length === 9 && /^[6789]/.test(form.phone) && (
+                <span className="pw-match ok">✓ Teléfono válido</span>
+              )}
+              {form.phone.length === 9 && !/^[6789]/.test(form.phone) && (
+                <span className="pw-match fail">✗ Debe empezar por 6, 7, 8 o 9</span>
+              )}
             </div>
 
             <div className="auth-field auth-field--full">
