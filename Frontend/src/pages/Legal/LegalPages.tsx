@@ -33,4 +33,5 @@ export default function LegalPages() {
       <div className="legal__container"><C /><div className="legal__footer"><Link to="/" className="btn-ghost">← Volver a la web</Link><div className="legal__footer-links"><Link to="/legal/privacidad">Privacidad</Link><Link to="/legal/aviso-legal">Aviso legal</Link><Link to="/legal/cookies">Cookies</Link></div></div></div>
     </div>
   );
+  
 }
