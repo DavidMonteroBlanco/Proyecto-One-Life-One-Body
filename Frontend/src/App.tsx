@@ -33,6 +33,9 @@ const AdminUsersWeight = lazy(() => import("./pages/admin/AdminUsersWeight"));
 const AdminDiets = lazy(() => import("./pages/admin/AdminDiets"));
 const ServicesAdmin = lazy(() => import("./pages/admin/ServicesAdmin"));
 
+const LegalPages = lazy(() => import("./pages/Legal/LegalPages"));
+
+
 function PageLoader() {
   return (
     <div style={{
@@ -63,6 +66,7 @@ export default function App() {
           <Route path="/login" element={<AccessGuard><Login /></AccessGuard>} />
           <Route path="/register" element={<AccessGuard><Register /></AccessGuard>} />
           <Route path="/forgot-password" element={<AccessGuard><ForgotPassword /></AccessGuard>} />
+          <Route path="/legal/:page" element={<LegalPages />} />
         </Route>
 
         {/* ── RUTAS PRIVADAS ── */}

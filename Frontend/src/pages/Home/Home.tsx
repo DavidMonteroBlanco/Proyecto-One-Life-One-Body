@@ -505,6 +505,11 @@ export default function Home() {
           </div>
         </div>
         <div className="container footer__bottom">
+          <div className="footer__legal">
+             <a href="/legal/privacidad">Privacidad</a>
+             <a href="/legal/aviso-legal">Aviso legal</a>
+             <a href="/legal/cookies">Cookies</a>
+          </div>
           <p className="footer__copy">© {new Date().getFullYear()} One Life One Body · Fitness Center · Todos los derechos reservados</p>
         </div>
       </footer>
