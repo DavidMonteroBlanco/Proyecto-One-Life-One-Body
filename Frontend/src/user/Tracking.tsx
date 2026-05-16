@@ -1,6 +1,6 @@
 // src/user/Tracking.tsx
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/Authcontext";
 import api from "../services/api";
 import "./Tracking.css";
@@ -143,9 +143,7 @@ function formatDateFull(date: string) {
   return d.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
 }
 
-function getToday() {
-  return new Date().toISOString().split("T")[0];
-}
+
 
 /* ══════════════════════════════════════════════════════════════
    MAIN PAGE

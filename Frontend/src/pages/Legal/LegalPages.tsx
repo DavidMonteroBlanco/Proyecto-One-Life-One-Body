@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import logoImg from "../../assets/icons/logo-bw.jpg";
 import "./LegalPages.css";
+import React from "react";
+
 
 const D = { empresa: "One Life One Body", titular: "David Montero Blanco", nif: "XXXXXXXXX", dir: "Benidorm, Alicante, España", email: "d3ivins0n24@gmail.com", tel: "+34 631 98 63 91", web: "https://onelifeonebody.es" };
 
@@ -12,7 +14,7 @@ function Legal() { return (<><h1 className="legal__title">Aviso Legal</h1><p cla
 
 function Cookies() { return (<><h1 className="legal__title">Politica de Cookies</h1><p className="legal__date">Actualizada: Mayo 2026</p><h2>1. Que son las cookies</h2><p>Archivos que los sitios web almacenan en tu navegador. Nosotros usamos localStorage y sessionStorage en lugar de cookies tradicionales.</p><h2>2. Que almacenamos</h2><h3>localStorage (persistente)</h3><ul><li><b>token:</b> Token de autenticación para mantener la sesión. Estrictamente necesario.</li><li><b>olob_access:</b> Código de acceso al área cliente.</li></ul><h3>Datos técnicos</h3><ul><li><b>IP:</b> para rate limiting y logs de seguridad (máx. 30 días).</li></ul><h2>3. Cookies de terceros</h2><p>NO usamos cookies de terceros, ni analítica, ni publicidad, ni redes sociales. No rastreamos tu actividad.</p><h2>4. Finalidad</h2><ul><li><b>Técnicas (necesarias):</b> token de sesión y código de acceso son imprescindibles.</li><li><b>Seguridad:</b> registro de IP para protección.</li></ul><h2>5. Como eliminarlos</h2><ul><li><b>Cerrar sesión:</b> elimina automáticamente token y código.</li><li><b>Manual:</b> Navegador → Configuración → Privacidad → Borrar datos.</li><li><b>Chrome:</b> F12 → Application → Local Storage → Clear.</li></ul><h2>6. Consentimiento</h2><p>Al usar la plataforma aceptas estas tecnologías estrictamente necesarias. No usamos cookies opcionales, por lo que no se requiere banner de cookies.</p></>); }
 
-const PAGES: Record<string, { c: () => JSX.Element }> = { "privacidad": { c: Privacy }, "aviso-legal": { c: Legal }, "cookies": { c: Cookies } };
+const PAGES: Record<string, { c: () => React.ReactElement }> = { "privacidad": { c: Privacy }, "aviso-legal": { c: Legal }, "cookies": { c: Cookies } };
 
 export default function LegalPages() {
   const { page } = useParams<{ page: string }>();
