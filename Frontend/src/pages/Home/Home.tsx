@@ -395,7 +395,7 @@ export default function Home() {
                 <p>Sin horarios. Sin excusas.<br />Solo resultados.</p>
               </div>
               <div className="onelife-promo__biotech">
-                <img src="/biotech.webp" alt="BioTech USA" className="onelife-promo__biotech-img" />
+                <img src="/img/biotech.webp" alt="BioTech USA" className="onelife-promo__biotech-img" />
                 <div>
                   <span className="onelife-promo__biotech-label">Colaborador oficial</span>
                   <strong>BioTech USA</strong>

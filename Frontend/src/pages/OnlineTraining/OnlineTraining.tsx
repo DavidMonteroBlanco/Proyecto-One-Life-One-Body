@@ -26,10 +26,10 @@ const features = [
 ];
 
 const products = [
-  { name: "Iso Whey Zero", type: "Proteína aislada", price: "49.90", image: "/Prote.webp", url: `https://shop.biotechusa.es/products/iso-whey-zero-bebida-de-proteina-en-polvo-1816-g/iso-whey-zero-2270-g.html` },
-  { name: "100% Creatine Monohydrate", type: "Creatina", price: "19.90", image: "/creatina.png", url: `https://shop.biotechusa.es/products/100-micronized-creatine-monohydrate-500-g?variant=36970313678912/100-creatine-monohydrate-500-g.html` },
-  { name: "BCAA Zero", type: "BCAAs", price: "24.90", image: "/bcaa.png", url: `https://shop.biotechusa.es/products/bcaa-glutamine-zero-480-g?variant=31620767481920/bcaa-flash-zero-360-g.html` },
-  { name: "Black Blood NOX+", type: "Pre-entreno", price: "29.90", image: "/preentreno.webp", url: `https://shop.biotechusa.es/products/black-blood-nox-330-g?variant=31713128644672/black-blood-nox-330-g.html` },
+  { name: "Iso Whey Zero", type: "Proteína aislada", price: "49.90", image: "/img/Prote.webp", url: `https://shop.biotechusa.es/products/iso-whey-zero-bebida-de-proteina-en-polvo-1816-g/iso-whey-zero-2270-g.html` },
+  { name: "100% Creatine Monohydrate", type: "Creatina", price: "19.90", image: "/img/creatina.png", url: `https://shop.biotechusa.es/products/100-micronized-creatine-monohydrate-500-g?variant=36970313678912/100-creatine-monohydrate-500-g.html` },
+  { name: "BCAA Zero", type: "BCAAs", price: "24.90", image: "/img/bcaa.png", url: `https://shop.biotechusa.es/products/bcaa-glutamine-zero-480-g?variant=31620767481920/bcaa-flash-zero-360-g.html` },
+  { name: "Black Blood NOX+", type: "Pre-entreno", price: "29.90", image: "/img/preentreno.webp", url: `https://shop.biotechusa.es/products/black-blood-nox-330-g?variant=31713128644672/black-blood-nox-330-g.html` },
 ];
 
 export default function EntrenosOnline() {
@@ -47,7 +47,7 @@ export default function EntrenosOnline() {
           <video
             ref={videoRef}
             className={`eo-hero__video ${videoLoaded ? "eo-hero__video--loaded" : ""}`}
-            src="/video-entrenos.mp4"
+            src="/videos/video-entrenos.mp4"
             autoPlay muted loop playsInline
             onLoadedData={() => setVideoLoaded(true)}
           />
@@ -115,11 +115,11 @@ export default function EntrenosOnline() {
             variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1}>
             <div className="eo-intro-video__frame">
               <video
-                src="/video-intro.mp4"
+                src="/videos/video-intro.mp4"
                 controls
                 playsInline
                 preload="metadata"
-                poster="/gym-instalaciones.jpeg"
+                poster="/img/gym-instalaciones.jpeg"
                 className="eo-intro-video__player"
               />
             </div>
@@ -147,7 +147,7 @@ export default function EntrenosOnline() {
         <div className="container">
           <motion.div className="eo-section-header" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
-          <img src="/biotech.webp" alt="BioTech USA" style={{ height: "24px", objectFit: "contain" }} />
+          <img src="/img/biotech.webp" alt="BioTech USA" style={{ height: "24px", objectFit: "contain" }} />
           <p className="eo-label" style={{ marginBottom: 0 }}>Colaborador oficial</p>
           </div>
             <h2 className="eo-section__title">BioTech USA</h2>
