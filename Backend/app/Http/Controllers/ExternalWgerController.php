@@ -204,6 +204,28 @@ class ExternalWgerController extends Controller
         return $this->pickBestDescription($item);
     }
 
+    // Search YouTube and return video ID (requires YOUTUBE_API_KEY in .env)
+    private function fetchYouTubeVideoId(string $englishName): ?string
+    {
+        $key = env('YOUTUBE_API_KEY');
+        if (!$key || $englishName === '') return null;
+
+        $cacheKey = "yt_videoid_" . md5($englishName);
+        return Cache::remember($cacheKey, 60 * 60 * 24 * 30, function () use ($englishName, $key) {
+            $res = Http::timeout(5)->acceptJson()->get("https://www.googleapis.com/youtube/v3/search", [
+                "part"          => "id",
+                "q"             => $englishName . " exercise tutorial",
+                "type"          => "video",
+                "maxResults"    => 1,
+                "videoDuration" => "short",
+                "key"           => $key,
+            ]);
+            if (!$res->ok()) return null;
+            $items = $res->json()["items"] ?? [];
+            return $items[0]["id"]["videoId"] ?? null;
+        });
+    }
+
     private function pickImage(array $item): ?string
     {
         if (!empty($item['images']) && is_array($item['images'])) {
@@ -373,13 +395,18 @@ class ExternalWgerController extends Controller
             $images = $this->fetchWgerImages($id);
         }
 
+        $engName = $this->pickEnglishName($data);
+
         // Fallback 2: Wikipedia thumbnail
+        if (empty($images) && $engName !== '') {
+            $wikiImg = $this->fetchWikipediaImage($engName);
+            if ($wikiImg) $images = [$wikiImg];
+        }
+
+        // Fallback 3: YouTube video (solo cuando no hay ninguna imagen)
+        $videoId = null;
         if (empty($images)) {
-            $engName = $this->pickEnglishName($data);
-            if ($engName !== '') {
-                $wikiImg = $this->fetchWikipediaImage($engName);
-                if ($wikiImg) $images = [$wikiImg];
-            }
+            $videoId = $this->fetchYouTubeVideoId($engName);
         }
 
         $muscles = [];
@@ -401,6 +428,7 @@ class ExternalWgerController extends Controller
             "muscles"     => array_values(array_unique($muscles)),
             "equipment"   => array_values(array_unique($equipment)),
             "images"      => $images,
+            "videoId"     => $videoId,
         ]);
     }
 }

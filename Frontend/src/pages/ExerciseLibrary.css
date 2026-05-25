@@ -330,6 +330,14 @@
   font-size: 5rem;
   opacity: 0.15;
 }
+.exlib__modal-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 18px 18px 0 0;
+}
 
 /* ── Modal body ── */
 .exlib__modal-body {

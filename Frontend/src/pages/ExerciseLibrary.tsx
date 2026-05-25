@@ -109,6 +109,14 @@ function DetailModal({
                 </>
               )}
             </>
+          ) : detail?.videoId ? (
+            <iframe
+              className="exlib__modal-video"
+              src={`https://www.youtube.com/embed/${detail.videoId}?autoplay=1&mute=1&loop=1&playlist=${detail.videoId}&controls=0&rel=0&modestbranding=1&playsinline=1`}
+              allow="autoplay; encrypted-media"
+              allowFullScreen={false}
+              title={detail.name}
+            />
           ) : (
             <div className="exlib__modal-img-placeholder">◎</div>
           )}
