@@ -32,6 +32,7 @@ const MyAppointments = lazy(() => import("./user/MyAppointments"));
 const AdminUsersWeight = lazy(() => import("./pages/admin/AdminUsersWeight"));
 const AdminDiets = lazy(() => import("./pages/admin/AdminDiets"));
 const ServicesAdmin = lazy(() => import("./pages/admin/ServicesAdmin"));
+const ExerciseLibrary = lazy(() => import("./pages/ExerciseLibrary"));
 
 const LegalPages = lazy(() => import("./pages/Legal/LegalPages"));
 
@@ -76,6 +77,7 @@ export default function App() {
           <Route path="/my-tracking" element={<Tracking />} />
           <Route path="/my-diet" element={<MyDiet />} />
           <Route path="/my-appointments" element={<MyAppointments />} />
+          <Route path="/exercises" element={<ExerciseLibrary />} />
 
           <Route path="/admin/users-weight" element={<AdminRoute><AdminUsersWeight /></AdminRoute>} />
           <Route path="/admin/diets" element={<AdminRoute><AdminDiets /></AdminRoute>} />

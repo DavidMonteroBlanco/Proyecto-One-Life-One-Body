@@ -52,6 +52,7 @@ const userLinks = [
   { to: "/my-diet",          icon: "🍽", label: "Mi Dieta",      sub: "Plan de alimentación" },
   { to: "/my-appointments",  icon: "📅", label: "Reservas",      sub: "Pesaje semanal" },
   { to: "/my-profile",       icon: "⊕", label: "Mi Perfil",     sub: "Cuenta y seguridad" },
+  { to: "/exercises",        icon: "◉", label: "Ejercicios",    sub: "Biblioteca + demos" },
 ];
 
 const adminLinks = [

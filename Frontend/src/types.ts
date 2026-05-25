@@ -48,7 +48,20 @@ export type ExternalDrink = {
 export type WgerExercise = {
   id: number;
   name: string;
+  description?: string;
+  category?: string | null;
+  muscles?: string[];
+  images?: string[];
+};
+
+export type WgerExerciseDetail = {
+  id: number;
+  name: string;
   description: string;
+  category?: string | null;
+  muscles?: string[];
+  equipment?: string[];
+  images?: string[];
 };
 
 export type WgerListResponse<T> = {

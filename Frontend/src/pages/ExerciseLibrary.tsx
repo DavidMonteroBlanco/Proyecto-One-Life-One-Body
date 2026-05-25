@@ -1,325 +1,342 @@
-import { useEffect, useMemo, useState } from "react";
-import PageShell from "../components/PageShell";
-import  api  from "../services/api";
-import type { WgerExercise, WgerListResponse } from "../types";
+import { useEffect, useRef, useState, useCallback } from "react";
+import api from "../services/api";
+import type { WgerExercise, WgerExerciseDetail, WgerListResponse } from "../types";
+import "./ExerciseLibrary.css";
 
-function stripHtml(html: string) {
-  return html.replace(/<[^>]+>/g, "").trim();
+/* ── Categorías wger con sus IDs ── */
+const CATEGORIES = [
+  { id: null,  label: "Todos" },
+  { id: 11,    label: "Pecho" },
+  { id: 12,    label: "Espalda" },
+  { id: 13,    label: "Hombros" },
+  { id: 8,     label: "Brazos" },
+  { id: 9,     label: "Piernas" },
+  { id: 10,    label: "Abdomen" },
+  { id: 14,    label: "Gemelos" },
+];
+
+/* ── Animación entre 2 imágenes (efecto demo) ── */
+function ExerciseAnim({ images, className = "" }: { images: string[]; className?: string }) {
+  if (!images || images.length === 0) {
+    return (
+      <div className={`exlib__img-placeholder ${className}`}>
+        <div className="exlib__img-placeholder-icon">◎</div>
+        <div className="exlib__img-placeholder-text">Sin imagen</div>
+      </div>
+    );
+  }
+  if (images.length === 1) {
+    return <img src={images[0]} alt="" className={`exlib__img ${className}`} loading="lazy" />;
+  }
+  return (
+    <>
+      <img src={images[0]} alt="" className={`exlib__img exlib__img--a ${className}`} loading="lazy" />
+      <img src={images[1]} alt="" className={`exlib__img exlib__img--b ${className}`} loading="lazy" />
+      <span className="exlib__anim-badge">● DEMO</span>
+    </>
+  );
 }
 
-
-type WgerDetail = {
-  id: number;
-  name: string;
-  description?: string;
-
-  translations?: Array<{ description?: string; name?: string }>;
-};
-
-function pickDescription(obj: { description?: string; translations?: any[] } | null | undefined) {
-  if (!obj) return "";
-  const direct = stripHtml(obj.description || "");
-  if (direct) return direct;
-
-  const t0 = obj.translations?.[0]?.description ? stripHtml(obj.translations[0].description) : "";
-  if (t0) return t0;
-
-  return "";
-}
-
-export default function ExerciseLibrary() {
-  const [q, setQ] = useState("press");
-  const [items, setItems] = useState<WgerExercise[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-
-  const [onlyWithDesc, setOnlyWithDesc] = useState(false);
-  const [sort, setSort] = useState<"none" | "asc" | "desc">("asc");
-
-  const [detail, setDetail] = useState<WgerDetail | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
-
-  const [savingId, setSavingId] = useState<number | null>(null);
-
-  async function search(term: string) {
-    setLoading(true);
-    setMsg(null);
-
-    try {
-      const res = await api.get<WgerListResponse<WgerExercise>>(
-        "/api/public/external/wger/exercises",
-        { params: { search: term, limit: 30 } }
-      );
-
-      const list = res.data.results ?? [];
-      setItems(list);
-
-      if (!list.length) setMsg("No se encontraron ejercicios");
-    } catch {
-      setItems([]);
-      setMsg("Error consultando la API externa");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function loadDetail(id: number) {
-    setDetailLoading(true);
-    setMsg(null);
-
-    try {
-      const res = await api.get<WgerDetail>(`/api/public/external/wger/exerciseinfo/${id}`);
-      setDetail(res.data);
-    } catch {
-      setMsg("No se pudo cargar el detalle");
-    } finally {
-      setDetailLoading(false);
-    }
-  }
-
-  async function saveToDb(ex: { id: number; name?: string; description?: string }) {
-    setMsg(null);
-    setSavingId(ex.id);
-
-    try {
-      await api.post("/api/saved-exercises", {
-        source: "wger",
-        external_id: ex.id,
-        name: ex.name || `Ejercicio #${ex.id}`,
-        description: ex.description || "",
-      });
-
-      setMsg("Guardado en BD ");
-    } catch (e: any) {
-      setMsg(e?.response?.data?.message ?? "No se pudo guardar en BD");
-    } finally {
-      setSavingId(null);
-    }
-  }
+/* ── Modal de detalle ── */
+function DetailModal({
+  exerciseId,
+  onClose,
+  savedIds,
+  onToggleSave,
+}: {
+  exerciseId: number;
+  onClose: () => void;
+  savedIds: Set<number>;
+  onToggleSave: (id: number, name: string, desc: string) => void;
+}) {
+  const [detail, setDetail] = useState<WgerExerciseDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const isSaved = savedIds.has(exerciseId);
 
   useEffect(() => {
-    search(q);
-  }, []);
+    setLoading(true);
+    api
+      .get<WgerExerciseDetail>(`/public/external/wger/exerciseinfo/${exerciseId}`)
+      .then((r) => setDetail(r.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [exerciseId]);
 
-  const view = useMemo(() => {
-    let list = [...items];
-
-    if (onlyWithDesc) {
-      list = list.filter((x) => stripHtml(x.description || "").length > 0);
-    }
-
-    if (sort !== "none") {
-      list.sort((a, b) => {
-        const aa = (a.name || "").toLowerCase();
-        const bb = (b.name || "").toLowerCase();
-        if (aa < bb) return sort === "asc" ? -1 : 1;
-        if (aa > bb) return sort === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-
-    return list;
-  }, [items, onlyWithDesc, sort]);
+  // Cerrar con Escape
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
 
   return (
-    <PageShell>
-      <div className="space-y-6">
-        <div className="olob-card">
-          <h1 className="text-2xl font-bold">Biblioteca de ejercicios</h1>
-          <p className="mt-1 text-sm opacity-70">
-            API externa (wger) con búsqueda, filtros, orden, detalle y guardado en BD.
-          </p>
+    <div className="exlib__overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="exlib__modal">
+        <button className="exlib__modal-close" onClick={onClose} aria-label="Cerrar">✕</button>
 
-          <form
-            className="mt-4 flex flex-col gap-3 md:flex-row"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const term = q.trim();
-              if (term.length < 2) {
-                setMsg("Escribe al menos 2 caracteres");
-                return;
-              }
-              search(term);
-            }}
-          >
-            <input
-              className="flex-1 rounded border p-2"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="press, squat..."
-            />
-
-            <button
-              className="rounded bg-black px-4 py-2 text-white disabled:opacity-60"
-              disabled={loading}
-              type="submit"
-            >
-              {loading ? "Buscando..." : "Buscar"}
-            </button>
-          </form>
-
-          <div className="mt-3 flex flex-wrap gap-4 text-sm">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={onlyWithDesc}
-                onChange={(e) => setOnlyWithDesc(e.target.checked)}
-              />
-              Solo con descripción
-            </label>
-
-            <label className="flex items-center gap-2">
-              Orden:
-              <select
-                className="rounded border p-1"
-                value={sort}
-                onChange={(e) => setSort(e.target.value as "none" | "asc" | "desc")}
-              >
-                <option value="none">Sin</option>
-                <option value="asc">A-Z</option>
-                <option value="desc">Z-A</option>
-              </select>
-            </label>
-          </div>
-
-          {msg && <p className="mt-3 text-sm">{msg}</p>}
-        </div>
-
-        <div className="olob-card">
-          <h2 className="text-lg font-bold">Resultados ({view.length})</h2>
-
-          {view.length === 0 ? (
-            <p className="mt-3 text-sm opacity-70">Sin resultados</p>
+        <div className="exlib__modal-img-wrap">
+          {loading ? (
+            <div className="exlib__modal-img-placeholder">◎</div>
+          ) : detail?.images?.length ? (
+            <>
+              {detail.images.length === 1 ? (
+                <img src={detail.images[0]} alt="" className="exlib__modal-img" />
+              ) : (
+                <>
+                  <img src={detail.images[0]} alt="" className="exlib__modal-img exlib__modal-img--a" />
+                  <img src={detail.images[1]} alt="" className="exlib__modal-img exlib__modal-img--b" />
+                </>
+              )}
+            </>
           ) : (
-            <ul className="mt-3 grid gap-3 md:grid-cols-2">
-              {view.map((ex) => {
-                const desc = stripHtml(ex.description || "");
-                const short = desc.slice(0, 120);
-
-                return (
-                  <li key={ex.id} className="rounded border p-3">
-                    <div className="flex items-start gap-3 overflow-hidden">
-                      <img
-                        src="/LOGO-OLB CHICA.jpg"
-                        alt="One Life One Body"
-                        loading="lazy"
-                        style={{
-                          width: "56px",
-                          height: "56px",
-                          objectFit: "contain",
-                          borderRadius: "10px",
-                          background: "white",
-                          padding: "4px",
-                          flex: "0 0 auto",
-                        }}
-                      />
-
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold">{ex.name || `Ejercicio #${ex.id}`}</div>
-
-                        <div className="mt-1 text-xs opacity-70">
-                          {short || "Descripción no disponible en la lista. Pulsa “Ver” para detalle."}
-                          {desc.length > 120 ? "…" : ""}
-                        </div>
-
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => loadDetail(ex.id)}
-                            className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:opacity-90"
-                          >
-                            Ver
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              saveToDb({
-                                id: ex.id,
-                                name: ex.name || `Ejercicio #${ex.id}`,
-                                description: desc || "",
-                              })
-                            }
-                            disabled={savingId === ex.id}
-                            className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-60"
-                          >
-                            {savingId === ex.id ? "Guardando..." : "Guardar en BD"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="exlib__modal-img-placeholder">◎</div>
           )}
         </div>
 
-        {detail && (
-          <div className="olob-card border-2 border-blue-600">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-xl font-bold">{detail.name}</h3>
-                <p className="text-xs opacity-70">ID externo: {detail.id}</p>
+        <div className="exlib__modal-body">
+          {loading ? (
+            <div style={{ color: "var(--text-muted)", fontFamily: "var(--font-condensed)", fontSize: "0.9rem" }}>
+              Cargando...
+            </div>
+          ) : !detail ? (
+            <div style={{ color: "var(--text-muted)", fontFamily: "var(--font-condensed)", fontSize: "0.9rem" }}>
+              No se pudo cargar el ejercicio.
+            </div>
+          ) : (
+            <>
+              <h2 className="exlib__modal-name">{detail.name}</h2>
+
+              <div className="exlib__modal-meta">
+                {detail.category && <span className="exlib__badge exlib__badge--cat">{detail.category}</span>}
+                {detail.muscles?.slice(0, 3).map((m) => (
+                  <span key={m} className="exlib__badge exlib__badge--muscle">{m}</span>
+                ))}
               </div>
 
-              <button
-                type="button"
-                onClick={() => setDetail(null)}
-                className="text-sm text-red-600 hover:underline"
-              >
-                Cerrar
-              </button>
-            </div>
+              {detail.description && (
+                <p className="exlib__modal-desc">{detail.description}</p>
+              )}
 
-            {detailLoading ? (
-              <p className="mt-3">Cargando...</p>
-            ) : (
-              (() => {
-                const clean = pickDescription(detail);
-
-                return (
-                  <div className="mt-3 space-y-3">
-                    <p className="text-sm leading-relaxed">
-                      {clean ||
-                        "Este ejercicio no trae descripción en la base externa. Aun así puedes guardarlo y describirlo en tu plan (series, repeticiones, técnica y descanso)."}
-                    </p>
-
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          saveToDb({
-                            id: detail.id,
-                            name: detail.name || `Ejercicio #${detail.id}`,
-                            description: clean || "",
-                          })
-                        }
-                        disabled={savingId === detail.id}
-                        className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-60"
-                      >
-                        {savingId === detail.id ? "Guardando..." : "Guardar en BD"}
-                      </button>
-                    </div>
-
-                    {!clean && (
-                      <div className="rounded border p-3 text-sm opacity-90">
-                        <div className="font-semibold">Sugerencia rápida</div>
-                        <ul className="mt-2 list-disc pl-5">
-                          <li>Calienta 5–10 min</li>
-                          <li>1 serie ligera para técnica</li>
-                          <li>3–4 series de 8–12 reps</li>
-                          <li>Descanso 60–90s y control del movimiento</li>
-                        </ul>
-                      </div>
-                    )}
+              {detail.muscles && detail.muscles.length > 0 && (
+                <div className="exlib__modal-section">
+                  <div className="exlib__modal-section-title">Músculos trabajados</div>
+                  <div className="exlib__modal-tags">
+                    {detail.muscles.map((m) => (
+                      <span key={m} className="exlib__modal-tag">{m}</span>
+                    ))}
                   </div>
-                );
-              })()
-            )}
-          </div>
-        )}
+                </div>
+              )}
+
+              {detail.equipment && detail.equipment.length > 0 && (
+                <div className="exlib__modal-section">
+                  <div className="exlib__modal-section-title">Material necesario</div>
+                  <div className="exlib__modal-tags">
+                    {detail.equipment.map((e) => (
+                      <span key={e} className="exlib__modal-tag">{e}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="exlib__modal-actions">
+                <button
+                  className={`exlib__modal-save-btn ${isSaved ? "exlib__modal-save-btn--saved" : ""}`}
+                  onClick={() => onToggleSave(detail.id, detail.name, detail.description)}
+                >
+                  {isSaved ? "✓ Guardado en favoritos" : "♡ Guardar en favoritos"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </PageShell>
+    </div>
+  );
+}
+
+/* ── Componente principal ── */
+export default function ExerciseLibrary() {
+  const [exercises, setExercises]   = useState<WgerExercise[]>([]);
+  const [loading, setLoading]       = useState(false);
+  const [search, setSearch]         = useState("");
+  const [activecat, setActiveCat]   = useState<number | null>(null);
+  const [status, setStatus]         = useState<string>("");
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [savedIds, setSavedIds]     = useState<Set<number>>(new Set());
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const fetchExercises = useCallback(async (q: string, cat: number | null) => {
+    setLoading(true);
+    setStatus("");
+    try {
+      const params: Record<string, string | number> = { limit: 24 };
+      if (q.trim())  params.search   = q.trim();
+      if (cat)       params.category = cat;
+
+      const res = await api.get<WgerListResponse<WgerExercise>>(
+        "/public/external/wger/exercises", { params }
+      );
+      const list = res.data.results ?? [];
+      setExercises(list);
+      setStatus(list.length === 0 ? "Sin resultados para esa búsqueda." : `${list.length} ejercicios`);
+    } catch {
+      setExercises([]);
+      setStatus("Error conectando con la API. Inténtalo de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Cargar favoritos del usuario
+  useEffect(() => {
+    api.get("/saved-exercises")
+      .then((r) => {
+        const ids = new Set<number>(
+          (r.data ?? []).map((x: { external_id: number }) => x.external_id)
+        );
+        setSavedIds(ids);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Carga inicial con categoría "Todos"
+  useEffect(() => { fetchExercises("", null); }, [fetchExercises]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchExercises(search, activecat);
+  };
+
+  const handleCat = (id: number | null) => {
+    setActiveCat(id);
+    fetchExercises(search, id);
+  };
+
+  const handleToggleSave = async (id: number, name: string, desc: string) => {
+    try {
+      if (savedIds.has(id)) {
+        // Buscar el ID local del saved exercise para borrarlo
+        const res = await api.get("/saved-exercises");
+        const found = (res.data ?? []).find((x: { external_id: number; id: number }) => x.external_id === id);
+        if (found) await api.delete(`/saved-exercises/${found.id}`);
+        setSavedIds((prev) => { const s = new Set(prev); s.delete(id); return s; });
+      } else {
+        await api.post("/saved-exercises", { source: "wger", external_id: id, name, description: desc });
+        setSavedIds((prev) => new Set(prev).add(id));
+      }
+    } catch { /* silent */ }
+  };
+
+  return (
+    <div className="exlib">
+      {/* Header */}
+      <div className="exlib__header">
+        <h1 className="exlib__title">BIBLIOTECA DE<br />EJERCICIOS</h1>
+        <p className="exlib__sub">Demostraciones animadas · API wger</p>
+      </div>
+
+      {/* Búsqueda */}
+      <form className="exlib__search-row" onSubmit={handleSearch}>
+        <div className="exlib__search-wrap">
+          <span className="exlib__search-icon">⌕</span>
+          <input
+            ref={inputRef}
+            className="exlib__search-input"
+            type="text"
+            placeholder="Buscar ejercicio... (press, squat, curl...)"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <button className="exlib__search-btn" type="submit" disabled={loading}>
+          {loading ? "..." : "Buscar"}
+        </button>
+      </form>
+
+      {/* Categorías */}
+      <div className="exlib__cats">
+        {CATEGORIES.map((c) => (
+          <button
+            key={c.id ?? "all"}
+            className={`exlib__cat-pill ${activecat === c.id ? "exlib__cat-pill--active" : ""}`}
+            onClick={() => handleCat(c.id)}
+            type="button"
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Estado */}
+      <div className="exlib__status">{status}</div>
+
+      {/* Grid */}
+      {loading ? (
+        <div className="exlib__skeleton-grid">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="exlib__skeleton-card">
+              <div className="exlib__skeleton-img" />
+              <div className="exlib__skeleton-body">
+                <div className="exlib__skeleton-line" />
+                <div className="exlib__skeleton-line exlib__skeleton-line--short" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="exlib__grid">
+          {exercises.length === 0 ? (
+            <div className="exlib__empty">
+              <div className="exlib__empty-icon">◎</div>
+              <div className="exlib__empty-text">Sin resultados</div>
+            </div>
+          ) : (
+            exercises.map((ex) => (
+              <div
+                key={ex.id}
+                className={`exlib__card ${savedIds.has(ex.id) ? "exlib__card--saved" : ""}`}
+                onClick={() => setSelectedId(ex.id)}
+              >
+                <div className="exlib__img-wrap">
+                  <ExerciseAnim images={ex.images ?? []} />
+                </div>
+                <button
+                  className={`exlib__save-btn ${savedIds.has(ex.id) ? "exlib__save-btn--saved" : ""}`}
+                  title={savedIds.has(ex.id) ? "Quitar de favoritos" : "Guardar en favoritos"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleSave(ex.id, ex.name, "");
+                  }}
+                >
+                  {savedIds.has(ex.id) ? "♥" : "♡"}
+                </button>
+                <div className="exlib__card-body">
+                  <div className="exlib__card-name">{ex.name}</div>
+                  <div className="exlib__card-meta">
+                    {ex.category && (
+                      <span className="exlib__badge exlib__badge--cat">{ex.category}</span>
+                    )}
+                    {ex.muscles?.slice(0, 2).map((m) => (
+                      <span key={m} className="exlib__badge exlib__badge--muscle">{m}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Modal de detalle */}
+      {selectedId !== null && (
+        <DetailModal
+          exerciseId={selectedId}
+          onClose={() => setSelectedId(null)}
+          savedIds={savedIds}
+          onToggleSave={handleToggleSave}
+        />
+      )}
+    </div>
   );
 }

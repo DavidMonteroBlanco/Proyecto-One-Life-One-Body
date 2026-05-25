@@ -95,64 +95,59 @@ class ExternalWgerController extends Controller
 
    
     public function exercises(Request $request)
-{
-    $request->validate([
-        "search" => ["nullable", "string", "max:40"],
-        "limit" => ["nullable", "integer", "min:1", "max:50"],
-        "language" => ["nullable", "integer", "min:1", "max:50"],
-    ]);
+    {
+        $request->validate([
+            "search"   => ["nullable", "string", "max:40"],
+            "limit"    => ["nullable", "integer", "min:1", "max:50"],
+            "category" => ["nullable", "integer"],
+        ]);
 
-    $search = trim((string) $request->query("search", ""));
-    $limit  = (int) $request->query("limit", 20);
+        $search   = trim((string) $request->query("search", ""));
+        $limit    = (int) $request->query("limit", 20);
+        $category = $request->query("category");
+        $category = $category !== null ? (int) $category : null;
 
-    
-    $language = $request->query("language");
-    $language = $language !== null ? (int)$language : null;
+        $cacheKey = "wger_exerciseinfo_list_v2_" . md5($search . "_" . $limit . "_" . ($category ?? "all"));
 
-    $cacheKey = "wger_exerciseinfo_list_" . md5($search . "_" . $limit . "_" . ($language ?? "all"));
+        $data = Cache::remember($cacheKey, 60 * 10, function () use ($search, $limit, $category) {
+            $params = ["limit" => $limit, "format" => "json"];
+            if ($search !== "")  $params["search"]   = $search;
+            if ($category)       $params["category"] = $category;
 
-    $data = Cache::remember($cacheKey, 60 * 10, function () use ($search, $limit, $language) {
-        $url = "https://wger.de/api/v2/exerciseinfo/";
+            $res = Http::timeout(8)->acceptJson()->get("https://wger.de/api/v2/exerciseinfo/", $params);
 
-        $params = [
-            "limit"  => $limit,
-            "search" => $search,
-        ];
+            if (!$res->ok()) {
+                return ["count" => 0, "results" => [], "error" => "wger_" . $res->status()];
+            }
+            return $res->json();
+        });
 
-        if ($language) {
-            $params["language"] = $language;
-        }
+        $results = array_map(function ($x) {
+            $images = [];
+            foreach (($x["images"] ?? []) as $img) {
+                if (!empty($img["image"])) $images[] = (string) $img["image"];
+            }
 
-        $res = Http::timeout(8)->acceptJson()->get($url, $params);
+            $muscles = [];
+            foreach (($x["muscles"] ?? []) as $m) {
+                if (!empty($m["name_en"])) $muscles[] = $m["name_en"];
+                elseif (!empty($m["name"])) $muscles[] = $m["name"];
+            }
 
-        if (!$res->ok()) {
             return [
-                "count" => 0,
-                "results" => [],
-                "error" => "wger_error_" . $res->status(),
+                "id"       => $x["id"] ?? null,
+                "name"     => $x["name"] ?? ("Ejercicio #" . ($x["id"] ?? "?")),
+                "category" => $x["category"]["name"] ?? null,
+                "muscles"  => array_values(array_unique($muscles)),
+                "images"   => $images,
             ];
-        }
+        }, $data["results"] ?? []);
 
-        return $res->json();
-    });
-
-    $results = array_map(function ($x) {
-        $desc = $x["description"] ?? "";
-        $desc = is_string($desc) ? $desc : "";
-
-        return [
-            "id" => $x["id"] ?? null,
-            "name" => $x["name"] ?? ("Ejercicio #" . ($x["id"] ?? "?")),
-            "description" => $desc,
-            "images" => $x["images"] ?? [],
-        ];
-    }, $data["results"] ?? []);
-
-    return response()->json([
-        "count" => $data["count"] ?? 0,
-        "results" => $results,
-    ]);
-}
+        return response()->json([
+            "count"   => $data["count"] ?? 0,
+            "results" => $results,
+        ]);
+    }
 
 
     
@@ -176,11 +171,30 @@ class ExternalWgerController extends Controller
             return response()->json($data, 404);
         }
 
+        $images = [];
+        foreach (($data["images"] ?? []) as $img) {
+            if (!empty($img["image"])) $images[] = (string) $img["image"];
+        }
+
+        $muscles = [];
+        foreach (($data["muscles"] ?? []) as $m) {
+            if (!empty($m["name_en"])) $muscles[] = $m["name_en"];
+            elseif (!empty($m["name"])) $muscles[] = $m["name"];
+        }
+
+        $equipment = [];
+        foreach (($data["equipment"] ?? []) as $e) {
+            if (!empty($e["name"])) $equipment[] = $e["name"];
+        }
+
         return response()->json([
-            "id" => $data["id"] ?? $id,
-            "name" => $data["name"] ?? ("Ejercicio #" . $id),
+            "id"          => $data["id"] ?? $id,
+            "name"        => $data["name"] ?? ("Ejercicio #" . $id),
             "description" => $this->pickBestDescription($data),
-            "image" => $this->pickImage($data),
+            "category"    => $data["category"]["name"] ?? null,
+            "muscles"     => array_values(array_unique($muscles)),
+            "equipment"   => array_values(array_unique($equipment)),
+            "images"      => $images,
         ]);
     }
 }
