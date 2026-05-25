@@ -478,6 +478,25 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ══ MAPA ══ */}
+      <section className="map-section">
+        <div className="map-section__header container">
+          <span className="map-section__label">Encuéntranos</span>
+          <h2 className="map-section__title">DÓNDE ESTAMOS</h2>
+          <p className="map-section__address">📍 C/ de Goya, 37, BAJO · 03502 Benidorm, Alicante</p>
+        </div>
+        <div className="map-section__embed-wrap">
+          <iframe
+            className="map-section__iframe"
+            title="Localización One Life One Body"
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1583.4!2d-0.13252!3d38.53952!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6218b4fae62bcd%3A0x8b3c5a3b2e1f4a5c!2sCalle+de+Goya%2C+37%2C+03502+Benidorm%2C+Alicante!5e0!3m2!1ses!2ses!4v1700000000000!5m2!1ses!2ses"
+          />
+        </div>
+      </section>
+
       {/* ══ FOOTER ══ */}
       <footer className="footer">
         <div className="container footer__top">
