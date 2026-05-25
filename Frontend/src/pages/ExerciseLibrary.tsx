@@ -254,7 +254,7 @@ export default function ExerciseLibrary() {
       {/* Header */}
       <div className="exlib__header">
         <h1 className="exlib__title">BIBLIOTECA DE<br />EJERCICIOS</h1>
-        <p className="exlib__sub">Demostraciones animadas · API wger</p>
+        <p className="exlib__sub">Demostraciones animadas</p>
       </div>
 
       {/* Búsqueda */}

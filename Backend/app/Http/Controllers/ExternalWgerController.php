@@ -120,7 +120,62 @@ class ExternalWgerController extends Controller
         return null;
     }
 
-   
+    // Fetch images from wger exerciseimage endpoint (separate from exerciseinfo)
+    private function fetchWgerImages(int $exerciseBaseId): array
+    {
+        $cacheKey = "wger_exerciseimage_" . $exerciseBaseId;
+        return Cache::remember($cacheKey, 60 * 60 * 24, function () use ($exerciseBaseId) {
+            $res = Http::timeout(6)->acceptJson()->get("https://wger.de/api/v2/exerciseimage/", [
+                "format"        => "json",
+                "exercise_base" => $exerciseBaseId,
+                "limit"         => 4,
+            ]);
+            if (!$res->ok()) return [];
+            $imgs = [];
+            foreach (($res->json()["results"] ?? []) as $img) {
+                if (!empty($img["image"])) $imgs[] = (string) $img["image"];
+            }
+            return $imgs;
+        });
+    }
+
+    // Fetch a thumbnail from Wikipedia (free, no API key)
+    private function fetchWikipediaImage(string $englishName): ?string
+    {
+        if ($englishName === '') return null;
+        $cacheKey = "wiki_img_" . md5($englishName);
+        return Cache::remember($cacheKey, 60 * 60 * 24 * 7, function () use ($englishName) {
+            $res = Http::timeout(5)->acceptJson()->get("https://en.wikipedia.org/w/api.php", [
+                "action"     => "query",
+                "prop"       => "pageimages",
+                "pithumbsize"=> 400,
+                "format"     => "json",
+                "generator"  => "search",
+                "gsrsearch"  => $englishName . " exercise",
+                "gsrlimit"   => 1,
+            ]);
+            if (!$res->ok()) return null;
+            $pages = $res->json()["query"]["pages"] ?? [];
+            foreach ($pages as $page) {
+                $src = $page["thumbnail"]["source"] ?? null;
+                if ($src) return (string) $src;
+            }
+            return null;
+        });
+    }
+
+    // Get the English name from translations (for Wikipedia queries)
+    private function pickEnglishName(array $item): string
+    {
+        foreach (($item['translations'] ?? []) as $t) {
+            if ((int)($t['language'] ?? 0) === 2) {
+                $n = trim((string)($t['name'] ?? ''));
+                if ($n !== '') return $n;
+            }
+        }
+        return trim((string)($item['name'] ?? ''));
+    }
+
     public function exercises(Request $request)
     {
         $request->validate([
@@ -153,6 +208,20 @@ class ExternalWgerController extends Controller
             $images = [];
             foreach (($x["images"] ?? []) as $img) {
                 if (!empty($img["image"])) $images[] = (string) $img["image"];
+            }
+
+            // Fallback 1: wger exerciseimage endpoint
+            if (empty($images) && !empty($x["id"])) {
+                $images = $this->fetchWgerImages((int) $x["id"]);
+            }
+
+            // Fallback 2: Wikipedia thumbnail
+            if (empty($images)) {
+                $engName = $this->pickEnglishName($x);
+                if ($engName !== '') {
+                    $wikiImg = $this->fetchWikipediaImage($engName);
+                    if ($wikiImg) $images = [$wikiImg];
+                }
             }
 
             $muscles = [];
@@ -201,6 +270,20 @@ class ExternalWgerController extends Controller
         $images = [];
         foreach (($data["images"] ?? []) as $img) {
             if (!empty($img["image"])) $images[] = (string) $img["image"];
+        }
+
+        // Fallback 1: wger exerciseimage endpoint
+        if (empty($images)) {
+            $images = $this->fetchWgerImages($id);
+        }
+
+        // Fallback 2: Wikipedia thumbnail
+        if (empty($images)) {
+            $engName = $this->pickEnglishName($data);
+            if ($engName !== '') {
+                $wikiImg = $this->fetchWikipediaImage($engName);
+                if ($wikiImg) $images = [$wikiImg];
+            }
         }
 
         $muscles = [];
