@@ -333,13 +333,18 @@ class ExternalWgerController extends Controller
                 $images = $this->fetchWgerImages((int) $x["id"]);
             }
 
+            $engName = $this->pickEnglishName($x);
+
             // Fallback 2: Wikipedia thumbnail
+            if (empty($images) && $engName !== '') {
+                $wikiImg = $this->fetchWikipediaImage($engName);
+                if ($wikiImg) $images = [$wikiImg];
+            }
+
+            // Fallback 3: YouTube video ID
+            $videoId = null;
             if (empty($images)) {
-                $engName = $this->pickEnglishName($x);
-                if ($engName !== '') {
-                    $wikiImg = $this->fetchWikipediaImage($engName);
-                    if ($wikiImg) $images = [$wikiImg];
-                }
+                $videoId = $this->fetchYouTubeVideoId($engName);
             }
 
             $muscles = [];
@@ -354,6 +359,7 @@ class ExternalWgerController extends Controller
                 "category" => $this->translateCategory($x["category"]["name"] ?? null),
                 "muscles"  => array_values(array_unique($muscles)),
                 "images"   => $images,
+                "videoId"  => $videoId,
             ];
         }, $data["results"] ?? []);
 

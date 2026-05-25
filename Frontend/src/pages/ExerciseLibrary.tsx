@@ -16,11 +16,23 @@ const CATEGORIES = [
 ];
 
 /* ── Animación entre 2 imágenes (efecto demo) ── */
-function ExerciseAnim({ images, className = "" }: { images: string[]; className?: string }) {
+function ExerciseAnim({ images, videoId, className = "" }: { images: string[]; videoId?: string | null; className?: string }) {
   const [errors, setErrors] = useState<Record<number, boolean>>({});
   const valid = (images ?? []).filter((_, i) => !errors[i]);
 
   const onErr = (i: number) => setErrors((p) => ({ ...p, [i]: true }));
+
+  if (valid.length === 0 && videoId) {
+    return (
+      <iframe
+        className={`exlib__card-video ${className}`}
+        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&playsinline=1`}
+        allow="autoplay; encrypted-media"
+        loading="lazy"
+        title="demo"
+      />
+    );
+  }
 
   if (valid.length === 0) {
     return (
@@ -328,7 +340,7 @@ export default function ExerciseLibrary() {
                 onClick={() => setSelectedId(ex.id)}
               >
                 <div className="exlib__img-wrap">
-                  <ExerciseAnim images={ex.images ?? []} />
+                  <ExerciseAnim images={ex.images ?? []} videoId={ex.videoId} />
                 </div>
                 <button
                   className={`exlib__save-btn ${savedIds.has(ex.id) ? "exlib__save-btn--saved" : ""}`}

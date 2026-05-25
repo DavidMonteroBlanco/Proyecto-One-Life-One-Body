@@ -52,6 +52,7 @@ export type WgerExercise = {
   category?: string | null;
   muscles?: string[];
   images?: string[];
+  videoId?: string | null;
 };
 
 export type WgerExerciseDetail = {
