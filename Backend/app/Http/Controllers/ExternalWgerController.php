@@ -8,6 +8,102 @@ use Illuminate\Support\Facades\Http;
 
 class ExternalWgerController extends Controller
 {
+    private static array $muscleES = [
+        'Anterior deltoid'             => 'Deltoides anterior',
+        'Posterior deltoid'            => 'Deltoides posterior',
+        'Middle deltoid'               => 'Deltoides medio',
+        'Deltoid'                      => 'Deltoides',
+        'Biceps brachii'               => 'Bíceps',
+        'Brachialis'                   => 'Braquial',
+        'Brachioradialis'              => 'Braquiorradial',
+        'Triceps brachii'              => 'Tríceps',
+        'Pectoralis major'             => 'Pectoral mayor',
+        'Pectoralis minor'             => 'Pectoral menor',
+        'Serratus anterior'            => 'Serrato anterior',
+        'Latissimus dorsi'             => 'Dorsal ancho',
+        'Trapezius'                    => 'Trapecio',
+        'Infraspinatus'                => 'Infraespinoso',
+        'Teres major'                  => 'Redondo mayor',
+        'Rhomboids'                    => 'Romboides',
+        'Erector spinae'               => 'Erector espinal',
+        'Rectus abdominis'             => 'Recto abdominal',
+        'Obliquus externus abdominis'  => 'Oblicuo externo',
+        'Obliquus internus abdominis'  => 'Oblicuo interno',
+        'Transversus abdominis'        => 'Transverso abdominal',
+        'Iliopsoas'                    => 'Iliopsoas',
+        'Gluteus maximus'              => 'Glúteo mayor',
+        'Gluteus medius'               => 'Glúteo medio',
+        'Gluteus minimus'              => 'Glúteo menor',
+        'Quadriceps femoris'           => 'Cuádriceps',
+        'Vastus lateralis'             => 'Vasto lateral',
+        'Vastus medialis'              => 'Vasto medial',
+        'Vastus intermedius'           => 'Vasto intermedio',
+        'Rectus femoris'               => 'Recto femoral',
+        'Hamstrings'                   => 'Isquiotibiales',
+        'Biceps femoris'               => 'Bíceps femoral',
+        'Adductor longus'              => 'Aductor largo',
+        'Adductor magnus'              => 'Aductor mayor',
+        'Gastrocnemius'                => 'Gemelo',
+        'Soleus'                       => 'Sóleo',
+        'Tibialis anterior'            => 'Tibial anterior',
+        'Hip flexors'                  => 'Flexores de cadera',
+    ];
+
+    private static array $equipmentES = [
+        'Barbell'            => 'Barra',
+        'SZ-Bar'             => 'Barra Z',
+        'EZ-Bar'             => 'Barra EZ',
+        'Dumbbell'           => 'Mancuerna',
+        'Kettlebell'         => 'Kettlebell',
+        'Bench'              => 'Banco',
+        'Pull-up bar'        => 'Barra de dominadas',
+        'Cable'              => 'Cable',
+        'Machine'            => 'Máquina',
+        'Plate'              => 'Disco',
+        'Foam roller'        => 'Rodillo',
+        'Resistance Band'    => 'Banda elástica',
+        'Swiss ball'         => 'Balón suizo',
+        'Gymnastics rings'   => 'Anillas',
+        'Bodyweight'         => 'Peso corporal',
+        'Body weight'        => 'Peso corporal',
+        'None (no equipment needed)' => 'Sin material',
+        'Rowing machine'     => 'Máquina de remo',
+        'Treadmill'          => 'Cinta de correr',
+        'Elliptical'         => 'Elíptica',
+        'Bicycle'            => 'Bicicleta',
+        'Steppers'           => 'Escaladora',
+        'Jump rope'          => 'Comba',
+    ];
+
+    private static array $categoryES = [
+        'Arms'       => 'Brazos',
+        'Legs'       => 'Piernas',
+        'Abs'        => 'Abdomen',
+        'Chest'      => 'Pecho',
+        'Back'       => 'Espalda',
+        'Shoulders'  => 'Hombros',
+        'Calves'     => 'Gemelos',
+        'Core'       => 'Core',
+        'Cardio'     => 'Cardio',
+        'Glutes'     => 'Glúteos',
+    ];
+
+    private function translateMuscle(string $name): string
+    {
+        return self::$muscleES[$name] ?? $name;
+    }
+
+    private function translateEquipment(string $name): string
+    {
+        return self::$equipmentES[$name] ?? $name;
+    }
+
+    private function translateCategory(?string $name): ?string
+    {
+        if ($name === null) return null;
+        return self::$categoryES[$name] ?? $name;
+    }
+
     private function stripHtml(?string $html): string
     {
         $html = (string) $html;
@@ -226,14 +322,14 @@ class ExternalWgerController extends Controller
 
             $muscles = [];
             foreach (($x["muscles"] ?? []) as $m) {
-                if (!empty($m["name_en"])) $muscles[] = $m["name_en"];
-                elseif (!empty($m["name"])) $muscles[] = $m["name"];
+                $raw = !empty($m["name_en"]) ? $m["name_en"] : ($m["name"] ?? '');
+                if ($raw !== '') $muscles[] = $this->translateMuscle($raw);
             }
 
             return [
                 "id"       => $x["id"] ?? null,
                 "name"     => $this->pickName($x),
-                "category" => $x["category"]["name"] ?? null,
+                "category" => $this->translateCategory($x["category"]["name"] ?? null),
                 "muscles"  => array_values(array_unique($muscles)),
                 "images"   => $images,
             ];
@@ -288,20 +384,20 @@ class ExternalWgerController extends Controller
 
         $muscles = [];
         foreach (($data["muscles"] ?? []) as $m) {
-            if (!empty($m["name_en"])) $muscles[] = $m["name_en"];
-            elseif (!empty($m["name"])) $muscles[] = $m["name"];
+            $raw = !empty($m["name_en"]) ? $m["name_en"] : ($m["name"] ?? '');
+            if ($raw !== '') $muscles[] = $this->translateMuscle($raw);
         }
 
         $equipment = [];
         foreach (($data["equipment"] ?? []) as $e) {
-            if (!empty($e["name"])) $equipment[] = $e["name"];
+            if (!empty($e["name"])) $equipment[] = $this->translateEquipment($e["name"]);
         }
 
         return response()->json([
             "id"          => $data["id"] ?? $id,
             "name"        => $this->pickName($data),
             "description" => $this->pickDescriptionLocalized($data),
-            "category"    => $data["category"]["name"] ?? null,
+            "category"    => $this->translateCategory($data["category"]["name"] ?? null),
             "muscles"     => array_values(array_unique($muscles)),
             "equipment"   => array_values(array_unique($equipment)),
             "images"      => $images,
