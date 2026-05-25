@@ -81,6 +81,33 @@ class ExternalWgerController extends Controller
         return "Descripción no disponible en la fuente externa.";
     }
 
+    // Extrae el nombre localizado: español (lang 4) > inglés (lang 2) > campo name
+    private function pickName(array $item): string
+    {
+        $spanish = null;
+        $english = null;
+        foreach (($item['translations'] ?? []) as $t) {
+            $lang = (int)($t['language'] ?? 0);
+            $n    = trim((string)($t['name'] ?? ''));
+            if ($n === '') continue;
+            if ($lang === 4) { $spanish = $n; break; }
+            if ($lang === 2) $english = $n;
+        }
+        return $spanish ?? $english ?? trim((string)($item['name'] ?? '')) ?: ('Ejercicio #' . ($item['id'] ?? '?'));
+    }
+
+    // Extrae la descripción: español (lang 4) > lógica anterior
+    private function pickDescriptionLocalized(array $item): string
+    {
+        foreach (($item['translations'] ?? []) as $t) {
+            if ((int)($t['language'] ?? 0) === 4) {
+                $d = $this->stripHtml($t['description'] ?? '');
+                if ($d !== '') return $d;
+            }
+        }
+        return $this->pickBestDescription($item);
+    }
+
     private function pickImage(array $item): ?string
     {
         if (!empty($item['images']) && is_array($item['images'])) {
@@ -136,7 +163,7 @@ class ExternalWgerController extends Controller
 
             return [
                 "id"       => $x["id"] ?? null,
-                "name"     => $x["name"] ?? ("Ejercicio #" . ($x["id"] ?? "?")),
+                "name"     => $this->pickName($x),
                 "category" => $x["category"]["name"] ?? null,
                 "muscles"  => array_values(array_unique($muscles)),
                 "images"   => $images,
@@ -189,8 +216,8 @@ class ExternalWgerController extends Controller
 
         return response()->json([
             "id"          => $data["id"] ?? $id,
-            "name"        => $data["name"] ?? ("Ejercicio #" . $id),
-            "description" => $this->pickBestDescription($data),
+            "name"        => $this->pickName($data),
+            "description" => $this->pickDescriptionLocalized($data),
             "category"    => $data["category"]["name"] ?? null,
             "muscles"     => array_values(array_unique($muscles)),
             "equipment"   => array_values(array_unique($equipment)),

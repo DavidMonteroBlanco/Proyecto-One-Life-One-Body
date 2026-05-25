@@ -17,7 +17,12 @@ const CATEGORIES = [
 
 /* ── Animación entre 2 imágenes (efecto demo) ── */
 function ExerciseAnim({ images, className = "" }: { images: string[]; className?: string }) {
-  if (!images || images.length === 0) {
+  const [errors, setErrors] = useState<Record<number, boolean>>({});
+  const valid = (images ?? []).filter((_, i) => !errors[i]);
+
+  const onErr = (i: number) => setErrors((p) => ({ ...p, [i]: true }));
+
+  if (valid.length === 0) {
     return (
       <div className={`exlib__img-placeholder ${className}`}>
         <div className="exlib__img-placeholder-icon">◎</div>
@@ -25,13 +30,23 @@ function ExerciseAnim({ images, className = "" }: { images: string[]; className?
       </div>
     );
   }
-  if (images.length === 1) {
-    return <img src={images[0]} alt="" className={`exlib__img ${className}`} loading="lazy" />;
+  if (valid.length === 1) {
+    return (
+      <img
+        src={valid[0]} alt="" loading="lazy" referrerPolicy="no-referrer"
+        className={`exlib__img ${className}`}
+        onError={() => onErr(images.indexOf(valid[0]))}
+      />
+    );
   }
   return (
     <>
-      <img src={images[0]} alt="" className={`exlib__img exlib__img--a ${className}`} loading="lazy" />
-      <img src={images[1]} alt="" className={`exlib__img exlib__img--b ${className}`} loading="lazy" />
+      <img src={valid[0]} alt="" loading="lazy" referrerPolicy="no-referrer"
+        className={`exlib__img exlib__img--a ${className}`}
+        onError={() => onErr(images.indexOf(valid[0]))} />
+      <img src={valid[1]} alt="" loading="lazy" referrerPolicy="no-referrer"
+        className={`exlib__img exlib__img--b ${className}`}
+        onError={() => onErr(images.indexOf(valid[1]))} />
       <span className="exlib__anim-badge">● DEMO</span>
     </>
   );
@@ -80,11 +95,17 @@ function DetailModal({
           ) : detail?.images?.length ? (
             <>
               {detail.images.length === 1 ? (
-                <img src={detail.images[0]} alt="" className="exlib__modal-img" />
+                <img src={detail.images[0]} alt="" className="exlib__modal-img"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
               ) : (
                 <>
-                  <img src={detail.images[0]} alt="" className="exlib__modal-img exlib__modal-img--a" />
-                  <img src={detail.images[1]} alt="" className="exlib__modal-img exlib__modal-img--b" />
+                  <img src={detail.images[0]} alt="" className="exlib__modal-img exlib__modal-img--a"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                  <img src={detail.images[1]} alt="" className="exlib__modal-img exlib__modal-img--b"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                 </>
               )}
             </>
