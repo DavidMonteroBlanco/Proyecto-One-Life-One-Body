@@ -286,7 +286,7 @@ export default function Home() {
       <section className="section-metodo" id="metodo">
         <div className="container metodo__inner">
           <motion.div className="metodo__text" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-            <p className="section-label">El método</p>
+            <p className="section-label">Método</p>
             <h2 className="section-title">No es un gym.<br />Es un sistema.</h2>
             <div className="cyan-line" />
             <p className="metodo__desc">
@@ -369,7 +369,7 @@ export default function Home() {
           <div className="onelife-promo">
             <motion.div className="onelife-promo__content"
               variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-              <p className="section-label">Nuevo</p>
+              <p className="section-label">Método</p>
               <h2 className="onelife-promo__title">METODO<br /><span>ONE LIFE</span></h2>
               <p className="onelife-promo__desc">
                 Tu transformación no depende de un lugar. Plan personalizado, seguimiento por videollamada, 
