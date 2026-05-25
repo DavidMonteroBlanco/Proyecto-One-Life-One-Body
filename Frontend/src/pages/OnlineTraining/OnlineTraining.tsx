@@ -36,7 +36,12 @@ export default function EntrenosOnline() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
 
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // Fallback: mostrar el video aunque onLoadedData no dispare
+    const t = setTimeout(() => setVideoLoaded(true), 2500);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <div className="eo-page">
@@ -49,6 +54,7 @@ export default function EntrenosOnline() {
             className={`eo-hero__video ${videoLoaded ? "eo-hero__video--loaded" : ""}`}
             src="/videos/video-entrenos.mp4"
             autoPlay muted loop playsInline
+            onCanPlay={() => setVideoLoaded(true)}
             onLoadedData={() => setVideoLoaded(true)}
           />
           <div className="eo-hero__overlay" />
