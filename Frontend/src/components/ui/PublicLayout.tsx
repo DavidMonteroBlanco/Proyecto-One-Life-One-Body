@@ -1,16 +1,17 @@
-import { Outlet, NavLink, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import logoImg from "../../assets/icons/logo-bw.jpg";
 import "./PublicLayout.css";
 
-const AUTH_ROUTES = ["/login", "/register", "/access", "/forgot-password"];
+const NO_NAVBAR_ROUTES = ["/login", "/register", "/access", "/forgot-password"];
 
 export default function PublicLayout() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const isAuthPage = AUTH_ROUTES.includes(location.pathname);
+  const hideNavbar = NO_NAVBAR_ROUTES.includes(location.pathname);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -20,20 +21,32 @@ export default function PublicLayout() {
 
   useEffect(() => setMenuOpen(false), [location]);
 
+  const handleHashLink = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    setMenuOpen(false);
+    if (!href.startsWith("/#")) return;
+    e.preventDefault();
+    const id = href.slice(2);
+    if (location.pathname === "/") {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      navigate("/");
+      setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 350);
+    }
+  };
+
   const navLinks = [
-    { label: "Método",           href: "/#metodo" },
-    { label: "Servicios",        href: "/#servicios" },
-    { label: "Entrenos Online",  href: "/entrenos-online" },
-    { label: "Testimonios",      href: "/#testimonios" },
-    { label: "Contacto",         href: "/#contacto" },
+    { label: "Método",          href: "/#metodo" },
+    { label: "Servicios",       href: "/#servicios" },
+    { label: "Entrenos Online", href: "/entrenos-online" },
+    { label: "Testimonios",     href: "/#testimonios" },
+    { label: "Contacto",        href: "/#contacto" },
   ];
 
   return (
     <div className="public-layout">
 
-      {/* Navbar solo en páginas que NO son auth */}
-      {!isAuthPage && (
-        <nav className={`navbar ${scrolled ? "navbar--scrolled" : ""}`}>
+      {!hideNavbar && (
+        <nav className={`navbar ${scrolled || menuOpen ? "navbar--scrolled" : ""}`}>
           <div className="navbar__inner">
 
             <a href="/" className="navbar__logo">
@@ -43,7 +56,7 @@ export default function PublicLayout() {
             <ul className="navbar__links">
               {navLinks.map((l) => (
                 <li key={l.href}>
-                  <a href={l.href} className="navbar__link">{l.label}</a>
+                  <a href={l.href} className="navbar__link" onClick={(e) => handleHashLink(e, l.href)}>{l.label}</a>
                 </li>
               ))}
             </ul>
@@ -73,7 +86,7 @@ export default function PublicLayout() {
 
           <div className={`navbar__mobile ${menuOpen ? "navbar__mobile--open" : ""}`}>
             {navLinks.map((l) => (
-              <a key={l.href} href={l.href} className="navbar__mobile-link">{l.label}</a>
+              <a key={l.href} href={l.href} className="navbar__mobile-link" onClick={(e) => handleHashLink(e, l.href)}>{l.label}</a>
             ))}
             <NavLink to="/access" className="btn-primary" style={{ marginTop: "1rem" }}>
               Área cliente

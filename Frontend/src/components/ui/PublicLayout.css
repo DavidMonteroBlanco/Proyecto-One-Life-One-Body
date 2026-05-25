@@ -1,4 +1,4 @@
-.public-layout { min-height: 100vh; }
+.public-layout { min-height: 100dvh; }
 
 /* ── NAVBAR ── */
 .navbar {
@@ -6,6 +6,7 @@
   top: 0; left: 0; right: 0;
   z-index: 100;
   padding: 0.6rem 0;
+  padding-top: max(0.6rem, env(safe-area-inset-top, 0px));
   transition: background 0.35s, border-color 0.35s;
   border-bottom: 1px solid transparent;
 }

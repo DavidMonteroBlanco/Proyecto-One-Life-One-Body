@@ -1,7 +1,6 @@
 // src/pages/Legal/LegalPages.tsx
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import logoImg from "../../assets/icons/logo-bw.jpg";
 import "./LegalPages.css";
 import React from "react";
 
@@ -24,14 +23,6 @@ export default function LegalPages() {
   const C = p.c;
   return (
     <div className="legal">
-      <div className="legal__nav"><div className="container legal__nav-inner">
-        <Link to="/" className="legal__logo"><img src={logoImg} alt="OLOB" /><span>ONE LIFE ONE BODY</span></Link>
-        <div className="legal__nav-links">
-          <Link to="/legal/privacidad" className={page === "privacidad" ? "active" : ""}>Privacidad</Link>
-          <Link to="/legal/aviso-legal" className={page === "aviso-legal" ? "active" : ""}>Aviso legal</Link>
-          <Link to="/legal/cookies" className={page === "cookies" ? "active" : ""}>Cookies</Link>
-        </div>
-      </div></div>
       <div className="legal__container"><C /><div className="legal__footer"><Link to="/" className="btn-ghost">← Volver a la web</Link><div className="legal__footer-links"><Link to="/legal/privacidad">Privacidad</Link><Link to="/legal/aviso-legal">Aviso legal</Link><Link to="/legal/cookies">Cookies</Link></div></div></div>
     </div>
   );
