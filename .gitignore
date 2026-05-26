@@ -1,0 +1,33 @@
+# ── Claude Code internal files ──
+.claude/
+
+# ── Frontend build output ──
+Frontend/dist/
+Frontend/node_modules/
+
+# ── Backend PHP dependencies ──
+Backend/vendor/
+
+# ── Frontend compiled files placed in Backend/public (producción cPanel) ──
+Backend/public/assets/
+Backend/public/index.html
+Backend/public/vite.svg
+Backend/public/videos/
+
+# ── Laravel generated files ──
+Backend/storage/logs/*.log
+Backend/storage/framework/cache/
+Backend/storage/framework/sessions/
+Backend/storage/framework/views/
+Backend/bootstrap/cache/*.php
+
+# ── Environment files (never commit secrets) ──
+Backend/.env
+Backend/.env.backup
+
+# ── OS & editor ──
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/

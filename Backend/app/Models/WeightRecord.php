@@ -18,10 +18,10 @@ class WeightRecord extends Model
     protected function casts(): array
     {
         return [
-            'weight_kg'         => 'decimal:1',
-            'fat_percentage'    => 'decimal:1',
-            'muscle_percentage' => 'decimal:1',
-            'recorded_at'       => 'date',
+            'weight_kg'         => 'float',
+            'fat_percentage'    => 'float',
+            'muscle_percentage' => 'float',
+            'recorded_at'       => 'date:Y-m-d',
         ];
     }
 
