@@ -283,6 +283,11 @@ export default function AdminDiets() {
                     userId={selectedUser.id}
                     userName={selectedUser.name}
                     onUsePlan={handleUseDraft}
+                    onSent={async (mensaje) => {
+                      setMsg({ type: "ok", text: mensaje });
+                      await loadPlans(selectedUser.id);
+                      loadUsers();
+                    }}
                   />
                   <button className="admin-btn admin-btn--primary" onClick={openNew}><Icon name="plus" size={14} /> Nueva dieta</button>
                 </div>

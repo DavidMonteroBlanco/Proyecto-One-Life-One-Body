@@ -1,9 +1,15 @@
 // src/pages/admin/AiDietAssistant.tsx
 //
 // Asistente de IA del panel: David conversa con él para redactar un plan
-// de alimentación y, cuando le convence, lo vuelca en el formulario de
-// dietas con un botón. Lo que devuelve es SIEMPRE un borrador: no sale
-// nada hacia el cliente hasta que David guarda y pulsa enviar.
+// de alimentación y, cuando le convence, tiene dos salidas:
+//
+//   "Crear y enviar al cliente"  -> lo guarda y lo manda, en un paso
+//   "Revisar antes"              -> lo vuelca en el formulario para
+//                                   ajustarlo a mano
+//
+// La vía corta sigue pidiendo confirmación con el nombre del cliente
+// delante. Lo redacta una IA y son datos de salud: la última palabra la
+// tiene una persona que ve a quién se lo manda.
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import api from "../../services/api";
@@ -32,6 +38,8 @@ type Props = {
   userName: string | null;
   /** Carga el borrador en el formulario de dietas. */
   onUsePlan: (plan: DraftPlan) => void;
+  /** Avisa al panel de que el plan ya se ha creado y enviado. */
+  onSent?: (mensaje: string) => void;
 };
 
 const SUGGESTIONS = [
@@ -41,7 +49,7 @@ const SUGGESTIONS = [
   "Ajusta el plan anterior para alguien que no come pescado",
 ];
 
-export default function AiDietAssistant({ userId, userName, onUsePlan }: Props) {
+export default function AiDietAssistant({ userId, userName, onUsePlan, onSent }: Props) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -49,6 +57,7 @@ export default function AiDietAssistant({ userId, userName, onUsePlan }: Props) 
   const [drafting, setDrafting] = useState(false);
   const [draft, setDraft] = useState<DraftPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   const scrollToEnd = useCallback(() => {
@@ -114,6 +123,61 @@ export default function AiDietAssistant({ userId, userName, onUsePlan }: Props) 
     setOpen(false);
   };
 
+  /**
+   * Camino corto: guarda el plan y lo manda, en un paso.
+   *
+   * Pide confirmación con el nombre y el correo delante. No es por
+   * ceremonia: lo que sale de aquí lo ha escrito una IA y son datos de
+   * salud, así que la última palabra la tiene una persona que ve a quién
+   * se lo está enviando. Un envío sin ese paso acaba antes o después en
+   * la dieta de alguien que no era.
+   */
+  const crearYEnviar = async () => {
+    if (!draft || !userId) return;
+
+    const meals = draft.meals.filter((m) => m.foods.trim());
+    if (meals.length === 0) {
+      setError("El borrador no tiene ninguna comida con contenido.");
+      return;
+    }
+
+    if (!window.confirm(
+      `Se va a crear el plan "${draft.title}" y enviarlo a ${userName}.\n\n`
+      + `Lo ha redactado la IA: repásalo antes si no lo has hecho.\n\n`
+      + `¿Enviar?`
+    )) return;
+
+    setSending(true);
+    setError(null);
+
+    try {
+      const { data: creado } = await api.post(`/admin/diet/users/${userId}`, {
+        title: draft.title,
+        notes: draft.notes || null,
+        meals,
+      });
+
+      const planId = creado?.plan?.id;
+      if (!planId) throw new Error("El plan se ha creado pero no ha devuelto su identificador.");
+
+      const { data: envio } = await api.post(`/admin/diet/plans/${planId}/send`);
+
+      setDraft(null);
+      setOpen(false);
+      onSent?.(envio?.message ?? "Plan creado y enviado.");
+    } catch (err) {
+      // El plan puede haberse creado y haber fallado solo el correo. Se
+      // avisa para que David lo busque en la lista en vez de volver a
+      // crearlo y dejar dos planes iguales.
+      setError(errorFrom(
+        err,
+        "No se ha podido completar. Mira si el plan aparece ya en la lista antes de repetir."
+      ));
+    } finally {
+      setSending(false);
+    }
+  };
+
   if (!open) {
     return (
       <button className="admin-btn admin-btn--ghost aia__open" onClick={() => setOpen(true)}>
@@ -136,8 +200,8 @@ export default function AiDietAssistant({ userId, userName, onUsePlan }: Props) 
 
       <p className="aia__disclaimer">
         <Icon name="alert" size={14} />
-        Lo que genere es un borrador. Revísalo antes de guardarlo: no sale nada al
-        cliente hasta que tú le des a enviar.
+        Lo que genere es un borrador. Repásalo: si le das a enviar, le llega
+        al cliente por email y a su área tal cual está.
       </p>
 
       <div className="aia__messages">
@@ -185,10 +249,17 @@ export default function AiDietAssistant({ userId, userName, onUsePlan }: Props) 
               ))}
             </ul>
             <div className="aia__draft-actions">
-              <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={useDraft}>
-                <Icon name="check" size={14} /> Cargar en el formulario
+              <button
+                className="admin-btn admin-btn--primary admin-btn--sm"
+                onClick={crearYEnviar}
+                disabled={sending || !userId}
+              >
+                <Icon name="send" size={14} /> {sending ? "Enviando..." : "Crear y enviar al cliente"}
               </button>
-              <button className="admin-btn admin-btn--ghost admin-btn--sm" onClick={() => setDraft(null)}>
+              <button className="admin-btn admin-btn--ghost admin-btn--sm" onClick={useDraft} disabled={sending}>
+                <Icon name="pencil" size={14} /> Revisar antes
+              </button>
+              <button className="admin-btn admin-btn--ghost admin-btn--sm" onClick={() => setDraft(null)} disabled={sending}>
                 Descartar
               </button>
             </div>

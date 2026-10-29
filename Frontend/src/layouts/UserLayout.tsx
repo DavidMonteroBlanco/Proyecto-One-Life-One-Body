@@ -138,7 +138,6 @@ const userLinks: SidebarItem[] = [
   { to: "/my-diet",          icon: "plate",    label: "Mi dieta",     sub: "Plan de alimentación" },
   { to: "/my-appointments",  icon: "calendar", label: "Reservas",     sub: "Pesaje semanal" },
   { to: "/my-profile",       icon: "user",     label: "Mi perfil",    sub: "Cuenta y seguridad" },
-  { to: "/exercises",        icon: "book",     label: "Ejercicios",   sub: "Biblioteca y demos" },
 ];
 
 const adminLinks: SidebarItem[] = [
