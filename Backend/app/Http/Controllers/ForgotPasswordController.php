@@ -7,6 +7,7 @@ use App\Models\PasswordVerificationCode;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
 
@@ -56,8 +57,27 @@ class ForgotPasswordController extends Controller
             'expires_at' => now()->addMinutes(10),
         ]);
 
-        // Enviar email
-        Mail::to($user->email)->send(new VerificationCodeMail($user->name, $code));
+        /*
+         * El envío va protegido, y no es por comodidad: es parte de no
+         * revelar qué correos están registrados.
+         *
+         * Sin el try/catch, con el SMTP caído esto pasaba:
+         *   - correo registrado    -> excepción -> HTTP 500
+         *   - correo no registrado -> HTTP 200
+         *
+         * Es decir, bastaba mirar el código de respuesta para saber quién
+         * tiene cuenta, justo lo que el mensaje neutro de abajo pretende
+         * evitar. Ahora las dos ramas responden igual y el fallo queda en
+         * el registro, que es donde hay que mirarlo.
+         */
+        try {
+            Mail::to($user->email)->send(new VerificationCodeMail($user->name, $code));
+        } catch (\Throwable $e) {
+            Log::error('CODIGO_RECUPERACION_NO_ENVIADO', [
+                'user_id' => $user->id,
+                'error'   => $e->getMessage(),
+            ]);
+        }
 
         return response()->json([
             'message' => 'Si el email existe, recibirás un código de verificación.',

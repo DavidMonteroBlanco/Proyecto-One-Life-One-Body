@@ -6,6 +6,7 @@ use App\Mail\VerificationCodeMail;
 use App\Models\PasswordVerificationCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
 
@@ -65,8 +66,25 @@ class ProfileController extends Controller
             'expires_at' => now()->addMinutes(10),
         ]);
 
-        // Enviar email con template profesional
-        Mail::to($user->email)->send(new VerificationCodeMail($user->name, $code));
+        /*
+         * Aquí la persona ya ha iniciado sesión, así que no hay nada que
+         * ocultar: si el correo no sale, lo mejor es decírselo. Lo que no
+         * puede pasar es un 500 pelado, ni que se quede esperando un
+         * código que nunca va a llegar.
+         */
+        try {
+            Mail::to($user->email)->send(new VerificationCodeMail($user->name, $code));
+        } catch (\Throwable $e) {
+            Log::error('CODIGO_CAMBIO_PASSWORD_NO_ENVIADO', [
+                'user_id' => $user->id,
+                'error'   => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'No hemos podido enviarte el código por email. '
+                           . 'Inténtalo en unos minutos o avisa al centro.',
+            ], 502);
+        }
 
         return response()->json([
             'message' => 'Código de verificación enviado a tu email.',
