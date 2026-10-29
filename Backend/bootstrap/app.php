@@ -12,6 +12,31 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        /*
+         * ══════════════════════════════════════════════════════════
+         * EL PROXY DEL HOSTING
+         *
+         * Render, Railway y Hostinger ponen un balanceador delante y
+         * terminan ellos el HTTPS. Sin esto, Laravel ve SIEMPRE la IP
+         * del proxy en lugar de la del visitante, y eso rompe dos cosas:
+         *
+         *   1. Los limitadores de peticiones van por IP. Con una sola IP
+         *      para todo el mundo, los 5 intentos de acceso cada 15
+         *      minutos se los reparten TODOS los visitantes juntos: basta
+         *      que alguien falle cinco veces para dejar al resto fuera,
+         *      y la contraseña correcta también empieza a dar error.
+         *
+         *   2. Laravel cree que la petición llegó por HTTP y genera
+         *      enlaces con http:// dentro de los emails.
+         *
+         * Se confía en cualquier proxy ('*') porque en estas plataformas
+         * su IP no es fija ni se publica. Es seguro aquí porque la
+         * aplicación solo es accesible a través de ese balanceador: nadie
+         * puede llegar al contenedor por su cuenta y falsear la cabecera.
+         * ══════════════════════════════════════════════════════════
+         */
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\IsAdmin::class,
         ]);
