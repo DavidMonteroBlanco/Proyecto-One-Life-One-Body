@@ -6,10 +6,9 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   if (loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
-        <span style={{ color: "var(--primary)", fontFamily: "var(--font-condensed)", letterSpacing: "0.2em" }}>
-          CARGANDO...
-        </span>
+      <div className="route-loader route-loader--full" role="status" aria-live="polite">
+        <span className="spinner" aria-hidden="true" />
+        Cargando...
       </div>
     );
   }

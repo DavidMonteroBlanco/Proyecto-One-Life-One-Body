@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import api from "../services/api";
 import type { WgerExercise, WgerExerciseDetail, WgerListResponse } from "../types";
+import Icon from "../components/ui/Icon";
 import "./ExerciseLibrary.css";
+import { useReveal } from "../lib/motion";
 
 /* ── Categorías wger con sus IDs ── */
 const CATEGORIES = [
@@ -37,7 +39,7 @@ function ExerciseAnim({ images, videoId, className = "" }: { images: string[]; v
   if (valid.length === 0) {
     return (
       <div className={`exlib__img-placeholder ${className}`}>
-        <div className="exlib__img-placeholder-icon">◎</div>
+        <div className="exlib__img-placeholder-icon"><Icon name="image" size={34} strokeWidth={1.3} /></div>
         <div className="exlib__img-placeholder-text">Sin imagen</div>
       </div>
     );
@@ -59,7 +61,7 @@ function ExerciseAnim({ images, videoId, className = "" }: { images: string[]; v
       <img src={valid[1]} alt="" loading="lazy" referrerPolicy="no-referrer"
         className={`exlib__img exlib__img--b ${className}`}
         onError={() => onErr(images.indexOf(valid[1]))} />
-      <span className="exlib__anim-badge">● DEMO</span>
+      <span className="exlib__anim-badge">Demo</span>
     </>
   );
 }
@@ -99,11 +101,11 @@ function DetailModal({
   return (
     <div className="exlib__overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="exlib__modal">
-        <button className="exlib__modal-close" onClick={onClose} aria-label="Cerrar">✕</button>
+        <button className="exlib__modal-close" onClick={onClose} aria-label="Cerrar"><Icon name="close" size={16} /></button>
 
         <div className="exlib__modal-img-wrap">
           {loading ? (
-            <div className="exlib__modal-img-placeholder">◎</div>
+            <div className="exlib__modal-img-placeholder"><Icon name="image" size={64} strokeWidth={1} /></div>
           ) : detail?.images?.length ? (
             <>
               {detail.images.length === 1 ? (
@@ -130,17 +132,17 @@ function DetailModal({
               title={detail.name}
             />
           ) : (
-            <div className="exlib__modal-img-placeholder">◎</div>
+            <div className="exlib__modal-img-placeholder"><Icon name="image" size={64} strokeWidth={1} /></div>
           )}
         </div>
 
         <div className="exlib__modal-body">
           {loading ? (
-            <div style={{ color: "var(--text-muted)", fontFamily: "var(--font-condensed)", fontSize: "0.9rem" }}>
+            <div className="exlib__status">
               Cargando...
             </div>
           ) : !detail ? (
-            <div style={{ color: "var(--text-muted)", fontFamily: "var(--font-condensed)", fontSize: "0.9rem" }}>
+            <div className="exlib__status">
               No se pudo cargar el ejercicio.
             </div>
           ) : (
@@ -185,7 +187,7 @@ function DetailModal({
                   className={`exlib__modal-save-btn ${isSaved ? "exlib__modal-save-btn--saved" : ""}`}
                   onClick={() => onToggleSave(detail.id, detail.name, detail.description)}
                 >
-                  {isSaved ? "✓ Guardado en favoritos" : "♡ Guardar en favoritos"}
+                  {isSaved ? <><Icon name="heart-filled" size={15} /> Guardado</> : <><Icon name="heart" size={15} /> Guardar en favoritos</>}
                 </button>
               </div>
             </>
@@ -206,6 +208,9 @@ export default function ExerciseLibrary() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [savedIds, setSavedIds]     = useState<Set<number>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Vuelve a escanear cada vez que cambia el listado de ejercicios
+  useReveal(exercises.length);
 
   const fetchExercises = useCallback(async (q: string, cat: number | null) => {
     setLoading(true);
@@ -280,7 +285,7 @@ export default function ExerciseLibrary() {
       {/* Búsqueda */}
       <form className="exlib__search-row" onSubmit={handleSearch}>
         <div className="exlib__search-wrap">
-          <span className="exlib__search-icon">⌕</span>
+          <span className="exlib__search-icon"><Icon name="search" size={17} /></span>
           <input
             ref={inputRef}
             className="exlib__search-input"
@@ -326,17 +331,17 @@ export default function ExerciseLibrary() {
           ))}
         </div>
       ) : (
-        <div className="exlib__grid">
+        <div className="exlib__grid stagger">
           {exercises.length === 0 ? (
             <div className="exlib__empty">
-              <div className="exlib__empty-icon">◎</div>
+              <div className="exlib__empty-icon"><Icon name="search" size={40} strokeWidth={1.2} /></div>
               <div className="exlib__empty-text">Sin resultados</div>
             </div>
           ) : (
             exercises.map((ex) => (
               <div
                 key={ex.id}
-                className={`exlib__card ${savedIds.has(ex.id) ? "exlib__card--saved" : ""}`}
+                className={`exlib__card ${savedIds.has(ex.id) ? "exlib__card--saved" : ""}`} data-reveal
                 onClick={() => setSelectedId(ex.id)}
               >
                 <div className="exlib__img-wrap">
@@ -350,7 +355,7 @@ export default function ExerciseLibrary() {
                     handleToggleSave(ex.id, ex.name, "");
                   }}
                 >
-                  {savedIds.has(ex.id) ? "♥" : "♡"}
+                  <Icon name={savedIds.has(ex.id) ? "heart-filled" : "heart"} size={16} />
                 </button>
                 <div className="exlib__card-body">
                   <div className="exlib__card-name">{ex.name}</div>

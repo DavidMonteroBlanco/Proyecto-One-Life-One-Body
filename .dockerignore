@@ -1,0 +1,43 @@
+# Lo que NO entra en la imagen.
+#
+# Importa por dos motivos: el despliegue va más rápido, y sobre todo no
+# se cuelan secretos ni la base de datos local dentro de la imagen.
+
+# Secretos y configuración local
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Base de datos local: la del servidor se crea en el arranque
+Backend/database/*.sqlite
+Backend/database/*.sqlite-journal
+
+# Dependencias: se instalan dentro de la imagen
+**/node_modules
+Backend/vendor
+
+# Caché y registros de Laravel
+Backend/storage/logs/*
+Backend/storage/framework/cache/*
+Backend/storage/framework/sessions/*
+Backend/storage/framework/views/*
+Backend/bootstrap/cache/*
+
+# Construcciones previas del frontend
+Frontend/dist
+
+# El frontend ya construido se copia desde la etapa de node, no desde
+# el disco: si se colara una versión vieja, taparía la nueva.
+Backend/public/assets
+Backend/public/index.html
+
+# Git y herramientas
+.git
+.gitignore
+.github
+**/.vscode
+**/.idea
+
+# Notas del proyecto
+OnelifeOnebody
+*.md

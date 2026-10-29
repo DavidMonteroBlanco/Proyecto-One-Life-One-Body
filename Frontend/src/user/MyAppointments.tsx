@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
 import "./Tracking.css";
+import Icon from "../components/ui/Icon";
+import "./MyAppointments.css";
 
 type Appointment = {
   id: number; appointment_date: string; appointment_time: string;
@@ -11,11 +13,12 @@ type Appointment = {
 
 type SlotData = { date: string; slots: string[]; day_name: string };
 
-const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  pending:   { label: "Pendiente",  color: "#fbbf24", bg: "rgba(245,158,11,0.1)" },
-  confirmed: { label: "Confirmada", color: "#6ee7b7", bg: "rgba(16,185,129,0.1)" },
-  cancelled: { label: "Cancelada",  color: "#fca5a5", bg: "rgba(239,68,68,0.08)" },
-  completed: { label: "Completada", color: "#7ee8e8", bg: "rgba(126,232,232,0.1)" },
+/* Cada estado se pinta con un modificador de la insignia global */
+const STATUS_LABELS: Record<string, { label: string; variant: string }> = {
+  pending:   { label: "Pendiente",  variant: "badge--warning" },
+  confirmed: { label: "Confirmada", variant: "badge--success" },
+  cancelled: { label: "Cancelada",  variant: "badge--danger" },
+  completed: { label: "Completada", variant: "badge--brand" },
 };
 
 const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -139,7 +142,7 @@ export default function MyAppointments() {
   const past = appointments.filter(a => a.status === "completed" || a.status === "cancelled");
 
   return (
-    <div style={{ maxWidth: 700 }}>
+    <div className="appts">
       <div className="tracking-header">
         <div>
           <h1 className="tracking-title">Reservas</h1>
@@ -147,92 +150,63 @@ export default function MyAppointments() {
         </div>
         {!showBook && (
           <button className="tracking-add-btn" onClick={() => setShowBook(true)}>
-            + Reservar pesaje
+            <Icon name="plus" size={15} /> Reservar pesaje
           </button>
         )}
       </div>
 
       {msg && (
-        <div style={{
-          fontFamily: "var(--font-condensed)", fontSize: "0.85rem", fontWeight: 600,
-          padding: "0.6rem 1rem", borderRadius: 8, marginBottom: "1.5rem",
-          background: msg.type === "ok" ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)",
-          borderLeft: `3px solid ${msg.type === "ok" ? "#10b981" : "#ef4444"}`,
-          color: msg.type === "ok" ? "#6ee7b7" : "#fca5a5",
-        }}>{msg.text}</div>
+        <div className={`tracking-msg tracking-msg--${msg.type}`} role="status">{msg.text}</div>
       )}
 
-      {/* ══ BOOKING FORM ══ */}
+      {/* ══ FORMULARIO DE RESERVA ══ */}
       {showBook && (
-        <div style={{
-          background: "var(--bg-card)", border: "1px solid var(--border)",
-          borderRadius: 14, padding: "1.5rem", marginBottom: "1.5rem",
-          position: "relative", overflow: "hidden",
-        }}>
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, var(--accent), transparent)" }} />
-
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
-            <h2 style={{ fontFamily: "var(--font-condensed)", fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.06em" }}>
-              Reservar pesaje
-            </h2>
-            <button onClick={() => { setShowBook(false); setSelectedDate(""); setSlotData(null); }} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "1.1rem" }}>✕</button>
+        <div className="appts__booker">
+          <div className="appts__booker-head">
+            <h2 className="appts__booker-title">Reservar pesaje</h2>
+            <button
+              className="appts__booker-close"
+              onClick={() => { setShowBook(false); setSelectedDate(""); setSlotData(null); }}
+              aria-label="Cerrar"
+            ><Icon name="close" size={18} /></button>
           </div>
 
-          {/* ── Calendar ── */}
-          <div style={{ background: "rgba(13,21,21,0.5)", border: "1px solid var(--border)", borderRadius: 12, padding: "1rem", marginBottom: "1.2rem" }}>
-            {/* Month navigation */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem" }}>
-              <button onClick={prevMonth} disabled={!canGoPrev} style={{
-                background: "none", border: "1px solid var(--border)", borderRadius: 6,
-                color: canGoPrev ? "var(--text-primary)" : "var(--text-muted)", cursor: canGoPrev ? "pointer" : "default",
-                padding: "0.3rem 0.6rem", fontSize: "0.85rem", opacity: canGoPrev ? 1 : 0.3,
-              }}>←</button>
-              <span style={{ fontFamily: "var(--font-display)", fontSize: "1.2rem", color: "var(--text-primary)", letterSpacing: "0.06em" }}>
-                {MONTH_NAMES[calMonth]} {calYear}
-              </span>
-              <button onClick={nextMonth} style={{
-                background: "none", border: "1px solid var(--border)", borderRadius: 6,
-                color: "var(--text-primary)", cursor: "pointer", padding: "0.3rem 0.6rem", fontSize: "0.85rem",
-              }}>→</button>
+          {/* ── Calendario ── */}
+          <div className="appts__calendar">
+            <div className="appts__cal-nav">
+              <button className="appts__cal-nav-btn" onClick={prevMonth} disabled={!canGoPrev} aria-label="Mes anterior"><Icon name="chevron-left" size={16} /></button>
+              <span className="appts__cal-month">{MONTH_NAMES[calMonth]} {calYear}</span>
+              <button className="appts__cal-nav-btn" onClick={nextMonth} aria-label="Mes siguiente"><Icon name="chevron-right" size={16} /></button>
             </div>
 
-            {/* Day headers */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: "0.3rem" }}>
+            <div className="appts__cal-headers" aria-hidden="true">
               {DAY_HEADERS.map(d => (
-                <div key={d} style={{
-                  textAlign: "center", fontFamily: "var(--font-condensed)", fontSize: "0.65rem",
-                  fontWeight: 700, letterSpacing: "0.12em", color: "var(--text-muted)", padding: "0.3rem 0",
-                }}>{d}</div>
+                <div key={d} className="appts__cal-header">{d}</div>
               ))}
             </div>
 
-            {/* Calendar grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+            <div className="appts__cal-grid">
               {calendarDays.map((day, i) => {
                 if (!day) return <div key={`empty-${i}`} />;
 
                 const dateStr = toDateStr(day);
-                const isWorkday = isWeekday(day);
-                const isFuture = isFutureOrToday(day);
-                const isSelectable = isWorkday && isFuture;
+                const isSelectable = isWeekday(day) && isFutureOrToday(day);
                 const isSelected = dateStr === selectedDate;
                 const isToday = dateStr === toDateStr(new Date());
+
+                const classes = [
+                  "appts__day",
+                  isToday ? "appts__day--today" : "",
+                  isSelected ? "appts__day--selected" : "",
+                ].filter(Boolean).join(" ");
 
                 return (
                   <button
                     key={dateStr}
-                    onClick={() => isSelectable ? loadSlots(dateStr) : null}
+                    className={classes}
+                    onClick={() => loadSlots(dateStr)}
                     disabled={!isSelectable}
-                    style={{
-                      padding: "0.45rem 0", borderRadius: 8, border: "none",
-                      fontFamily: "var(--font-condensed)", fontSize: "0.82rem", fontWeight: 600,
-                      cursor: isSelectable ? "pointer" : "default",
-                      background: isSelected ? "var(--primary)" : isToday ? "rgba(126,232,232,0.1)" : "transparent",
-                      color: isSelected ? "var(--bg-deep)" : !isSelectable ? "var(--text-muted)" : "var(--text-primary)",
-                      opacity: !isSelectable ? 0.25 : 1,
-                      transition: "all 0.15s",
-                      outline: isToday && !isSelected ? "1px solid rgba(126,232,232,0.3)" : "none",
-                    }}
+                    aria-pressed={isSelected}
                   >
                     {day.getDate()}
                   </button>
@@ -240,38 +214,35 @@ export default function MyAppointments() {
               })}
             </div>
 
-            <div style={{ marginTop: "0.6rem", display: "flex", gap: "1rem", justifyContent: "center" }}>
-              <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontFamily: "var(--font-condensed)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", border: "1px solid rgba(126,232,232,0.3)", display: "inline-block" }} /> Hoy
+            <div className="appts__cal-legend">
+              <span className="appts__legend-item">
+                <span className="appts__legend-dot appts__legend-dot--today" /> Hoy
               </span>
-              <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontFamily: "var(--font-condensed)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--primary)", display: "inline-block" }} /> Seleccionado
+              <span className="appts__legend-item">
+                <span className="appts__legend-dot appts__legend-dot--selected" /> Seleccionado
               </span>
             </div>
           </div>
 
-          {/* Time slots */}
+          {/* ── Horarios ── */}
           {selectedDate && (
             <>
-              <p style={{ fontFamily: "var(--font-condensed)", fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+              <p className="appts__slots-label">
                 {slotData?.day_name || ""} {new Date(selectedDate).getDate()} — Horarios disponibles
               </p>
               {slotsLoading ? (
-                <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Cargando horarios...</p>
+                <p className="appts__hint">Cargando horarios...</p>
               ) : slotData && slotData.slots.length === 0 ? (
-                <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>No hay horarios disponibles para este dia.</p>
+                <p className="appts__hint">No hay horarios disponibles para este día.</p>
               ) : (
-                <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginBottom: "1.2rem" }}>
+                <div className="appts__slots">
                   {slotData?.slots.map(s => (
-                    <button key={s} onClick={() => setSelectedTime(s)}
-                      style={{
-                        padding: "0.45rem 0.7rem", borderRadius: 6, cursor: "pointer",
-                        fontFamily: "var(--font-condensed)", fontSize: "0.82rem", fontWeight: 700,
-                        border: selectedTime === s ? "1px solid var(--primary)" : "1px solid var(--border)",
-                        background: selectedTime === s ? "rgba(126,232,232,0.15)" : "rgba(13,21,21,0.5)",
-                        color: selectedTime === s ? "var(--primary)" : "var(--text-secondary)",
-                        transition: "all 0.15s",
-                      }}>
+                    <button
+                      key={s}
+                      className={`appts__slot ${selectedTime === s ? "appts__slot--active" : ""}`}
+                      onClick={() => setSelectedTime(s)}
+                      aria-pressed={selectedTime === s}
+                    >
                       {s}
                     </button>
                   ))}
@@ -280,28 +251,25 @@ export default function MyAppointments() {
             </>
           )}
 
-          {/* Notes + Submit */}
+          {/* ── Notas y confirmación ── */}
           {selectedTime && (
             <>
-              <div style={{ marginBottom: "1rem" }}>
-                <label style={{ fontFamily: "var(--font-condensed)", fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase" as const, color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>
-                  Notas (opcional)
-                </label>
-                <input type="text" value={bookNotes} onChange={e => setBookNotes(e.target.value)} placeholder="Ej: vengo en ayunas..."
-                  style={{ width: "100%", background: "rgba(13,21,21,0.85)", border: "1px solid var(--border)", color: "var(--text-primary)", fontFamily: "var(--font-body)", fontSize: "0.85rem", padding: "0.55rem 0.8rem", borderRadius: 8, outline: "none" }} />
+              <div className="appts__notes">
+                <label htmlFor="book-notes">Notas (opcional)</label>
+                <input
+                  id="book-notes"
+                  type="text"
+                  value={bookNotes}
+                  onChange={e => setBookNotes(e.target.value)}
+                  placeholder="Ej: vengo en ayunas..."
+                />
               </div>
 
-              <div style={{ display: "flex", gap: "0.8rem", alignItems: "center" }}>
-                <button onClick={handleBook} disabled={booking}
-                  style={{
-                    padding: "0.65rem 1.4rem", background: "var(--primary)", color: "var(--bg-deep)",
-                    fontFamily: "var(--font-condensed)", fontSize: "0.85rem", fontWeight: 700,
-                    letterSpacing: "0.1em", textTransform: "uppercase" as const, border: "none", borderRadius: 8,
-                    cursor: booking ? "not-allowed" : "pointer", opacity: booking ? 0.5 : 1,
-                  }}>
+              <div className="appts__confirm">
+                <button className="tracking-submit-btn" onClick={handleBook} disabled={booking}>
                   {booking ? "Reservando..." : "Confirmar reserva"}
                 </button>
-                <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                <span className="appts__confirm-meta">
                   {formatDateLong(selectedDate)} a las {selectedTime}
                 </span>
               </div>
@@ -310,40 +278,34 @@ export default function MyAppointments() {
         </div>
       )}
 
-      {/* ══ UPCOMING ══ */}
+      {/* ══ LISTADOS ══ */}
       {loading ? (
-        <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-muted)", fontFamily: "var(--font-condensed)" }}>Cargando...</div>
+        <div className="route-loader" role="status" aria-live="polite">
+          <span className="spinner" aria-hidden="true" /> Cargando...
+        </div>
       ) : upcoming.length === 0 && past.length === 0 && !showBook ? (
-        <div style={{ textAlign: "center", padding: "4rem 2rem", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16 }}>
-          <span style={{ fontSize: "3rem", opacity: 0.3, display: "block", marginBottom: "1rem" }}>📅</span>
-          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.8rem", color: "var(--text-primary)", letterSpacing: "0.04em", marginBottom: "0.5rem" }}>Sin reservas</h2>
-          <p style={{ fontSize: "0.95rem", color: "var(--text-secondary)", maxWidth: 400, margin: "0 auto", lineHeight: 1.6 }}>
-            Reserva tu pesaje semanal para que tu entrenador te espere en el centro.
-          </p>
+        <div className="empty-state">
+          <span className="empty-state__icon"><Icon name="calendar" size={44} strokeWidth={1.2} /></span>
+          <h2 className="empty-state__title">Sin reservas</h2>
+          <p>Reserva tu pesaje semanal para que tu entrenador te espere en el centro.</p>
         </div>
       ) : (
         <>
           {upcoming.length > 0 && (
-            <div style={{ marginBottom: "2rem" }}>
-              <h2 style={{ fontFamily: "var(--font-condensed)", fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.06em", marginBottom: "0.8rem" }}>
-                Proximas reservas
-              </h2>
+            <div className="appts__section">
+              <h2 className="appts__section-title">Próximas reservas</h2>
               {upcoming.map(a => {
                 const st = STATUS_LABELS[a.status] || STATUS_LABELS.pending;
                 return (
-                  <div key={a.id} style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1rem", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12, marginBottom: "0.6rem" }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: "var(--font-condensed)", fontSize: "0.95rem", fontWeight: 700, color: "var(--text-primary)" }}>
-                        {formatDateLong(a.appointment_date)}
-                      </div>
-                      <div style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", color: "var(--primary)", marginTop: "0.1rem" }}>
-                        {a.appointment_time.substring(0, 5)}
-                      </div>
-                      {a.notes && <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.3rem" }}>{a.notes}</div>}
+                  <div key={a.id} className="appts__card">
+                    <div className="appts__card-info">
+                      <div className="appts__card-date">{formatDateLong(a.appointment_date)}</div>
+                      <div className="appts__card-time">{a.appointment_time.substring(0, 5)}</div>
+                      {a.notes && <div className="appts__card-notes">{a.notes}</div>}
                     </div>
-                    <span style={{ fontFamily: "var(--font-condensed)", fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.12em", padding: "0.2rem 0.6rem", borderRadius: 4, background: st.bg, color: st.color }}>{st.label}</span>
+                    <span className={`badge ${st.variant}`}>{st.label}</span>
                     {(a.status === "pending" || a.status === "confirmed") && (
-                      <button onClick={() => handleCancel(a.id)} style={{ background: "none", border: "1px solid rgba(239,68,68,0.15)", borderRadius: 6, color: "#fca5a5", cursor: "pointer", padding: "0.3rem 0.6rem", fontSize: "0.72rem", fontFamily: "var(--font-condensed)", fontWeight: 700 }}>Cancelar</button>
+                      <button className="appts__cancel" onClick={() => handleCancel(a.id)}>Cancelar</button>
                     )}
                   </div>
                 );
@@ -352,17 +314,15 @@ export default function MyAppointments() {
           )}
 
           {past.length > 0 && (
-            <div>
-              <h2 style={{ fontFamily: "var(--font-condensed)", fontSize: "0.9rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.06em", marginBottom: "0.8rem" }}>
-                Historial
-              </h2>
+            <div className="appts__section">
+              <h2 className="appts__section-title appts__section-title--muted">Historial</h2>
               {past.map(a => {
                 const st = STATUS_LABELS[a.status] || STATUS_LABELS.cancelled;
                 return (
-                  <div key={a.id} style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "0.8rem 1rem", borderBottom: "1px solid rgba(126,232,232,0.04)" }}>
-                    <span style={{ fontFamily: "var(--font-condensed)", fontSize: "0.82rem", color: "var(--text-secondary)", minWidth: 140 }}>{formatDateLong(a.appointment_date)}</span>
-                    <span style={{ fontFamily: "var(--font-display)", fontSize: "1rem", color: "var(--text-muted)" }}>{a.appointment_time.substring(0, 5)}</span>
-                    <span style={{ marginLeft: "auto", fontFamily: "var(--font-condensed)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.12em", padding: "0.15rem 0.5rem", borderRadius: 4, background: st.bg, color: st.color }}>{st.label}</span>
+                  <div key={a.id} className="appts__history-row">
+                    <span className="appts__history-date">{formatDateLong(a.appointment_date)}</span>
+                    <span className="appts__history-time">{a.appointment_time.substring(0, 5)}</span>
+                    <span className={`badge ${st.variant}`}>{st.label}</span>
                   </div>
                 );
               })}

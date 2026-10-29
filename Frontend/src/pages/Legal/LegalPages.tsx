@@ -1,6 +1,7 @@
 // src/pages/Legal/LegalPages.tsx
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import Icon from "../../components/ui/Icon";
 import "./LegalPages.css";
 import React from "react";
 
@@ -19,11 +20,11 @@ export default function LegalPages() {
   const { page } = useParams<{ page: string }>();
   const p = PAGES[page || ""];
   useEffect(() => { window.scrollTo(0, 0); }, [page]);
-  if (!p) return <div className="legal"><div className="legal__container"><h1 className="legal__title">No encontrada</h1><Link to="/" className="btn-primary" style={{ marginTop: "2rem" }}>Volver</Link></div></div>;
+  if (!p) return <div className="legal"><div className="legal__container"><h1 className="legal__title">No encontrada</h1><Link to="/" className="btn-primary legal__back">Volver</Link></div></div>;
   const C = p.c;
   return (
     <div className="legal">
-      <div className="legal__container"><C /><div className="legal__footer"><Link to="/" className="btn-ghost">← Volver a la web</Link><div className="legal__footer-links"><Link to="/legal/privacidad">Privacidad</Link><Link to="/legal/aviso-legal">Aviso legal</Link><Link to="/legal/cookies">Cookies</Link></div></div></div>
+      <div className="legal__container"><C /><div className="legal__footer"><Link to="/" className="btn-ghost"><Icon name="arrow-left" size={15} /> Volver a la web</Link><div className="legal__footer-links"><Link to="/legal/privacidad">Privacidad</Link><Link to="/legal/aviso-legal">Aviso legal</Link><Link to="/legal/cookies">Cookies</Link></div></div></div>
     </div>
   );
 }

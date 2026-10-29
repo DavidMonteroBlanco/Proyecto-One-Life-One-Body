@@ -5,10 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\DietPlan;
 use App\Models\DietMeal;
+use App\Services\Entregas;
 use Illuminate\Http\Request;
 
 class AdminDietController extends Controller
 {
+    public function __construct(
+        private Entregas $entregas,
+    ) {}
+
     /**
      * Listar usuarios con su dieta activa (eager loading).
      */
@@ -152,5 +157,37 @@ class AdminDietController extends Controller
             'message' => $dietPlan->active ? 'Dieta activada.' : 'Dieta desactivada.',
             'active'  => $dietPlan->active,
         ]);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // PDF Y ENVÍO AL CLIENTE
+    // ══════════════════════════════════════════════════════════
+
+    /** Descarga el plan en PDF para revisarlo antes de enviarlo. */
+    public function exportPdf(DietPlan $dietPlan)
+    {
+        [$pdf, $nombre] = $this->entregas->pdfDieta($dietPlan);
+
+        return $pdf->download($nombre);
+    }
+
+    /**
+     * Envía el plan al cliente: email con el PDF y aviso dentro de la web.
+     *
+     * Siempre a UNA persona, la dueña del plan, y a mano. No hay envío
+     * masivo a propósito: son datos de salud y un error multiplicado por
+     * toda la cartera no tiene vuelta atrás.
+     *
+     * Toda la lógica vive en el servicio Entregas, que es también quien
+     * registra la incidencia si el correo no sale.
+     */
+    public function sendPlan(Request $request, DietPlan $dietPlan)
+    {
+        $resultado = $this->entregas->dieta($dietPlan, $request->user()?->id);
+
+        return response()->json([
+            'message' => $resultado['message'],
+            'sent_at' => $dietPlan->fresh()->sent_at,
+        ], $resultado['ok'] ? 200 : 502);
     }
 }

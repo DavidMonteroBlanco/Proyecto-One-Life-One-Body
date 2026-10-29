@@ -1,65 +1,33 @@
-import { useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Sphere, MeshDistortMaterial, Float, Stars } from "@react-three/drei";
-import { motion } from "framer-motion";
-import type { Variants } from "framer-motion";
-import * as THREE from "three";
-import { useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, lazy, Suspense } from "react";
 import api from "../../services/api";
+import Icon from "../../components/ui/Icon";
+import type { IconName } from "../../components/ui/Icon";
+import Counter from "../../components/ui/Counter";
+import { useReveal } from "../../lib/motion";
 import gymPhoto from "../../assets/icons/gym-hero.jpeg";
 import logoImg from "../../assets/icons/logo-bw.jpg";
 import "./Home.css";
 
-/* ── FIGURA 3D ── */
-function HeroBody() {
-  const meshRef = useRef<THREE.Mesh>(null);
-  useFrame(({ clock }) => {
-    if (!meshRef.current) return;
-    meshRef.current.rotation.y = clock.getElapsedTime() * 0.18;
-    meshRef.current.rotation.x = Math.sin(clock.getElapsedTime() * 0.3) * 0.08;
-  });
-  return (
-    <Float speed={1.6} rotationIntensity={0.3} floatIntensity={0.6}>
-      <mesh ref={meshRef}>
-        <Sphere args={[1.5, 128, 128]}>
-          <MeshDistortMaterial
-            color="#1a9e9e"
-            emissive="#0d5555"
-            emissiveIntensity={0.6}
-            distort={0.38}
-            speed={1.8}
-            roughness={0.1}
-            metalness={0.7}
-          />
-        </Sphere>
-      </mesh>
-      <mesh rotation={[Math.PI / 2.5, 0, 0]}>
-        <torusGeometry args={[2.2, 0.018, 16, 120]} />
-        <meshBasicMaterial color="#7ee8e8" transparent opacity={0.35} />
-      </mesh>
-      <mesh rotation={[Math.PI / 1.8, 0.4, 0]}>
-        <torusGeometry args={[2.6, 0.01, 16, 120]} />
-        <meshBasicMaterial color="#7ee8e8" transparent opacity={0.15} />
-      </mesh>
-      {Array.from({ length: 6 }).map((_, i) => {
-        const angle = (i / 6) * Math.PI * 2;
-        return (
-          <mesh key={i} position={[Math.cos(angle) * 2.2, Math.sin(angle * 0.5) * 0.6, Math.sin(angle) * 2.2]}>
-            <sphereGeometry args={[0.04, 8, 8]} />
-            <meshBasicMaterial color="#7ee8e8" />
-          </mesh>
-        );
-      })}
-    </Float>
-  );
-}
+// El fondo del hero —el pitbull hecho de partículas— va en un chunk
+// aparte para que el titular se pinte sin esperarlo.
+const HeroDogParticles = lazy(() => import("./HeroDogParticles"));
 
 /* ── DATOS ── */
 const services = [
-  { icon: "◎", title: "Entrenamiento Personal", desc: "Sesiones presenciales adaptadas a tu cuerpo y tus metas. Sin plantillas genéricas, sin excusas.", tag: "Presencial" },
-  { icon: "▣", title: "Control de Peso", desc: "Seguimiento semanal con registro histórico. Tus datos, tus gráficas, tu evolución real en la app.", tag: "App incluida" },
-  { icon: "◈", title: "Entrenos Online", desc: "Rutinas de David desde cualquier lugar. Vídeos, progresión y seguimiento directo.", tag: "Digital" },
-  { icon: "◉", title: "Plan 360°", desc: "Entrenamiento + nutrición + seguimiento + comunidad. La experiencia completa.", tag: "Premium" },
+  { icon: "dumbbell" as IconName, title: "Entrenamiento personal", desc: "Sesiones presenciales adaptadas a tu cuerpo y tus metas. Sin plantillas genéricas, sin excusas.", tag: "Presencial" },
+  { icon: "scale" as IconName, title: "Control de peso", desc: "Seguimiento semanal con registro histórico. Tus datos, tus gráficas, tu evolución real en la app.", tag: "App incluida" },
+  { icon: "monitor" as IconName, title: "Entrenos online", desc: "Rutinas de David desde cualquier lugar. Vídeos, progresión y seguimiento directo.", tag: "Digital" },
+  { icon: "target" as IconName, title: "Plan 360°", desc: "Entrenamiento + nutrición + seguimiento + comunidad. La experiencia completa.", tag: "Premium" },
+];
+
+/* Frases de la cinta que recorre la portada en bucle */
+const CLAIMS = [
+  "Entrenamiento personal",
+  "Seguimiento real",
+  "Benidorm",
+  "Nutrición a medida",
+  "+200 transformaciones",
+  "Sin humo",
 ];
 
 const testimonials = [
@@ -67,14 +35,6 @@ const testimonials = [
   { name: "Alejandro R.", result: "+12 kg de músculo", text: "Vine sin saber nada de gym y ahora no concibo mi semana sin entrenar. Los entrenos online me salvan cuando viajo." },
   { name: "Lucía M.", result: "Composición corporal ideal", text: "Ver mi historial de pesajes con gráficas me motivó más que cualquier otra cosa. Resultados reales, sin humo." },
 ];
-
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: (i = 0) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.12, duration: 0.65, ease: "easeOut" },
-  }),
-};
 
 /* ── CHATBOT COMPONENT ── */
 type ChatMsg = { role: "user" | "bot"; text: string };
@@ -170,7 +130,7 @@ function ChatBot() {
           onClick={handleSend}
           disabled={loading || !input.trim()}
         >
-          {loading ? "..." : "→"}
+          {loading ? <span className="spinner" /> : <Icon name="send" size={16} />}
         </button>
       </div>
     </>
@@ -208,7 +168,7 @@ function FloatingChat() {
         aria-label={open ? "Cerrar chat" : "Abrir asistente"}
       >
         <span className={`floating-chat__icon ${open ? "floating-chat__icon--close" : ""}`}>
-          {open ? "✕" : "💬"}
+          {open ? <Icon name="close" size={22} /> : <Icon name="chat" size={22} />}
         </span>
         {!open && !hasOpened && (
           <span className="floating-chat__tooltip">¿Necesitas ayuda?</span>
@@ -220,51 +180,45 @@ function FloatingChat() {
 
 /* ── COMPONENTE ── */
 export default function Home() {
+  useReveal();
+
   return (
     <div className="home">
 
       {/* ══ HERO ══ */}
       <section className="hero">
-        <div className="hero__canvas">
-          <Canvas camera={{ position: [0, 0, 5.5], fov: 50 }} dpr={[1, 2]}>
-            <ambientLight intensity={0.3} />
-            <pointLight position={[4, 4, 4]} intensity={2.5} color="#7ee8e8" />
-            <pointLight position={[-4, -2, -4]} intensity={1} color="#1a9e9e" />
-            <Stars radius={80} depth={50} count={2000} factor={3} saturation={0} fade speed={0.6} />
-            <HeroBody />
-            <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.4}
-              maxPolarAngle={Math.PI / 1.6} minPolarAngle={Math.PI / 3} />
-          </Canvas>
+        <div className="hero__canvas" aria-hidden="true">
+          <Suspense fallback={null}>
+            <HeroDogParticles />
+          </Suspense>
         </div>
 
-        <div className="hero__content container">
-          <motion.p className="section-label" variants={fadeUp} initial="hidden" animate="visible" custom={0}>
+        <div className="hero__inner container">
+        <div className="hero__content">
+          <p className="section-label rise" >
             Fitness Center · Benidorm, Alicante
-          </motion.p>
-          <motion.h1 className="hero__title" variants={fadeUp} initial="hidden" animate="visible" custom={1}>
+          </p>
+          <h1 className="hero__title rise rise--1" >
             ONE LIFE<br /><span className="hero__title--accent">ONE BODY</span>
-          </motion.h1>
-          <motion.p className="hero__sub" variants={fadeUp} initial="hidden" animate="visible" custom={2}>
+          </h1>
+          <p className="hero__sub rise rise--2" >
             Tienes un solo cuerpo.<br />Entrénalo como merece.
-          </motion.p>
-          <motion.div className="hero__ctas" variants={fadeUp} initial="hidden" animate="visible" custom={3}>
+          </p>
+          <div className="hero__ctas rise rise--3" >
             <a href="#servicios" className="btn-primary">Ver servicios</a>
             <a href="#contacto" className="btn-ghost">Habla con David</a>
-          </motion.div>
+          </div>
           {/* Instagram badge */}
-          <motion.a
+          <a
             href="https://www.instagram.com/one.life.one.body.benidorm/"
             target="_blank" rel="noreferrer"
-            className="hero__ig-badge"
-            variants={fadeUp} initial="hidden" animate="visible" custom={4}
+            className="hero__ig-badge rise rise--4"
+            
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-              <circle cx="12" cy="12" r="4"/>
-              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-            </svg>
+            <Icon name="instagram" size={16} />
             @one.life.one.body.benidorm
-          </motion.a>
+          </a>
+        </div>
         </div>
 
         <div className="hero__scroll"><span /></div>
@@ -272,10 +226,10 @@ export default function Home() {
 
       {/* ══ FRANJA STATS ══ */}
       <section className="stats-bar">
-        <div className="container stats-bar__inner">
+        <div className="container stats-bar__inner stagger">
           {[["+200", "Clientes transformados"], ["5+", "Años de experiencia"], ["98%", "Tasa de adherencia"], ["Benidorm", "Alicante"]].map(([n, l]) => (
-            <div key={l} className="stats-bar__item">
-              <span className="stats-bar__num">{n}</span>
+            <div key={l} className="stats-bar__item" data-reveal>
+              <Counter value={n} className="stats-bar__num" />
               <span className="stats-bar__label">{l}</span>
             </div>
           ))}
@@ -285,7 +239,7 @@ export default function Home() {
       {/* ══ MÉTODO ══ */}
       <section className="section-metodo" id="metodo">
         <div className="container metodo__inner">
-          <motion.div className="metodo__text" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+          <div className="metodo__text" data-reveal>
             <p className="section-label">Método</p>
             <h2 className="section-title">No es un gym.<br />Es un sistema.</h2>
             <div className="cyan-line" />
@@ -303,45 +257,63 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Foto real del gimnasio */}
-          <motion.div
-            className="metodo__photo-wrap"
-            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1}
+          <div
+            className="metodo__photo-wrap parallax"
+            data-reveal
           >
             <img src={gymPhoto} alt="One Life One Body Benidorm" className="metodo__photo" />
             <div className="metodo__photo-badge">
               <span className="metodo__photo-badge-text">QUE COMIENCE EL JUEGO</span>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* ══ SERVICIOS ══ */}
       <section className="section-servicios" id="servicios">
         <div className="container">
-          <motion.div className="section-header" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+          <div className="section-header" data-reveal>
             <p className="section-label">Servicios</p>
             <h2 className="section-title">Elige tu camino</h2>
             <div className="cyan-line" />
-          </motion.div>
-          <div className="servicios__grid">
-            {services.map((s, i) => (
-              <motion.div key={s.title} className="servicio-card"
-                variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} custom={i}>
-                <div className="servicio-card__icon">{s.icon}</div>
+          </div>
+          <div className="servicios__grid stagger">
+            {services.map((s) => (
+              <div key={s.title} className="servicio-card"
+                data-reveal>
+                <div className="servicio-card__icon"><Icon name={s.icon} size={26} /></div>
                 <span className="servicio-card__tag">{s.tag}</span>
                 <h3 className="servicio-card__title">{s.title}</h3>
                 <p className="servicio-card__desc">{s.desc}</p>
-                <a href="#contacto" className="servicio-card__link">Más info <span>→</span></a>
-              </motion.div>
+                <a href="#contacto" className="servicio-card__link">Más info <Icon name="arrow-right" size={15} /></a>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* ══ BANNER INSTAGRAM ══ */}
+      {/* ══ CINTA ══ */}
+      <section className="claim-band" aria-hidden="true">
+        <div className="marquee">
+          {/* Dos copias idénticas: cuando la primera termina de salir,
+              la segunda ya está en su sitio y el bucle no da el salto. */}
+          {[0, 1].map((copy) => (
+            <div className="marquee__track" key={copy}>
+              {CLAIMS.map((claim) => (
+                <span className="claim-band__item" key={claim}>
+                  {claim}
+                  <span className="claim-band__dot" />
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="ig-banner">
         <div className="container ig-banner__inner">
           <div className="ig-banner__text">
@@ -353,11 +325,7 @@ export default function Home() {
             target="_blank" rel="noreferrer"
             className="ig-banner__btn"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-              <circle cx="12" cy="12" r="4"/>
-              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-            </svg>
+            <Icon name="instagram" size={22} />
             Seguir en Instagram
           </a>
         </div>
@@ -367,8 +335,8 @@ export default function Home() {
       <section className="section-entrenos" id="entrenos">
         <div className="container">
           <div className="onelife-promo">
-            <motion.div className="onelife-promo__content"
-              variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+            <div className="onelife-promo__content"
+              data-reveal>
               <p className="section-label">Método</p>
               <h2 className="onelife-promo__title">METODO<br /><span>ONE LIFE</span></h2>
               <p className="onelife-promo__desc">
@@ -384,13 +352,13 @@ export default function Home() {
                 <a href="/entrenos-online" className="btn-primary">Descubrir método</a>
                 <a href="/entrenos-online#suplementos" className="btn-ghost">Ver suplementos</a>
               </div>
-            </motion.div>
-            <motion.div className="onelife-promo__visual"
-              variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1}>
+            </div>
+            <div className="onelife-promo__visual"
+              data-reveal>
               <div className="onelife-promo__card">
                 <div className="onelife-promo__card-glow" />
                 <span className="onelife-promo__card-badge">ONLINE</span>
-                <div className="onelife-promo__card-icon">⚡</div>
+                <div className="onelife-promo__card-icon"><Icon name="bolt" size={30} /></div>
                 <h3>Entrena donde quieras</h3>
                 <p>Sin horarios. Sin excusas.<br />Solo resultados.</p>
               </div>
@@ -402,7 +370,7 @@ export default function Home() {
                   <span className="onelife-promo__biotech-code">Código: DAVIDS15</span>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -410,15 +378,15 @@ export default function Home() {
       {/* ══ TESTIMONIOS ══ */}
       <section className="section-testimonios" id="testimonios">
         <div className="container">
-          <motion.div className="section-header" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+          <div className="section-header" data-reveal>
             <p className="section-label">Resultados reales</p>
             <h2 className="section-title">Lo dicen ellos</h2>
             <div className="cyan-line" />
-          </motion.div>
-          <div className="testimonios__grid">
-            {testimonials.map((t, i) => (
-              <motion.div key={t.name} className="testimonio-card"
-                variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} custom={i}>
+          </div>
+          <div className="testimonios__grid stagger">
+            {testimonials.map((t) => (
+              <div key={t.name} className="testimonio-card"
+                data-reveal>
                 <p className="testimonio-card__text">"{t.text}"</p>
                 <div className="testimonio-card__footer">
                   <div className="testimonio-card__avatar">{t.name[0]}</div>
@@ -427,7 +395,7 @@ export default function Home() {
                     <span className="testimonio-card__result">{t.result}</span>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -436,7 +404,7 @@ export default function Home() {
       {/* ══ CONTACTO ══ */}
       <section className="section-contacto" id="contacto">
         <div className="container contacto__inner contacto__inner--centered">
-          <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+          <div data-reveal>
             <p className="section-label">Contacto</p>
             <h2 className="section-title">Empieza hoy</h2>
             <div className="cyan-line" />
@@ -448,7 +416,7 @@ export default function Home() {
               <a href="https://wa.me/34631986391?text=Hola%20Muky!%20Me%20interesa%20información%20sobre%20One%20Life%20One%20Body"
                 target="_blank" rel="noreferrer" className="contacto__wa-card">
                 <span className="contacto__wa-icon">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                  <Icon name="whatsapp" size={22} />
                 </span>
                 <div className="contacto__wa-info">
                   <strong>Muky</strong>
@@ -459,7 +427,7 @@ export default function Home() {
               <a href="https://wa.me/34601387263?text=Hola%20Dabuky!%20Me%20interesa%20información%20sobre%20One%20Life%20One%20Body"
                 target="_blank" rel="noreferrer" className="contacto__wa-card">
                 <span className="contacto__wa-icon">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                  <Icon name="whatsapp" size={22} />
                 </span>
                 <div className="contacto__wa-info">
                   <strong>Dabuky</strong>
@@ -474,7 +442,7 @@ export default function Home() {
               </a>
               <a href="mailto:info@onelifeonebody.es" className="btn-ghost">Enviar email</a>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -483,7 +451,7 @@ export default function Home() {
         <div className="map-section__header container">
           <span className="map-section__label">Encuéntranos</span>
           <h2 className="map-section__title">DÓNDE ESTAMOS</h2>
-          <p className="map-section__address">📍 C/ de Goya, 37, BAJO · 03502 Benidorm, Alicante</p>
+          <p className="map-section__address"><Icon name="pin" size={15} /> C/ de Goya, 37, BAJO · 03502 Benidorm, Alicante</p>
         </div>
         <div className="map-section__embed-wrap">
           <iframe
@@ -513,14 +481,10 @@ export default function Home() {
           <div className="footer__social">
             <span className="footer__nav-title">Síguenos</span>
             <a href="https://www.instagram.com/one.life.one.body.benidorm/" target="_blank" rel="noreferrer" className="footer__ig-btn">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                <circle cx="12" cy="12" r="4"/>
-                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-              </svg>
+              <Icon name="instagram" size={18} />
               @one.life.one.body.benidorm
             </a>
-            <p className="footer__location">📍 Benidorm, Alicante</p>
+            <p className="footer__location"><Icon name="pin" size={14} /> Benidorm, Alicante</p>
           </div>
         </div>
         <div className="container footer__bottom">

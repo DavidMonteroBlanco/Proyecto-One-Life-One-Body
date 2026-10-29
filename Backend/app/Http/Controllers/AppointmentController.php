@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\WeighingAppointment;
 use App\Mail\AppointmentNotificationMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class AppointmentController extends Controller
@@ -97,17 +98,28 @@ class AppointmentController extends Controller
             'status'           => 'pending',
         ]);
 
-        // Enviar email de notificación a los entrenadores
-        try {
-            $trainers = [
-                'pepesargento49@gmail.com', // Cambia por el email real de Muky/Dabuky
-            ];
-
-            foreach ($trainers as $email) {
+        /*
+         * Aviso al gimnasio de que hay una reserva nueva.
+         *
+         * La dirección sale de OLOB_MAIL_AVISOS en el .env. Antes había
+         * un correo personal escrito dentro del código con un comentario
+         * de "cambiar por el real": los avisos de todas las reservas
+         * estaban yendo a esa cuenta.
+         *
+         * Admite varias direcciones separadas por comas. Si se deja
+         * vacía, simplemente no se avisa a nadie.
+         */
+        foreach ($this->destinatariosDeAvisos() as $email) {
+            try {
                 Mail::to($email)->send(new AppointmentNotificationMail($appointment, $user));
+            } catch (\Throwable $e) {
+                // La reserva del cliente ya está hecha y es lo que importa:
+                // un fallo al avisar al gym no debe tumbar la petición.
+                Log::warning('No se pudo avisar de la reserva', [
+                    'appointment' => $appointment->id,
+                    'error'       => $e->getMessage(),
+                ]);
             }
-        } catch (\Exception $e) {
-            \Log::warning('Error enviando notificación de cita: ' . $e->getMessage());
         }
 
         return response()->json([
@@ -161,6 +173,22 @@ class AppointmentController extends Controller
             'message' => 'Estado actualizado.',
             'appointment' => $appointment->load('user:id,name,email'),
         ]);
+    }
+
+    /**
+     * Direcciones a las que avisar de la actividad del centro.
+     * Se configuran en el .env con OLOB_MAIL_AVISOS, separadas por comas.
+     *
+     * @return string[]
+     */
+    private function destinatariosDeAvisos(): array
+    {
+        $crudo = (string) config('olob.avisos');
+
+        return array_values(array_filter(
+            array_map('trim', explode(',', $crudo)),
+            fn ($email) => filter_var($email, FILTER_VALIDATE_EMAIL) !== false
+        ));
     }
 
     private static function dayName(string $date): string

@@ -1,0 +1,319 @@
+/* ══════════════════════════════════════════════════════════
+   MIS RESERVAS — calendario de pesajes
+   ══════════════════════════════════════════════════════════ */
+
+.appts { max-width: 700px; }
+
+/* ══ RESERVAR ══ */
+
+.appts__booker {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-5);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}
+.appts__booker::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--brand-500), transparent);
+}
+
+.appts__booker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+}
+.appts__booker-title {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text-1);
+}
+.appts__booker-close {
+  font-size: var(--fs-xl);
+  line-height: 1;
+  color: var(--text-3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.appts__booker-close:hover { color: var(--danger); }
+
+/* ── Calendario ── */
+.appts__calendar {
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.appts__cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.appts__cal-nav-btn {
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-md);
+  color: var(--text-1);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.appts__cal-nav-btn:hover:not(:disabled) { color: var(--brand-400); border-color: var(--border-brand); }
+.appts__cal-nav-btn:disabled { color: var(--text-4); opacity: 0.3; cursor: default; }
+
+.appts__cal-month {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-1);
+}
+
+.appts__cal-headers,
+.appts__cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.appts__cal-headers { margin-bottom: var(--sp-1); }
+.appts__cal-header {
+  padding-block: var(--sp-1);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--ls-wider);
+  text-align: center;
+  color: var(--text-3);
+}
+
+.appts__day {
+  padding-block: var(--sp-2);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text-1);
+  background: transparent;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.appts__day:hover:not(:disabled) { background: var(--surface-3); }
+.appts__day:disabled {
+  color: var(--text-4);
+  opacity: 0.25;
+  cursor: default;
+}
+.appts__day--today {
+  background: var(--accent-glow);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+.appts__day--selected,
+.appts__day--selected:hover {
+  color: var(--text-on-brand);
+  background: var(--brand-400);
+  box-shadow: none;
+}
+
+.appts__cal-legend {
+  display: flex;
+  justify-content: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-3);
+}
+.appts__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
+}
+.appts__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-full);
+}
+.appts__legend-dot--today { border: 1px solid var(--border-strong); }
+.appts__legend-dot--selected { background: var(--brand-400); }
+
+/* ── Horarios ── */
+.appts__slots-label {
+  margin-bottom: var(--sp-2);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.appts__hint {
+  font-size: var(--fs-md);
+  color: var(--text-3);
+}
+.appts__slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+}
+.appts__slot {
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--text-2);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.appts__slot:hover { border-color: var(--border-strong); color: var(--text-1); }
+.appts__slot--active {
+  color: var(--brand-400);
+  background: var(--accent-glow);
+  border-color: var(--border-brand);
+}
+
+/* ── Notas y confirmación ── */
+.appts__notes { margin-bottom: var(--sp-4); }
+.appts__notes label {
+  display: block;
+  margin-bottom: var(--sp-1);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.appts__notes input {
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  color: var(--text-1);
+  background: var(--surface-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.appts__notes input:focus { border-color: var(--border-brand); }
+
+.appts__confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.appts__confirm-meta {
+  font-size: var(--fs-base);
+  color: var(--text-3);
+}
+
+/* ══ LISTADOS ══ */
+
+.appts__section { margin-bottom: var(--sp-6); }
+.appts__section-title {
+  margin-bottom: var(--sp-3);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text-1);
+}
+.appts__section-title--muted { color: var(--text-3); }
+
+.appts__card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.appts__card-info { flex: 1; min-width: 180px; }
+.appts__card-date {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--text-1);
+  text-transform: capitalize;
+}
+.appts__card-time {
+  margin-top: 2px;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  color: var(--brand-400);
+}
+.appts__card-notes {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-base);
+  color: var(--text-3);
+}
+
+.appts__cancel {
+  padding: var(--sp-1) var(--sp-3);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: var(--ls-wide);
+  color: var(--danger);
+  background: none;
+  border: 1px solid var(--danger-border);
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.appts__cancel:hover { background: var(--danger-bg); }
+
+.appts__history-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.appts__history-date {
+  min-width: 140px;
+  font-family: var(--font-condensed);
+  font-size: var(--fs-base);
+  color: var(--text-2);
+  text-transform: capitalize;
+}
+.appts__history-time {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  color: var(--text-3);
+}
+.appts__history-row .badge { margin-left: auto; }
+
+@media (max-width: 480px) {
+  .appts__booker { padding: var(--sp-4); }
+  .appts__calendar { padding: var(--sp-3); }
+  .appts__cal-legend { flex-wrap: wrap; gap: var(--sp-3); }
+}

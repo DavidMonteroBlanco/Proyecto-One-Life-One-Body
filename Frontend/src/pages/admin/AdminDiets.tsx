@@ -1,23 +1,19 @@
 
 import { useState, useEffect } from "react";
 import api from "../../services/api";
+import Icon from "../../components/ui/Icon";
+import { MEALS, mealIcon, mealLabel } from "../../lib/meals";
+import AiDietAssistant from "./AiDietAssistant";
+import type { DraftPlan } from "./AiDietAssistant";
 import "./AdminPages.css";
+import "./AdminDiets.css";
 
 type UserItem = { id: number; name: string; email: string; has_diet: boolean; diet_title: string | null };
 type Meal = { id?: number; meal_type: string; foods: string; calories: string; macros: string };
-type Plan = { id: number; title: string; notes: string | null; active: boolean; meals: Meal[]; created_at: string };
-
-const MEAL_TYPES = [
-  { value: "desayuno", label: "🌅 Desayuno" },
-  { value: "media_manana", label: "🍎 Media mañana" },
-  { value: "comida", label: "🍽 Comida" },
-  { value: "merienda", label: "🥤 Merienda" },
-  { value: "pre_entreno", label: "⚡ Pre-entreno" },
-  { value: "post_entreno", label: "💪 Post-entreno" },
-  { value: "cena", label: "🌙 Cena" },
-];
-
-function mealLabel(type: string) { return MEAL_TYPES.find(m => m.value === type)?.label || type; }
+type Plan = {
+  id: number; title: string; notes: string | null; active: boolean;
+  meals: Meal[]; created_at: string; sent_at: string | null;
+};
 
 const emptyMeal = (): Meal => ({ meal_type: "desayuno", foods: "", calories: "", macros: "" });
 
@@ -55,7 +51,7 @@ export default function AdminDiets() {
   const openNew = () => {
     setEditPlanId(null);
     setFormTitle(""); setFormNotes("");
-    setFormMeals(MEAL_TYPES.map(m => ({ meal_type: m.value, foods: "", calories: "", macros: "" })));
+    setFormMeals(MEALS.map(m => ({ meal_type: m.value, foods: "", calories: "", macros: "" })));
     setShowForm(true);
   };
 
@@ -104,33 +100,100 @@ export default function AdminDiets() {
     catch { /* */ }
   };
 
+  /* Carga en el formulario el borrador que ha montado el asistente. */
+  const handleUseDraft = (plan: DraftPlan) => {
+    setEditPlanId(null);
+    setFormTitle(plan.title);
+    setFormNotes(plan.notes || "");
+    setFormMeals(
+      plan.meals.length > 0
+        ? plan.meals.map(m => ({
+            meal_type: m.meal_type,
+            foods: m.foods,
+            calories: m.calories || "",
+            macros: m.macros || "",
+          }))
+        : [emptyMeal()]
+    );
+    setShowForm(true);
+    setMsg({ type: "ok", text: "Borrador cargado. Revísalo antes de guardar." });
+  };
+
+  /* Descarga el PDF del plan con la cabecera de sesión, sin token en la URL. */
+  const [busyPlanId, setBusyPlanId] = useState<number | null>(null);
+
+  const handleDownloadPdf = async (plan: Plan) => {
+    if (busyPlanId) return;
+    setBusyPlanId(plan.id);
+    try {
+      const { data } = await api.get(`/admin/diet/plans/${plan.id}/pdf`, { responseType: "blob" });
+      const url = URL.createObjectURL(data as Blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `plan-${plan.title.toLowerCase().replace(/\s+/g, "-")}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setMsg({ type: "err", text: "No se ha podido generar el PDF." });
+    } finally { setBusyPlanId(null); }
+  };
+
+  /* Envía el plan por email al cliente dueño del plan, y solo a él. */
+  const handleSendPlan = async (plan: Plan) => {
+    if (!selectedUser || busyPlanId) return;
+    const warning = plan.sent_at
+      ? `Ya se envió el ${new Date(plan.sent_at).toLocaleDateString("es-ES")}. ¿Volver a enviarlo a ${selectedUser.email}?`
+      : `Enviar "${plan.title}" por email a ${selectedUser.email}?`;
+    if (!window.confirm(warning)) return;
+
+    setBusyPlanId(plan.id);
+    setMsg(null);
+    try {
+      const { data } = await api.post(`/admin/diet/plans/${plan.id}/send`);
+      setMsg({ type: "ok", text: data.message });
+      await loadPlans(selectedUser.id);
+    } catch (err) {
+      const res = (err as { response?: { data?: { message?: string } } })?.response;
+      setMsg({ type: "err", text: res?.data?.message || "No se ha podido enviar." });
+    } finally { setBusyPlanId(null); }
+  };
+
   const filtered = users.filter(u => u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="admin-page" style={{ maxWidth: 1100 }}>
+    <div className="admin-page admin-page--wide">
       <h1 className="admin-page__title">Dietas</h1>
       <p className="admin-page__sub">Gestiona los planes de alimentación de cada cliente</p>
 
       {msg && <div className={`admin-msg admin-msg--${msg.type}`}>{msg.text}</div>}
 
-      <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: "1.5rem", alignItems: "start" }}>
+      <div className="diets-layout">
 
-        {/* Users list */}
-        <div className="admin-card" style={{ padding: 0, position: "sticky", top: "1rem" }}>
-          <div style={{ padding: "1rem", borderBottom: "1px solid var(--border)" }}>
-            <input type="text" placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="aw-search" />
+        {/* ── LISTA DE CLIENTES ── */}
+        <div className="admin-card admin-card--flush diets__users">
+          <div className="diets__users-search">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="aw-search"
+              aria-label="Buscar cliente"
+            />
           </div>
           {usersLoading ? (
             <div className="admin-empty">Cargando...</div>
           ) : (
-            <div style={{ maxHeight: "65vh", overflowY: "auto" }}>
+            <div className="diets__users-list">
               {filtered.map(u => (
                 <button key={u.id} onClick={() => selectUser(u)}
                   className={`aw-user-card ${selectedUser?.id === u.id ? "aw-user-card--active" : ""}`}>
                   <div className="aw-user-card__avatar">{u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}</div>
                   <div className="aw-user-card__info">
                     <span className="aw-user-card__name">{u.name}</span>
-                    <span className="aw-user-card__meta">{u.has_diet ? `✓ ${u.diet_title}` : "Sin dieta"}</span>
+                    <span className="aw-user-card__meta">{u.has_diet ? u.diet_title : "Sin dieta"}</span>
                   </div>
                 </button>
               ))}
@@ -138,24 +201,24 @@ export default function AdminDiets() {
           )}
         </div>
 
-        {/* Detail */}
-        <div className="admin-card" style={{ minHeight: 400 }}>
+        {/* ── DETALLE ── */}
+        <div className="admin-card diets__detail">
           {!selectedUser ? (
-            <div className="admin-empty"><span className="admin-empty__icon">🍽</span>Selecciona un usuario</div>
+            <div className="admin-empty"><span className="admin-empty__icon"><Icon name="user" size={34} strokeWidth={1.3} /></span>Selecciona un usuario</div>
           ) : showForm ? (
             /* ── FORMULARIO ── */
             <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-                <h2 className="admin-card__title" style={{ marginBottom: 0 }}>
-                  <span className="admin-card__title-icon">🍽</span>
+              <div className="diets__panel-head">
+                <h2 className="admin-card__title admin-card__title--flush">
+                  <span className="admin-card__title-icon"><Icon name="plate" size={18} /></span>
                   {editPlanId ? "Editar dieta" : "Nueva dieta"} — {selectedUser.name.split(" ")[0]}
                 </h2>
-                <button className="admin-btn admin-btn--ghost" onClick={() => setShowForm(false)}>✕ Cancelar</button>
+                <button className="admin-btn admin-btn--ghost" onClick={() => setShowForm(false)}><Icon name="close" size={14} /> Cancelar</button>
               </div>
 
               <div className="admin-form">
                 <div className="admin-form--row">
-                  <div className="admin-field"><label>Titulo del plan</label>
+                  <div className="admin-field"><label>Título del plan</label>
                     <input value={formTitle} onChange={e => setFormTitle(e.target.value)} placeholder="Ej: Plan definición - Mayo" required />
                   </div>
                   <div className="admin-field"><label>Notas generales</label>
@@ -163,32 +226,34 @@ export default function AdminDiets() {
                   </div>
                 </div>
 
-                <div style={{ marginTop: "1.2rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem" }}>
-                    <h3 style={{ fontFamily: "var(--font-condensed)", fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.06em" }}>
-                      Comidas ({formMeals.length})
-                    </h3>
-                    <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={addMeal}>+ Añadir comida</button>
+                <div className="diets__meals-editor">
+                  <div className="diets__meals-head">
+                    <h3>Comidas ({formMeals.length})</h3>
+                    <button className="admin-btn admin-btn--primary admin-btn--sm" onClick={addMeal}><Icon name="plus" size={14} /> Añadir comida</button>
                   </div>
 
                   {formMeals.map((meal, i) => (
-                    <div key={i} style={{ background: "rgba(126,232,232,0.02)", border: "1px solid var(--border)", borderRadius: 10, padding: "1rem", marginBottom: "0.8rem" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.6rem" }}>
-                        <select value={meal.meal_type} onChange={e => updateMeal(i, "meal_type", e.target.value)}
-                          style={{ background: "rgba(13,21,21,0.85)", border: "1px solid var(--border)", color: "var(--text-primary)", fontFamily: "var(--font-condensed)", fontSize: "0.85rem", padding: "0.4rem 0.6rem", borderRadius: 6, colorScheme: "dark" }}>
-                          {MEAL_TYPES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                    <div key={i} className="diets__meal-editor">
+                      <div className="diets__meal-editor-head">
+                        <select
+                          className="diets__meal-select"
+                          value={meal.meal_type}
+                          onChange={e => updateMeal(i, "meal_type", e.target.value)}
+                          aria-label="Tipo de comida"
+                        >
+                          {MEALS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
                         </select>
                         {formMeals.length > 1 && (
-                          <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => removeMeal(i)}>✕</button>
+                          <button className="admin-btn admin-btn--danger admin-btn--sm" onClick={() => removeMeal(i)}><Icon name="close" size={13} /></button>
                         )}
                       </div>
-                      <div className="admin-field" style={{ marginBottom: "0.5rem" }}>
+                      <div className="admin-field">
                         <label>Alimentos</label>
                         <textarea value={meal.foods} onChange={e => updateMeal(i, "foods", e.target.value)} rows={2}
                           placeholder="Ej: 2 huevos revueltos, 60g avena con leche, 1 plátano" />
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
-                        <div className="admin-field"><label>Calorias</label>
+                      <div className="diets__meal-numbers">
+                        <div className="admin-field"><label>Calorías</label>
                           <input value={meal.calories} onChange={e => updateMeal(i, "calories", e.target.value)} placeholder="450 kcal" />
                         </div>
                         <div className="admin-field"><label>Macros</label>
@@ -199,7 +264,7 @@ export default function AdminDiets() {
                   ))}
                 </div>
 
-                <div className="admin-btn-row" style={{ marginTop: "1rem" }}>
+                <div className="admin-btn-row">
                   <button className="admin-btn admin-btn--primary" onClick={handleSave} disabled={saving}>
                     {saving ? "Guardando..." : editPlanId ? "Actualizar dieta" : "Crear dieta"}
                   </button>
@@ -209,46 +274,58 @@ export default function AdminDiets() {
           ) : (
             /* ── LISTADO DE DIETAS ── */
             <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-                <h2 className="admin-card__title" style={{ marginBottom: 0 }}>
-                  <span className="admin-card__title-icon">🍽</span> Dietas de {selectedUser.name}
+              <div className="diets__panel-head">
+                <h2 className="admin-card__title admin-card__title--flush">
+                  <span className="admin-card__title-icon"><Icon name="plate" size={18} /></span> Dietas de {selectedUser.name}
                 </h2>
-                <button className="admin-btn admin-btn--primary" onClick={openNew}>+ Nueva dieta</button>
+                <div className="diets__panel-actions">
+                  <AiDietAssistant
+                    userId={selectedUser.id}
+                    userName={selectedUser.name}
+                    onUsePlan={handleUseDraft}
+                  />
+                  <button className="admin-btn admin-btn--primary" onClick={openNew}><Icon name="plus" size={14} /> Nueva dieta</button>
+                </div>
               </div>
 
               {plansLoading ? (
                 <div className="admin-empty">Cargando...</div>
               ) : plans.length === 0 ? (
-                <div className="admin-empty"><span className="admin-empty__icon">🍽</span>No hay dietas asignadas</div>
+                <div className="admin-empty"><span className="admin-empty__icon"><Icon name="plate" size={34} strokeWidth={1.3} /></span>No hay dietas asignadas</div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div className="diets__plans">
                   {plans.map(p => (
-                    <div key={p.id} style={{ background: p.active ? "rgba(126,232,232,0.03)" : "transparent", border: "1px solid var(--border)", borderRadius: 12, padding: "1.2rem", borderLeft: p.active ? "3px solid var(--primary)" : undefined }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.8rem" }}>
+                    <div key={p.id} className={`diets__plan ${p.active ? "diets__plan--active" : ""}`}>
+                      <div className="diets__plan-head">
                         <div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <span style={{ fontFamily: "var(--font-condensed)", fontSize: "1.05rem", fontWeight: 700, color: "var(--text-primary)" }}>{p.title}</span>
-                            {p.active && <span style={{ fontSize: "0.6rem", fontFamily: "var(--font-condensed)", fontWeight: 800, letterSpacing: "0.15em", padding: "0.15rem 0.5rem", background: "rgba(16,185,129,0.1)", color: "#6ee7b7", borderRadius: 4 }}>ACTIVA</span>}
+                          <div className="diets__plan-title-row">
+                            <span className="diets__plan-title">{p.title}</span>
+                            {p.active && <span className="badge badge--success">Activa</span>}
+                            {p.sent_at && (
+                              <span className="badge" title={`Enviado el ${new Date(p.sent_at).toLocaleString("es-ES")}`}>
+                                <Icon name="check" size={11} /> Enviado
+                              </span>
+                            )}
                           </div>
-                          {p.notes && <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>{p.notes}</p>}
+                          {p.notes && <p className="diets__plan-notes">{p.notes}</p>}
                         </div>
-                        <div style={{ display: "flex", gap: "0.3rem" }}>
-                          <button className="admin-item__btn" onClick={() => handleToggle(p.id)} title={p.active ? "Desactivar" : "Activar"}>{p.active ? "◉" : "○"}</button>
-                          <button className="admin-item__btn" onClick={() => openEdit(p)} title="Editar">✎</button>
-                          <button className="admin-item__btn admin-item__btn--del" onClick={() => handleDelete(p.id)} title="Eliminar">✕</button>
+                        <div className="diets__plan-actions">
+                          <button className="admin-item__btn" onClick={() => handleDownloadPdf(p)} disabled={busyPlanId === p.id} title="Descargar PDF"><Icon name="download" size={15} /></button>
+                          <button className="admin-item__btn" onClick={() => handleSendPlan(p)} disabled={busyPlanId === p.id} title="Enviar por email al cliente"><Icon name="send" size={15} /></button>
+                          <button className="admin-item__btn" onClick={() => handleToggle(p.id)} title={p.active ? "Desactivar" : "Activar"}><Icon name={p.active ? "toggle-on" : "toggle-off"} size={15} /></button>
+                          <button className="admin-item__btn" onClick={() => openEdit(p)} title="Editar"><Icon name="pencil" size={15} /></button>
+                          <button className="admin-item__btn admin-item__btn--del" onClick={() => handleDelete(p.id)} title="Eliminar"><Icon name="trash" size={15} /></button>
                         </div>
                       </div>
 
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "0.6rem" }}>
+                      <div className="diets__plan-meals">
                         {p.meals.map((m, i) => (
-                          <div key={i} style={{ background: "rgba(13,21,21,0.5)", border: "1px solid rgba(126,232,232,0.04)", borderRadius: 8, padding: "0.7rem 0.9rem" }}>
-                            <div style={{ fontFamily: "var(--font-condensed)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.12em", color: "var(--primary-dim)", marginBottom: "0.3rem" }}>{mealLabel(m.meal_type)}</div>
-                            <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>{m.foods}</div>
+                          <div key={i} className="diets__plan-meal">
+                            <div className="diets__plan-meal-type"><Icon name={mealIcon(m.meal_type)} size={14} />{mealLabel(m.meal_type)}</div>
+                            <div className="diets__plan-meal-foods">{m.foods}</div>
                             {(m.calories || m.macros) && (
-                              <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "0.3rem" }}>
-                                {m.calories && <span>{m.calories}</span>}
-                                {m.calories && m.macros && <span> · </span>}
-                                {m.macros && <span>{m.macros}</span>}
+                              <div className="diets__plan-meal-macros">
+                                {m.calories}{m.calories && m.macros ? " · " : ""}{m.macros}
                               </div>
                             )}
                           </div>

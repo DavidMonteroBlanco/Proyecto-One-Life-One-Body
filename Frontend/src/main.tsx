@@ -4,7 +4,7 @@ import App from "./App";
 import { AuthProvider } from "./context/Authcontext";
 import "./index.css";
 import "./App.css";
-import "./styles/theme.scss";
+import "./styles/Theme.scss";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <BrowserRouter>

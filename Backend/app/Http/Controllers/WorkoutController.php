@@ -9,8 +9,11 @@ class WorkoutController extends Controller
 {
     public function index(Request $request)
     {
-        // devuelve solo los del usuario logueado
+        // Solo los del usuario logueado, con sus ejercicios: sin ellos
+        // el cliente vería el título del entreno pero no las series ni
+        // los pesos, que es justo lo que viene a consultar.
         $workouts = Workout::where('user_id', $request->user()->id)
+            ->with('exercises')
             ->orderBy('created_at', 'desc')
             ->get();
 

@@ -68,8 +68,12 @@ class ChatbotController extends Controller
         }
 
         try {
-            $response = Http::timeout(15)->post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}",
+            // La clave viaja en cabecera, no en la query string: así no
+            // queda escrita en los logs de acceso ni en las trazas de error.
+            $response = Http::timeout(15)
+                ->withHeaders(['x-goog-api-key' => $apiKey])
+                ->post(
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
                 [
                     'system_instruction' => [
                         'parts' => [['text' => $systemPrompt]],

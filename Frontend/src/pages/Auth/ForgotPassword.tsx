@@ -2,19 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import type { Variants } from "framer-motion";
 import api from "../../services/api";
 import logoImg from "../../assets/icons/logo-bw.jpg";
+import Icon from "../../components/ui/Icon";
 import "./Auth.css";
-
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i = 0) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.1, duration: 0.55, ease: "easeOut" },
-  }),
-};
 
 type Step = "email" | "code" | "success";
 
@@ -112,7 +103,7 @@ export default function ForgotPassword() {
       </div>
 
       <div className="auth-container">
-        <motion.div className="auth-card" variants={fadeUp} initial="hidden" animate="visible" custom={1}>
+        <div className="auth-card rise rise--1">
           <div className="auth-card__bg-logo">
             <img src={logoImg} alt="" aria-hidden="true" />
           </div>
@@ -195,7 +186,7 @@ export default function ForgotPassword() {
                   onChange={(e) => setConfirmPassword(e.target.value)} required />
                 {confirmPassword.length > 0 && (
                   <span className={`pw-match ${newPassword === confirmPassword ? "ok" : "fail"}`}>
-                    {newPassword === confirmPassword ? "✓ Coinciden" : "✗ No coinciden"}
+                    {newPassword === confirmPassword ? "Coinciden" : "No coinciden"}
                   </span>
                 )}
               </div>
@@ -209,8 +200,8 @@ export default function ForgotPassword() {
 
           {/* ── STEP 3: Success ── */}
           {step === "success" && (
-            <div className="auth-form" style={{ alignItems: "center", padding: "1.5rem 2.4rem 2rem" }}>
-              <div className="auth-success-icon">✓</div>
+            <div className="auth-form auth-form--centered">
+              <div className="auth-success-icon"><Icon name="check" size={28} strokeWidth={2} /></div>
               <button className="btn-primary auth-submit" onClick={() => navigate("/login")}>
                 Ir a iniciar sesión
               </button>
@@ -218,9 +209,9 @@ export default function ForgotPassword() {
           )}
 
           <div className="auth-card__footer">
-            <Link to="/login" className="auth-back">← Volver al login</Link>
+            <Link to="/login" className="auth-back"><Icon name="arrow-left" size={13} /> Volver al login</Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

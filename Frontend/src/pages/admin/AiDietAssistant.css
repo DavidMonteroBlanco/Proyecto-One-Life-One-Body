@@ -1,0 +1,252 @@
+/* ══════════════════════════════════════════════════════════
+   ASISTENTE DE IA — panel de dietas
+   ══════════════════════════════════════════════════════════ */
+
+.aia__open { flex-shrink: 0; }
+
+.aia {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--sp-5);
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.aia__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.aia__title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--brand-400);
+}
+.aia__subject {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
+}
+.aia__close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--text-3);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.aia__close:hover { color: var(--danger); background: var(--danger-bg); }
+
+.aia__disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-5);
+  font-size: var(--fs-base);
+  line-height: var(--lh-snug);
+  color: var(--warning);
+  background: var(--warning-bg);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* ── Conversación ── */
+.aia__messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-height: 180px;
+  max-height: 420px;
+  padding: var(--sp-5);
+  overflow-y: auto;
+}
+
+.aia__msg {
+  max-width: 82%;
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  white-space: pre-wrap;
+  border-radius: var(--r-md);
+  animation: msgIn var(--dur) var(--ease-out);
+}
+.aia__msg--user {
+  align-self: flex-end;
+  color: var(--text-on-brand);
+  background: var(--brand-400);
+  border-bottom-right-radius: var(--r-xs);
+}
+.aia__msg--model {
+  align-self: flex-start;
+  color: var(--text-2);
+  background: var(--surface-3);
+  border: 1px solid var(--border-subtle);
+  border-bottom-left-radius: var(--r-xs);
+}
+.aia__msg--typing {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+.aia__dot {
+  width: 6px;
+  height: 6px;
+  background: var(--text-3);
+  border-radius: var(--r-full);
+  animation: typingBounce 1.2s var(--ease-in-out) infinite;
+}
+.aia__dot:nth-child(2) { animation-delay: 0.15s; }
+.aia__dot:nth-child(3) { animation-delay: 0.3s; }
+
+/* ── Sugerencias de arranque ── */
+.aia__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: center;
+}
+.aia__suggestions-label {
+  width: 100%;
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.aia__suggestion {
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  text-align: left;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.aia__suggestion:hover { color: var(--brand-400); border-color: var(--border-brand); }
+
+/* ── Borrador estructurado ── */
+.aia__draft {
+  padding: var(--sp-4);
+  background: var(--surface-2);
+  border: 1px solid var(--border-brand);
+  border-radius: var(--r-md);
+}
+.aia__draft-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+.aia__draft-title {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--text-1);
+}
+.aia__draft-notes {
+  margin-bottom: var(--sp-3);
+  font-size: var(--fs-base);
+  color: var(--text-3);
+}
+.aia__draft-meals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+  list-style: none;
+}
+.aia__draft-meals li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-3);
+  background: var(--surface-1);
+  border-radius: var(--r-sm);
+}
+.aia__draft-meal-type {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  color: var(--brand-500);
+}
+.aia__draft-meal-foods {
+  font-size: var(--fs-base);
+  line-height: var(--lh-snug);
+  color: var(--text-2);
+}
+.aia__draft-meal-macros {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
+}
+.aia__draft-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* ── Redacción ── */
+.aia__composer {
+  display: flex;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface-2);
+  border-top: 1px solid var(--border-subtle);
+}
+.aia__input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--sp-3);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: var(--lh-snug);
+  color: var(--text-1);
+  background: var(--surface-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+  outline: none;
+  resize: vertical;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.aia__input:focus { border-color: var(--border-brand); }
+.aia__input::placeholder { color: var(--text-4); }
+.aia__send { flex-shrink: 0; align-self: stretch; }
+
+.aia__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-5) var(--sp-4);
+  background: var(--surface-2);
+}
+
+@media (max-width: 600px) {
+  .aia__messages { padding: var(--sp-4); max-height: 320px; }
+  .aia__msg { max-width: 94%; }
+  .aia__composer { padding: var(--sp-3); }
+  .aia__footer { padding: 0 var(--sp-3) var(--sp-3); }
+}

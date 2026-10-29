@@ -16,7 +16,8 @@ class DietPlan extends Model
     protected function casts(): array
     {
         return [
-            'active' => 'boolean',
+            'active'  => 'boolean',
+            'sent_at' => 'datetime',
         ];
     }
 

@@ -1,6 +1,7 @@
 // src/pages/admin/CollaboratorsAdmin.tsx
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import Icon from "../../components/ui/Icon";
 import "./AdminPages.css";
 
 type Collaborator = { id: number; name: string; role: string | null; bio: string | null; image_url: string | null; sort_order: number };
@@ -44,7 +45,7 @@ export default function CollaboratorsAdmin() {
       {msg && <div className={`admin-msg admin-msg--${msg.type}`}>{msg.text}</div>}
 
       <div className="admin-card">
-        <h2 className="admin-card__title"><span className="admin-card__title-icon">◉</span> Nuevo colaborador</h2>
+        <h2 className="admin-card__title"><span className="admin-card__title-icon"><Icon name="plus" size={18} /></span> Nuevo colaborador</h2>
         <form className="admin-form" onSubmit={create}>
           <div className="admin-form--row">
             <div className="admin-field"><label>Nombre</label><input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre completo" required /></div>
@@ -60,15 +61,15 @@ export default function CollaboratorsAdmin() {
       </div>
 
       <div className="admin-card">
-        <h2 className="admin-card__title"><span className="admin-card__title-icon">◎</span> Equipo ({items.length})</h2>
+        <h2 className="admin-card__title"><span className="admin-card__title-icon"><Icon name="user" size={18} /></span> Equipo ({items.length})</h2>
         {items.length === 0 ? (
-          <div className="admin-empty"><span className="admin-empty__icon">◉</span>No hay colaboradores</div>
+          <div className="admin-empty"><span className="admin-empty__icon"><Icon name="user" size={32} strokeWidth={1.3} /></span>No hay colaboradores</div>
         ) : (
           <div className="admin-list">
             {items.map(c => (
               <div key={c.id} className={`admin-item ${editId === c.id ? "admin-item--editing" : ""}`}>
                 {editId === c.id ? (
-                  <div className="admin-form" style={{ width: "100%" }}>
+                  <div className="admin-form admin-form--full">
                     <div className="admin-form--row">
                       <div className="admin-field"><label>Nombre</label><input value={eName} onChange={e => setEName(e.target.value)} /></div>
                       <div className="admin-field"><label>Cargo</label><input value={eRole} onChange={e => setERole(e.target.value)} /></div>
@@ -87,12 +88,12 @@ export default function CollaboratorsAdmin() {
                   <>
                     <span className="admin-item__order">{c.sort_order}</span>
                     <div className="admin-item__body">
-                      <div className="admin-item__title">{c.name} {c.role && <span style={{ color: "var(--primary-dim)", fontWeight: 400, fontSize: "0.82rem" }}>· {c.role}</span>}</div>
+                      <div className="admin-item__title">{c.name} {c.role && <span className="admin-item__role">· {c.role}</span>}</div>
                       {c.bio && <div className="admin-item__desc">{c.bio}</div>}
                     </div>
                     <div className="admin-item__actions">
-                      <button className="admin-item__btn" onClick={() => startEdit(c)} title="Editar">✎</button>
-                      <button className="admin-item__btn admin-item__btn--del" onClick={() => remove(c.id)} title="Eliminar">✕</button>
+                      <button className="admin-item__btn" onClick={() => startEdit(c)} title="Editar"><Icon name="pencil" size={15} /></button>
+                      <button className="admin-item__btn admin-item__btn--del" onClick={() => remove(c.id)} title="Eliminar"><Icon name="trash" size={15} /></button>
                     </div>
                   </>
                 )}

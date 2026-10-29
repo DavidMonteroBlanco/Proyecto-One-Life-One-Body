@@ -1,6 +1,7 @@
 // src/pages/admin/ServicesAdmin.tsx
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import Icon from "../../components/ui/Icon";
 import "./AdminPages.css";
 
 type Service = { id: number; title: string; description: string; sort_order: number };
@@ -48,7 +49,7 @@ export default function ServicesAdmin() {
       {msg && <div className={`admin-msg admin-msg--${msg.type}`}>{msg.text}</div>}
 
       <div className="admin-card">
-        <h2 className="admin-card__title"><span className="admin-card__title-icon">▣</span> Nuevo servicio</h2>
+        <h2 className="admin-card__title"><span className="admin-card__title-icon"><Icon name="plus" size={18} /></span> Nuevo servicio</h2>
         <form className="admin-form" onSubmit={create}>
           <div className="admin-form--row">
             <div className="admin-field"><label>Titulo</label><input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ej: Entrenamiento Personal" required /></div>
@@ -62,15 +63,15 @@ export default function ServicesAdmin() {
       </div>
 
       <div className="admin-card">
-        <h2 className="admin-card__title"><span className="admin-card__title-icon">◎</span> Servicios ({items.length})</h2>
+        <h2 className="admin-card__title"><span className="admin-card__title-icon"><Icon name="settings" size={18} /></span> Servicios ({items.length})</h2>
         {items.length === 0 ? (
-          <div className="admin-empty"><span className="admin-empty__icon">▣</span>No hay servicios</div>
+          <div className="admin-empty"><span className="admin-empty__icon"><Icon name="settings" size={32} strokeWidth={1.3} /></span>No hay servicios</div>
         ) : (
           <div className="admin-list">
             {items.map(s => (
               <div key={s.id} className={`admin-item ${editId === s.id ? "admin-item--editing" : ""}`}>
                 {editId === s.id ? (
-                  <div className="admin-form" style={{ width: "100%" }}>
+                  <div className="admin-form admin-form--full">
                     <div className="admin-form--row">
                       <div className="admin-field"><label>Titulo</label><input value={eTitle} onChange={e => setETitle(e.target.value)} /></div>
                       <div className="admin-field"><label>Orden</label><input type="number" min={1} value={eSort} onChange={e => setESort(Number(e.target.value))} /></div>
@@ -89,8 +90,8 @@ export default function ServicesAdmin() {
                       <div className="admin-item__desc">{s.description}</div>
                     </div>
                     <div className="admin-item__actions">
-                      <button className="admin-item__btn" onClick={() => startEdit(s)} title="Editar">✎</button>
-                      <button className="admin-item__btn admin-item__btn--del" onClick={() => remove(s.id)} title="Eliminar">✕</button>
+                      <button className="admin-item__btn" onClick={() => startEdit(s)} title="Editar"><Icon name="pencil" size={15} /></button>
+                      <button className="admin-item__btn admin-item__btn--del" onClick={() => remove(s.id)} title="Eliminar"><Icon name="trash" size={15} /></button>
                     </div>
                   </>
                 )}
