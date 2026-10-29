@@ -430,3 +430,27 @@
   .pw-checklist { grid-template-columns: 1fr; }
   .auth-code-input { width: 38px; height: 46px; font-size: 1.25rem; }
 }
+
+/* ── Aviso de servidor despertando ──
+   Solo sale en hosting gratuito, cuando el servidor estaba dormido y
+   tarda en levantarse. Sin esto, la pantalla parece colgada. */
+.auth-waking {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
+}
+
+.auth-spinner--sm {
+  width: 14px;
+  height: 14px;
+  /* El spinner base es blanco porque vive dentro del boton; aqui va
+     sobre el fondo, asi que toma el color del texto de al lado. */
+  border-color: currentColor;
+  border-top-color: transparent;
+}

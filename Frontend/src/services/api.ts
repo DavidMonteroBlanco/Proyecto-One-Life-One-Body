@@ -12,7 +12,20 @@ const api = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-  timeout: 15000, // 15 segundos máximo por petición (evita que se quede colgado)
+  /*
+   * 60 segundos, y no 15 como antes.
+   *
+   * En los planes gratuitos de hosting (Render, Fly) el servidor se
+   * duerme a los 15 minutos sin visitas y tarda entre 40 y 60 segundos
+   * en despertar. Con 15 segundos, la primera petición del día se
+   * cortaba SIEMPRE antes de que el servidor llegara a contestar.
+   *
+   * Y como axios no deja respuesta cuando se agota el tiempo, la
+   * pantalla de acceso lo mostraba como "email o contraseña
+   * incorrectos": parecía un problema de credenciales cuando era el
+   * servidor levantándose.
+   */
+  timeout: 60000,
 });
 
 // Inyecta el token en cada petición
