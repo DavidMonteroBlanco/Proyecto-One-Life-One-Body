@@ -87,7 +87,8 @@ class ChatbotController extends Controller
             $response = Http::timeout(15)
                 ->withHeaders(['x-goog-api-key' => $apiKey])
                 ->post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+                'https://generativelanguage.googleapis.com/v1beta/models/'
+                    . config('services.gemini.model') . ':generateContent',
                 [
                     'system_instruction' => [
                         'parts' => [['text' => $systemPrompt]],

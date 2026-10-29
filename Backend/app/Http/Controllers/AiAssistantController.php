@@ -22,7 +22,6 @@ use Illuminate\Support\Facades\Log;
  */
 class AiAssistantController extends Controller
 {
-    private const MODEL = 'gemini-2.5-flash';
     private const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/';
 
     /** Tipos de comida admitidos. Debe coincidir con Frontend/src/lib/meals.ts */
@@ -284,7 +283,7 @@ class AiAssistantController extends Controller
         try {
             $response = Http::timeout(45)
                 ->withHeaders(['x-goog-api-key' => $apiKey])
-                ->post(self::ENDPOINT . self::MODEL . ':generateContent', [
+                ->post(self::ENDPOINT . config('services.gemini.model') . ':generateContent', [
                     'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
                     'contents' => $contents,
                     'generationConfig' => $generationConfig,

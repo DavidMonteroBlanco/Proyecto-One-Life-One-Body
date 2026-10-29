@@ -37,5 +37,18 @@ return [
 
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
+
+        /*
+        | El modelo va aquí y no escrito dentro de los controladores.
+        |
+        | Google retira modelos con el tiempo: el 29/10/2026,
+        | gemini-2.5-flash dejó de aceptar claves nuevas y devolvía un
+        | 404 pidiendo usar otro. Estaba puesto a mano en dos sitios, así
+        | que la única salida era tocar código y volver a desplegar.
+        |
+        | Con esto, el día que vuelva a pasar se cambia la variable
+        | GEMINI_MODEL en el panel del hosting y listo.
+        */
+        'model' => env('GEMINI_MODEL', 'gemini-3.8-flash'),
     ],
 ];
