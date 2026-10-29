@@ -78,11 +78,15 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    // El defecto es español, no inglés: la aplicación es de un centro
+    // de Benidorm y todo lo que ve el cliente está en español. Con el
+    // defecto de Laravel, un servidor sin APP_LOCALE en el entorno
+    // sacaba los meses en inglés ("Plan definición · October 2026").
+    'locale' => env('APP_LOCALE', 'es'),
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'es'),
 
-    'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
+    'faker_locale' => env('APP_FAKER_LOCALE', 'es_ES'),
 
     /*
     |--------------------------------------------------------------------------
