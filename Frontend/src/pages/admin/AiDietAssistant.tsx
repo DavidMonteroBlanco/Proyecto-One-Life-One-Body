@@ -58,13 +58,19 @@ export default function AiDietAssistant({ userId, userName, onUsePlan, onSent }:
   const [draft, setDraft] = useState<DraftPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const endRef = useRef<HTMLDivElement>(null);
+  const listaRef = useRef<HTMLDivElement>(null);
 
-  const scrollToEnd = useCallback(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  /*
+   * Igual que en el chat de la portada: se toca el scrollTop del panel
+   * y no scrollIntoView, que arrastraría también la página.
+   */
+  const bajarLista = useCallback(() => {
+    const lista = listaRef.current;
+    if (!lista) return;
+    lista.scrollTop = lista.scrollHeight;
   }, []);
 
-  useEffect(() => { scrollToEnd(); }, [messages, draft, scrollToEnd]);
+  useEffect(() => { bajarLista(); }, [messages, draft, bajarLista]);
 
   const errorFrom = (err: unknown, fallback: string) => {
     const res = (err as { response?: { data?: { message?: string } } })?.response;
@@ -204,7 +210,7 @@ export default function AiDietAssistant({ userId, userName, onUsePlan, onSent }:
         al cliente por email y a su área tal cual está.
       </p>
 
-      <div className="aia__messages">
+      <div className="aia__messages" ref={listaRef}>
         {messages.length === 0 && (
           <div className="aia__suggestions">
             <span className="aia__suggestions-label">Prueba con</span>
@@ -265,8 +271,6 @@ export default function AiDietAssistant({ userId, userName, onUsePlan, onSent }:
             </div>
           </div>
         )}
-
-        <div ref={endRef} />
       </div>
 
       {error && <div className="admin-msg admin-msg--err">{error}</div>}

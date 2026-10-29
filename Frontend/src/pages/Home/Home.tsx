@@ -46,13 +46,33 @@ function ChatBot() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const listaRef = useRef<HTMLDivElement>(null);
+  const primeraVez = useRef(true);
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  /*
+   * Mueve SOLO el panel del chat, tocando su scrollTop.
+   *
+   * Antes esto era un scrollIntoView sobre un ancla al final de la
+   * lista, y scrollIntoView arrastra todos los contenedores con scroll
+   * por encima, incluida la página. Como el chat arranca ya con dos
+   * mensajes, el efecto saltaba al cargar la portada y te dejaba
+   * directamente abajo del todo, en el chat, sin haber tocado nada.
+   */
+  const bajarLista = useCallback(() => {
+    const lista = listaRef.current;
+    if (!lista) return;
+    lista.scrollTop = lista.scrollHeight;
   }, []);
 
-  useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
+  useEffect(() => {
+    // Al montar no hay nada que seguir: los mensajes de bienvenida ya
+    // se ven desde arriba, que es por donde se empieza a leer.
+    if (primeraVez.current) {
+      primeraVez.current = false;
+      return;
+    }
+    bajarLista();
+  }, [messages, bajarLista]);
 
   const handleSend = async () => {
     const text = input.trim();
@@ -100,7 +120,7 @@ function ChatBot() {
         <strong>Asistente One Life One Body</strong>
         <span className="bot__badge">IA</span>
       </div>
-      <div className="bot__messages">
+      <div className="bot__messages" ref={listaRef}>
         {messages.map((msg, i) => (
           <div key={i} className={`bot__msg bot__msg--${msg.role === "user" ? "user" : "bot"}`}>
             {msg.text}
@@ -113,7 +133,6 @@ function ChatBot() {
             <span className="bot__typing-dot" />
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
       <div className="bot__input">
         <input
