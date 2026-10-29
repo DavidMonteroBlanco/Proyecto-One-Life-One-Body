@@ -31,3 +31,9 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+
+# Material de la demo: el guion y los pasos de despliegue llevan
+# cuentas y contrasenas de ejemplo. Se quedan en el ordenador de
+# David, no en el repositorio.
+DEMO - Guion y Cuentas.txt
+DEMO - Desplegar.txt
