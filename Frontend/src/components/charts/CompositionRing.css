@@ -1,0 +1,89 @@
+/* ══════════════════════════════════════════════════════════
+   ANILLO DE COMPOSICIÓN CORPORAL
+   ══════════════════════════════════════════════════════════ */
+
+.ring {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-5);
+}
+
+.ring__svg {
+  flex-shrink: 0;
+  width: 140px;
+  height: 140px;
+}
+
+.ring__base {
+  fill: none;
+  stroke: var(--surface-4);
+}
+
+.ring__arco {
+  fill: none;
+  stroke-linecap: butt;
+  /* Solo `stroke-dasharray`: es la propiedad que hace crecer el arco
+     sin recalcular geometría, así que el navegador la compone sola. */
+  transition: stroke-dasharray 900ms var(--ease-out);
+}
+
+.ring__musculo { stroke: var(--brand-400); }
+.ring__grasa   { stroke: var(--warning); }
+.ring__resto   { stroke: var(--surface-4); }
+
+/* ── Leyenda ── */
+.ring__leyenda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-width: 150px;
+}
+
+.ring__dato {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.ring__punto {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--r-full);
+}
+.ring__punto--musculo { background: var(--brand-400); }
+.ring__punto--grasa   { background: var(--warning); }
+.ring__punto--resto   { background: var(--surface-4); }
+
+.ring__dato-etiqueta {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.ring__dato-valor {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+
+.ring__aviso {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--fs-xs);
+  line-height: var(--lh-normal);
+  color: var(--warning);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring__arco { transition: none; }
+}
+
+@media (max-width: 480px) {
+  .ring { justify-content: center; gap: var(--sp-4); }
+}

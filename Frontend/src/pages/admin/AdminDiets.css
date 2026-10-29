@@ -1,0 +1,199 @@
+/* ══════════════════════════════════════════════════════════
+   ADMINISTRACIÓN — dietas
+   Complementa AdminPages.css con el layout de dos columnas
+   (lista de clientes + detalle del plan).
+   ══════════════════════════════════════════════════════════ */
+
+.diets-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: var(--sp-5);
+  align-items: start;
+}
+
+/* ── Columna de clientes ── */
+.diets__users {
+  position: sticky;
+  top: var(--sp-4);
+  padding: 0;
+}
+.diets__users-search {
+  padding: var(--sp-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.diets__users-list {
+  max-height: 65vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--brand-700) transparent;
+}
+
+/* ── Columna de detalle ── */
+.diets__detail { min-height: 400px; }
+
+.diets__panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+}
+
+/* ══ EDITOR DE COMIDAS ══ */
+
+.diets__meals-editor { margin-top: var(--sp-5); }
+.diets__meals-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.diets__meals-head h3 {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text-1);
+}
+
+.diets__meal-editor {
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-4);
+  background: rgba(111, 222, 220, 0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.diets__meal-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.diets__meal-select {
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-md);
+  color: var(--text-1);
+  background: var(--surface-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-xs);
+  color-scheme: dark;
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.diets__meal-select:focus { border-color: var(--border-brand); }
+
+.diets__meal-numbers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+}
+
+/* ══ LISTADO DE PLANES ══ */
+
+.diets__plans {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.diets__plan {
+  padding: var(--sp-5);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.diets__plan--active {
+  background: rgba(111, 222, 220, 0.03);
+  border-left: 3px solid var(--brand-400);
+}
+
+.diets__plan-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.diets__plan-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.diets__plan-title {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  letter-spacing: var(--ls-wide);
+  color: var(--text-1);
+}
+.diets__plan-notes {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-base);
+  color: var(--text-3);
+}
+.diets__plan-actions {
+  display: flex;
+  gap: var(--sp-1);
+  flex-shrink: 0;
+}
+
+.diets__plan-meals {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--sp-3);
+}
+.diets__plan-meal {
+  padding: var(--sp-3);
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+}
+.diets__plan-meal-type {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-1);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  color: var(--brand-500);
+}
+.diets__plan-meal-foods {
+  font-size: var(--fs-base);
+  line-height: var(--lh-snug);
+  color: var(--text-2);
+}
+.diets__plan-meal-macros {
+  margin-top: var(--sp-1);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .diets-layout { grid-template-columns: 1fr; }
+  .diets__users { position: static; }
+  .diets__users-list { max-height: 320px; }
+}
+@media (max-width: 600px) {
+  .diets__meal-numbers { grid-template-columns: 1fr; }
+}
+
+/* Acciones de la cabecera del panel: asistente + nueva dieta */
+.diets__panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}

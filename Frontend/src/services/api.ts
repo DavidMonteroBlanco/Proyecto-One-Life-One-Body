@@ -3,7 +3,11 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost/One_Life_One_Body/Backend/public/api",
+  // Mismo origen siempre: en el servidor Laravel sirve también el
+  // frontend, y en local Vite redirige /api al puerto 8000 (ver
+  // vite.config.ts). Antes había aquí una ruta fija a una instalación
+  // local que ya no existe, así que en desarrollo no se llegaba a la API.
+  baseURL: import.meta.env.VITE_API_URL ?? "/api",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",

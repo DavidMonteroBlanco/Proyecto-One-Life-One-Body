@@ -42,12 +42,51 @@ class AppServiceProvider extends ServiceProvider
                 });
         });
 
-        // Endpoints sensibles (admin, cambio contraseña): 10 por IP cada 15 min
+        /*
+         * Operaciones sensibles de la propia cuenta (cambiar contraseña,
+         * pedir código): 10 cada 15 minutos.
+         *
+         * Se cuenta por usuario cuando hay sesión, y por IP cuando no la
+         * hay. Contar solo por IP castigaba a todos los que comparten
+         * salida a internet (un gimnasio, un wifi público) y a la vez
+         * dejaba que un atacante con varias IP siguiera probando.
+         */
         RateLimiter::for('sensitive', function (Request $request) {
-    return Limit::perMinutes(15, 60)->by($request->ip())
+            return Limit::perMinutes(15, 10)
+                ->by($request->user()?->id ?: $request->ip())
                 ->response(function () {
                     return response()->json([
                         'message' => 'Has realizado demasiadas operaciones. Espera unos minutos.',
+                    ], 429);
+                });
+        });
+
+        /*
+         * Panel de administración: David encadena muchas operaciones
+         * seguidas (altas de pesajes, edición de dietas), así que necesita
+         * un margen mucho más alto que el de una cuenta normal. Se cuenta
+         * por usuario, no por IP.
+         */
+        RateLimiter::for('admin', function (Request $request) {
+            return Limit::perMinute(120)
+                ->by($request->user()?->id ?: $request->ip())
+                ->response(function () {
+                    return response()->json([
+                        'message' => 'Demasiadas operaciones seguidas. Espera unos segundos.',
+                    ], 429);
+                });
+        });
+
+        /*
+         * Llamadas a la IA desde el panel: son caras y lentas, así que
+         * van con su propio límite por usuario.
+         */
+        RateLimiter::for('ai', function (Request $request) {
+            return Limit::perHour(60)
+                ->by($request->user()?->id ?: $request->ip())
+                ->response(function () {
+                    return response()->json([
+                        'message' => 'Has hecho muchas consultas al asistente. Espera un poco.',
                     ], 429);
                 });
         });

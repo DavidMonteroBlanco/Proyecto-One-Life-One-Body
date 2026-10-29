@@ -1,0 +1,79 @@
+/* ══════════════════════════════════════════════════════════
+   TIRA DE CONSTANCIA
+   ══════════════════════════════════════════════════════════ */
+
+.cs__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+
+.cs__resumen {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+.cs__numero {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  color: var(--brand-300);
+}
+.cs__de {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
+}
+
+.cs__racha { flex-shrink: 0; }
+
+/* ── La tira ── */
+.cs__tira {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+  height: 38px;
+}
+
+.cs__celda {
+  background: var(--surface-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-xs);
+  /* Arranca encogida y crece. Es una transformación, así que el
+     navegador la compone sin volver a maquetar la página. */
+  transform: scaleY(0.35);
+  transform-origin: bottom;
+  animation: csCrecer 420ms var(--ease-out) forwards;
+}
+
+.cs__celda--si {
+  background: linear-gradient(180deg, var(--brand-500), var(--brand-700));
+  border-color: var(--border-brand);
+}
+
+.cs__celda--actual {
+  outline: 1px solid var(--brand-400);
+  outline-offset: 1px;
+}
+
+@keyframes csCrecer {
+  to { transform: scaleY(1); }
+}
+
+.cs__pie {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--sp-2);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cs__celda { transform: none; animation: none; }
+}

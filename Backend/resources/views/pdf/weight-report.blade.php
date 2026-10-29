@@ -5,7 +5,7 @@
   <style>
     @page { margin: 0; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #d0e0e0; background: #070c0c; }
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #d0e0e0; background: #070c0c; }
 
     /* ── Header ── */
     .header {

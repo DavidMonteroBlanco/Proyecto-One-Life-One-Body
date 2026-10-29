@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import Icon from "./Icon";
 import logoImg from "../../assets/icons/logo-bw.jpg";
 import "./PublicLayout.css";
 
@@ -45,6 +46,10 @@ export default function PublicLayout() {
   return (
     <div className="public-layout">
 
+      {/* Barra de progreso de lectura. Va ligada al scroll por CSS:
+          no cuesta ni un listener de JavaScript. */}
+      <div className="read-progress" aria-hidden="true" />
+
       {!hideNavbar && (
         <nav className={`navbar ${scrolled || menuOpen ? "navbar--scrolled" : ""}`}>
           <div className="navbar__inner">
@@ -67,11 +72,7 @@ export default function PublicLayout() {
                 target="_blank" rel="noreferrer"
                 className="navbar__ig" aria-label="Instagram"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                  <circle cx="12" cy="12" r="4"/>
-                  <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-                </svg>
+                <Icon name="instagram" size={18} />
               </a>
               <NavLink to="/access" className="btn-primary navbar__cta">Área cliente</NavLink>
               <button
@@ -88,14 +89,14 @@ export default function PublicLayout() {
             {navLinks.map((l) => (
               <a key={l.href} href={l.href} className="navbar__mobile-link" onClick={(e) => handleHashLink(e, l.href)}>{l.label}</a>
             ))}
-            <NavLink to="/access" className="btn-primary" style={{ marginTop: "1rem" }}>
+            <NavLink to="/access" className="btn-primary navbar__mobile-cta">
               Área cliente
             </NavLink>
           </div>
         </nav>
       )}
 
-      <main>
+      <main className="page-enter" key={location.pathname}>
         <Outlet />
       </main>
     </div>

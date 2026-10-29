@@ -1,0 +1,314 @@
+===========================================================
+  SUBIR LA WEB A UN HOSTING GRATUITO
+  Pasos para hacerlo hoy
+===========================================================
+
+
+-----------------------------------------------------------
+  ANTES DE EMPEZAR: LEE ESTO
+-----------------------------------------------------------
+
+  AVISO HONESTO
+    En este ordenador no hay Docker instalado, asi que la
+    imagen del servidor NO la he podido probar. La web SI
+    esta probada entera funcionando en local como un solo
+    servicio (una sola direccion sirviendo la API y la web).
+
+    Traduccion practica: el primer despliegue puede pedir uno
+    o dos ajustes. Mas abajo tienes que mirar en cada paso y
+    que hacer si falla.
+
+  TU PLAN B SIEMPRE DISPONIBLE
+    Puedes ensenar la web desde tu portatil ahora mismo:
+
+      cd Backend
+      php artisan serve
+
+      y abres  http://127.0.0.1:8000
+
+    Eso sirve la web COMPLETA, no solo la API. Esta probado
+    hoy. Si el hosting se complica, no te quedas sin demo.
+
+  SOBRE "GRATUITO"
+    Railway ya no tiene plan gratis de verdad: da unos 5
+    dolares de credito de prueba, que para una demo sobra.
+
+    Render SI tiene plan gratis, pero duerme el servidor a
+    los 15 minutos sin uso y tarda unos 50 segundos en
+    despertar. Para una demo vale, pero abrela tu unos
+    minutos antes.
+
+    Los dos valen con lo que hay preparado. Railway es mas
+    rapido de configurar; Render es gratis de verdad.
+
+
+-----------------------------------------------------------
+  COMO ESTA MONTADO (para que entiendas lo que haces)
+-----------------------------------------------------------
+
+  Un SOLO servicio. Laravel sirve dos cosas:
+
+    /api/...      la API
+    todo lo demas  la web de React
+
+  Antes eran dos cosas separadas. Juntarlas quita de encima
+  los problemas de CORS y deja una sola direccion que dar.
+
+  Los ficheros que lo hacen posible:
+
+    Dockerfile            construye el frontend y lo mete
+                          dentro de Laravel
+    docker/apache.conf    el servidor web
+    docker/entrypoint.sh  el arranque: puerto, base de datos,
+                          migraciones, datos de demo y cachés
+
+
+===========================================================
+  PASO 0 — SUBIR EL CODIGO A GITHUB
+===========================================================
+
+  Railway y Render construyen desde GitHub, asi que esto es
+  obligatorio. Ahora mismo hay mas de 100 ficheros sin subir.
+
+  NO LO HE HECHO YO porque subir codigo es algo que sale
+  fuera de tu ordenador y preferia preguntarte. Si quieres,
+  dimelo y lo hago.
+
+  Si lo haces tu:
+
+    git checkout -b demo-hosting
+    git add .
+    git commit -m "feat: demo desplegable como un solo servicio"
+    git push -u origin demo-hosting
+
+  COMPRUEBA ANTES DE SUBIR que el .env NO va dentro:
+
+    git status --porcelain | findstr ".env"
+
+    No debe aparecer "Backend/.env". Esta ignorado, pero
+    mejor mirarlo que fiarse.
+
+
+===========================================================
+  PASO 1 — RAILWAY  (la opcion rapida)
+===========================================================
+
+  1. Entra en railway.com y crea cuenta con GitHub.
+
+  2. New Project  ->  Deploy from GitHub repo
+     Elige  Proyecto-One-Life-One-Body
+     Y la rama  demo-hosting
+
+  3. Railway vera el Dockerfile y empezara a construir solo.
+     No hay que elegir lenguaje ni nada.
+
+     QUE MIRAR: la pestana de Build. Tarda unos 3-5 minutos
+     la primera vez (tiene que descargar PHP y npm).
+
+  4. Variables  ->  mete estas:
+
+       APP_ENV        production
+       APP_DEBUG      false
+       APP_KEY        (mira el paso 2)
+       MAIL_MAILER    log
+       DEMO_SEED      true
+
+     Y cuando tengas la direccion (paso 5), anade:
+
+       APP_URL        https://lo-que-te-de-railway.up.railway.app
+
+  5. Settings  ->  Networking  ->  Generate Domain
+     Eso te da la direccion publica.
+
+  6. Abrela. Deberias ver la portada de One Life One Body.
+
+     Entra con las cuentas del fichero
+     "DEMO - Guion y Cuentas.txt".
+
+
+-----------------------------------------------------------
+  PASO 2 — LA CLAVE DE APLICACION (APP_KEY)
+-----------------------------------------------------------
+
+  Laravel no arranca sin ella. Saca una asi, en tu ordenador:
+
+    cd Backend
+    php artisan key:generate --show
+
+  Copia lo que te salga ENTERO, incluido el "base64:" del
+  principio, y pegalo en la variable APP_KEY de Railway.
+
+  Si no la pones, el arranque se genera una sola para no
+  dejarte tirado, pero cambia en cada despliegue y eso cierra
+  las sesiones abiertas. Ponla.
+
+
+-----------------------------------------------------------
+  PASO 3 — QUE LOS DATOS NO SE BORREN  (opcional)
+-----------------------------------------------------------
+
+  La base de datos es un fichero SQLite dentro del servidor.
+  Sin mas, cada vez que despliegues se empieza de cero (que
+  para una demo no es grave: los datos de ejemplo se vuelven
+  a crear solos).
+
+  Si quieres que lo que meta el cliente durante la demo
+  sobreviva:
+
+  En Railway:
+    1. En el servicio  ->  Settings  ->  Volumes  ->  Add
+    2. Mount path:  /data
+    3. Anade la variable:
+
+         DB_DATABASE    /data/database.sqlite
+
+  Con eso la base de datos vive en el volumen y los
+  despliegues no se la llevan.
+
+
+===========================================================
+  ALTERNATIVA — RENDER  (gratis de verdad)
+===========================================================
+
+  1. render.com  ->  New  ->  Web Service
+  2. Conecta el repositorio y la rama demo-hosting
+  3. Language / Runtime:  Docker
+  4. Instance Type:  Free
+  5. Las mismas variables del paso 1
+  6. Create Web Service
+
+  Para que los datos no se borren: Disks -> Add Disk, mount
+  path /data, y la variable DB_DATABASE=/data/database.sqlite
+
+  RECUERDA: el plan gratis duerme a los 15 minutos. Abre la
+  web unos minutos antes de la reunion.
+
+
+===========================================================
+  SI ALGO FALLA — MIRA AQUI
+===========================================================
+
+  LA CONSTRUCCION FALLA EN "npm run build"
+     Lo mas probable: un error de TypeScript. Compruebalo en
+     tu ordenador, que es mas rapido:
+
+       cd Frontend
+       npm run build
+
+     Si en tu ordenador funciona y en el servidor no, suele
+     ser que falta subir algun fichero a GitHub.
+
+  LA CONSTRUCCION FALLA EN "composer install"
+     Mira si el log habla de una extension de PHP que falta.
+     Se anade en el Dockerfile, en la linea que dice
+     docker-php-ext-install.
+
+  CONSTRUYE BIEN PERO LA WEB NO RESPONDE
+     Casi siempre es el puerto. El arranque lee la variable
+     PORT, que Railway y Render ponen solas. Mira en el log
+     de despliegue la linea:
+
+       Puerto: 8080     (o el numero que sea)
+
+     Si ahi pone 80 es que la plataforma no paso PORT.
+
+  SALE  {"message":"Error de configuracion del servidor."}
+     Esto lo dice la propia web a proposito cuando le falta
+     algo critico. Las dos causas:
+
+       a) Falta APP_KEY  ->  paso 2
+
+       b) Pusiste MAIL_MAILER=smtp sin los datos de correo.
+          En produccion, si el correo esta en smtp, exige
+          MAIL_HOST y MAIL_FROM_ADDRESS. Para la demo deja
+          MAIL_MAILER=log.
+
+     En el log del servidor sale la causa exacta, buscando
+     CONFIG_INCOMPLETA.
+
+  LA PORTADA CARGA PERO SIN ESTILOS, O EN BLANCO
+     Es la politica de seguridad del navegador bloqueando
+     algo. Abre la consola del navegador con F12 y mira si
+     hay errores que digan "Content Security Policy".
+
+     Si los hay, el origen que falta se anade en
+     Backend/app/Http/Middleware/SecurityHeaders.php, en la
+     constante CSP_WEB. Mandame el error y te digo donde.
+
+  ENTRO Y ME SACA AL LOGIN OTRA VEZ
+     Si cambiaste APP_KEY entre medias, las sesiones viejas
+     dejan de valer. Entra de nuevo y ya.
+
+  NO HAY DATOS, TODO VACIO
+     Mira en el log de arranque si aparece:
+
+       Creando los datos de la demo...
+
+     Si no sale, la variable DEMO_SEED esta en false.
+     Ponla en true y vuelve a desplegar.
+
+
+===========================================================
+  CUANDO PASES A HOSTINGER (lo de verdad)
+===========================================================
+
+  Esto ya no es la demo. Hay que hacer estas cinco cosas:
+
+  1. BORRAR LAS CUENTAS DE DEMO
+     Su contrasena esta escrita en un fichero de texto.
+
+       DEMO_SEED = false
+
+     y borrar a mano los dos usuarios .demo
+
+  2. CORREO DE VERDAD
+       MAIL_MAILER      smtp
+       MAIL_HOST        (el de tu proveedor)
+       MAIL_PORT        587
+       MAIL_USERNAME    (la cuenta del centro)
+       MAIL_PASSWORD    (su contrasena)
+       MAIL_FROM_ADDRESS (la cuenta del centro)
+
+  3. EL CORREO DEL GIMNASIO
+       OLOB_MAIL_AVISOS   el correo que recibe las reservas
+       OLOB_MAIL_COPIA    copia de lo que se manda (opcional)
+
+     SIN EL PRIMERO NO SE AVISA DE NINGUNA RESERVA. No da
+     error, simplemente no manda nada. Es lo primero que hay
+     que rellenar.
+
+  4. LA LINEA PROGRAMADA DE LOS REINTENTOS
+     Sin esto, las incidencias se guardan pero nadie las
+     reintenta:
+
+       * * * * * cd /ruta/al/Backend && php artisan schedule:run
+
+  5. CAMBIAR EL CODIGO DE ACCESO
+     Ahora es DIVA y esta escrito en el codigo, en
+     Frontend/src/pages/Auth/AccessGate.tsx
+
+  Y si quieres el asistente de IA de las dietas:
+       GEMINI_API_KEY   (se saca gratis en Google AI Studio)
+
+  Acuerdate tambien de que APP_DEBUG tiene que estar en
+  false. Si se queda en true, cada error le ensena al
+  visitante rutas del servidor y trozos de codigo. La web
+  avisa en su registro pero no se corta sola.
+
+
+===========================================================
+  DESPUES DE CADA CAMBIO EN EL CODIGO
+===========================================================
+
+  Railway y Render vuelven a construir solos en cuanto subes
+  a GitHub:
+
+    git add .
+    git commit -m "lo que sea"
+    git push
+
+  No hay que tocar nada en el panel.
+
+  Si cambias una VARIABLE en el panel, dale a redesplegar:
+  la configuracion se queda guardada en cache al arrancar, y
+  si no se reinicia sigue con la vieja.

@@ -1,35 +1,106 @@
 // src/styles/Theme.scss
 // ══════════════════════════════════════════════════════════
 // Puente SASS → las custom properties de src/index.css son la
-// única fuente de verdad del sistema de color/tipografía.
-// Estas variables solo existen para que el código SCSS pueda
-// usar sintaxis $variable sin duplicar (y desincronizar) valores.
+// única fuente de verdad del sistema de diseño. Estas variables
+// solo existen para que el código SCSS pueda usar sintaxis
+// $variable sin duplicar (y desincronizar) valores.
 // ══════════════════════════════════════════════════════════
 
-$primary: var(--primary);
-$primary-dim: var(--primary-dim);
-$accent: var(--accent);
-$bg-deep: var(--bg-deep);
-$bg-dark: var(--bg-dark);
-$bg-card: var(--bg-card);
+// ── Superficies ──
+$surface-0: var(--surface-0);
+$surface-1: var(--surface-1);
+$surface-2: var(--surface-2);
+$surface-3: var(--surface-3);
+$surface-4: var(--surface-4);
+
+// ── Marca ──
+$brand-300: var(--brand-300);
+$brand-400: var(--brand-400);
+$brand-500: var(--brand-500);
+$brand-600: var(--brand-600);
+$brand-700: var(--brand-700);
+
+// ── Texto ──
+$text-1: var(--text-1);
+$text-2: var(--text-2);
+$text-3: var(--text-3);
+$text-4: var(--text-4);
+$text-on-brand: var(--text-on-brand);
+
+// ── Bordes ──
+$border-subtle: var(--border-subtle);
 $border: var(--border);
-$border-hover: var(--border-hover);
-$text-primary: var(--text-primary);
-$text-secondary: var(--text-secondary);
-$text-muted: var(--text-muted);
+$border-strong: var(--border-strong);
+$border-brand: var(--border-brand);
+
+// ── Semánticos ──
+$success: var(--success);
+$warning: var(--warning);
+$danger: var(--danger);
+
+// ── Espaciado ──
+$sp-1: var(--sp-1);
+$sp-2: var(--sp-2);
+$sp-3: var(--sp-3);
+$sp-4: var(--sp-4);
+$sp-5: var(--sp-5);
+$sp-6: var(--sp-6);
+$sp-7: var(--sp-7);
+$sp-8: var(--sp-8);
+
+// ── Radios ──
+$r-xs: var(--r-xs);
+$r-sm: var(--r-sm);
+$r-md: var(--r-md);
+$r-lg: var(--r-lg);
+$r-xl: var(--r-xl);
+$r-full: var(--r-full);
+
+// ── Tipografía ──
 $font-display: var(--font-display);
 $font-condensed: var(--font-condensed);
 $font-body: var(--font-body);
 
+$fs-xs: var(--fs-xs);
+$fs-sm: var(--fs-sm);
+$fs-base: var(--fs-base);
+$fs-md: var(--fs-md);
+$fs-lg: var(--fs-lg);
+$fs-xl: var(--fs-xl);
+$fs-2xl: var(--fs-2xl);
+$fs-3xl: var(--fs-3xl);
+
+// ── Movimiento ──
+$ease-out: var(--ease-out);
+$dur-fast: var(--dur-fast);
+$dur: var(--dur);
+
+// ── Alias heredados (no usar en código nuevo) ──
+$primary: var(--brand-400);
+$primary-dim: var(--brand-500);
+$accent: var(--brand-600);
+$bg-deep: var(--surface-0);
+$bg-dark: var(--surface-1);
+$bg-card: var(--surface-2);
+$border-hover: var(--border-strong);
+$text-primary: var(--text-1);
+$text-secondary: var(--text-2);
+$text-muted: var(--text-3);
+
+// ── Breakpoints ──
+$breakpoint-desktop: 1024px;
 $breakpoint-tablet: 768px;
 $breakpoint-mobile: 480px;
 
-// ── Mixins ──
+// ══ Mixins ══
+
 @mixin respond-to($breakpoint) {
   @if $breakpoint == mobile {
     @media (max-width: $breakpoint-mobile) { @content; }
   } @else if $breakpoint == tablet {
     @media (max-width: $breakpoint-tablet) { @content; }
+  } @else if $breakpoint == desktop {
+    @media (max-width: $breakpoint-desktop) { @content; }
   }
 }
 
@@ -40,30 +111,43 @@ $breakpoint-mobile: 480px;
 }
 
 @mixin card-style {
-  background: $bg-card;
+  background: $surface-2;
   border: 1px solid $border;
-  border-radius: 14px;
+  border-radius: $r-lg;
   overflow: hidden;
-  transition: border-color 0.3s;
+  transition: border-color $dur $ease-out, background $dur $ease-out;
 
   &:hover {
-    border-color: $border-hover;
+    border-color: $border-strong;
+    background: $surface-3;
   }
 }
 
 @mixin label-style {
   font-family: $font-condensed;
-  font-size: 0.68rem;
+  font-size: $fs-xs;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: var(--ls-wider);
   text-transform: uppercase;
-  color: $text-muted;
+  color: $text-3;
 }
 
-@mixin title-style($size: 2rem) {
+@mixin title-style($size: $fs-2xl) {
   font-family: $font-display;
   font-size: $size;
-  letter-spacing: 0.04em;
-  color: $text-primary;
-  line-height: 1;
+  letter-spacing: 0.02em;
+  color: $text-1;
+  line-height: var(--lh-tight);
+}
+
+// Muesca diagonal característica de la marca
+@mixin notched($size: 10px) {
+  clip-path: polygon(
+    0 0,
+    calc(100% - #{$size}) 0,
+    100% #{$size},
+    100% 100%,
+    #{$size} 100%,
+    0 calc(100% - #{$size})
+  );
 }

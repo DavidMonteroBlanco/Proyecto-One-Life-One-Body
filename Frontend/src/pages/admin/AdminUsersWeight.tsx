@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import api from "../../services/api";
+import Icon from "../../components/ui/Icon";
 import "./AdminUsersWeight.css";
 
 type UserSummary = {
@@ -129,10 +130,32 @@ export default function AdminUsersWeight() {
     catch { /* */ } finally { setDeletingId(null); }
   };
 
-  const handleDownloadPdf = () => {
-    if (!selectedUser) return;
-    const token = localStorage.getItem("token");
-    window.open(`${api.defaults.baseURL}/admin/users/${selectedUser.id}/weight-records/pdf?token=${token}`, "_blank");
+  // El PDF se pide con la cabecera Authorization normal y se descarga
+  // como blob. Antes se abría en una pestaña con ?token= en la URL, lo
+  // que dejaba el token de sesión escrito en el historial y en los logs.
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    if (!selectedUser || pdfLoading) return;
+    setPdfLoading(true);
+    try {
+      const { data } = await api.get(
+        `/admin/users/${selectedUser.id}/weight-records/pdf`,
+        { responseType: "blob" }
+      );
+      const url = URL.createObjectURL(data as Blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `informe-pesajes-${selectedUser.name.trim().toLowerCase().replace(/\s+/g, "-")}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setAddMsg({ type: "err", text: "No se pudo generar el informe." });
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   const filtered = users.filter((u) => u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()));
@@ -152,7 +175,7 @@ export default function AdminUsersWeight() {
           ) : usersError ? (
             <div className="aw-empty">
               <p>Error al cargar usuarios</p>
-              <button className="aw-btn aw-btn--primary" style={{ marginTop: "0.8rem" }} onClick={() => { setUsersLoading(true); loadUsers(); }}>Reintentar</button>
+              <button className="aw-btn aw-btn--primary aw-btn--retry" onClick={() => { setUsersLoading(true); loadUsers(); }}>Reintentar</button>
             </div>
           ) : filtered.length === 0 ? (
             <div className="aw-empty">No hay usuarios</div>
@@ -173,13 +196,13 @@ export default function AdminUsersWeight() {
 
         <div className="aw-detail">
           {!selectedUser ? (
-            <div className="aw-detail__empty"><span className="aw-detail__empty-icon">◈</span><p>Selecciona un usuario</p></div>
+            <div className="aw-detail__empty"><span className="aw-detail__empty-icon"><Icon name="user" size={34} strokeWidth={1.3} /></span><p>Selecciona un usuario</p></div>
           ) : (
             <>
               <div className="aw-detail__header">
                 <div><h2 className="aw-detail__name">{selectedUser.name}</h2><p className="aw-detail__email">{selectedUser.email}</p></div>
-                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                  {records.length > 0 && <button className="aw-pdf-btn" onClick={handleDownloadPdf}>📄 PDF</button>}
+                <div className="aw-detail__actions">
+                  {records.length > 0 && <button className="aw-pdf-btn" onClick={handleDownloadPdf} disabled={pdfLoading}><Icon name="download" size={15} /> {pdfLoading ? "Generando…" : "PDF"}</button>}
                   <button className="aw-add-btn" onClick={() => { setShowAdd(true); setTimeout(() => addRef.current?.focus(), 100); }}>+ Nuevo pesaje</button>
                 </div>
               </div>
@@ -214,7 +237,7 @@ export default function AdminUsersWeight() {
               {recordsLoading ? (
                 <div className="aw-loading"><span className="aw-spinner" /> Cargando...</div>
               ) : records.length === 0 ? (
-                <div className="aw-empty" style={{ marginTop: "2rem" }}>Sin pesajes registrados.</div>
+                <div className="aw-empty aw-empty--spaced">Sin pesajes registrados.</div>
               ) : (
                 <div className="aw-records">
                   <h3 className="aw-records__title">Historial ({records.length} pesajes)</h3>
@@ -226,12 +249,12 @@ export default function AdminUsersWeight() {
                         {editId === r.id ? (
                           <div className="aw-record__edit">
                             <input type="number" step="0.1" value={editWeight} onChange={(e) => setEditWeight(e.target.value)} className="aw-record__edit-weight" placeholder="kg" />
-                            <input type="number" step="0.1" value={editFat} onChange={(e) => setEditFat(e.target.value)} placeholder="% grasa" style={{width:"75px"}} />
-                            <input type="number" step="0.1" value={editMuscle} onChange={(e) => setEditMuscle(e.target.value)} placeholder="% musc" style={{width:"75px"}} />
+                            <input type="number" step="0.1" value={editFat} onChange={(e) => setEditFat(e.target.value)} placeholder="% grasa" className="aw-record__edit-pct" />
+                            <input type="number" step="0.1" value={editMuscle} onChange={(e) => setEditMuscle(e.target.value)} placeholder="% musc" className="aw-record__edit-pct" />
                             <input type="date" value={editDate} max={getToday()} onChange={(e) => setEditDate(e.target.value)} />
                             <input type="text" value={editNotes} placeholder="Notas..." onChange={(e) => setEditNotes(e.target.value)} />
-                            <button className="aw-btn aw-btn--sm aw-btn--primary" onClick={handleEdit} disabled={editLoading}>{editLoading ? "..." : "✓"}</button>
-                            <button className="aw-btn aw-btn--sm aw-btn--ghost" onClick={() => setEditId(null)}>✕</button>
+                            <button className="aw-btn aw-btn--sm aw-btn--primary" onClick={handleEdit} disabled={editLoading}>{editLoading ? "…" : <Icon name="check" size={14} />}</button>
+                            <button className="aw-btn aw-btn--sm aw-btn--ghost" onClick={() => setEditId(null)}><Icon name="close" size={14} /></button>
                           </div>
                         ) : (
                           <>
@@ -242,8 +265,8 @@ export default function AdminUsersWeight() {
                             {diff !== null && <span className={`aw-record__diff ${diff <= 0 ? "aw-record__diff--down" : "aw-record__diff--up"}`}>{diff > 0 ? "+" : ""}{n(diff).toFixed(1)}</span>}
                             {r.notes && <span className="aw-record__notes">{r.notes}</span>}
                             <div className="aw-record__actions">
-                              <button className="aw-record__btn" onClick={() => startEdit(r)} title="Editar">✎</button>
-                              <button className="aw-record__btn aw-record__btn--del" onClick={() => handleDelete(r.id)} disabled={deletingId === r.id} title="Eliminar">{deletingId === r.id ? "..." : "✕"}</button>
+                              <button className="aw-record__btn" onClick={() => startEdit(r)} title="Editar"><Icon name="pencil" size={14} /></button>
+                              <button className="aw-record__btn aw-record__btn--del" onClick={() => handleDelete(r.id)} disabled={deletingId === r.id} title="Eliminar">{deletingId === r.id ? "…" : <Icon name="trash" size={14} />}</button>
                             </div>
                           </>
                         )}

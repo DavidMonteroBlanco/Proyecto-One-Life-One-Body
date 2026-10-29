@@ -2,7 +2,9 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/Authcontext";
 import api from "../services/api";
+import Icon from "../components/ui/Icon";
 import "./Profile.css";
+import { useReveal } from "../lib/motion";
 
 type ProfileData = {
   name: string;
@@ -15,6 +17,8 @@ type PasswordStep = "idle" | "sending" | "code" | "success";
 
 export default function Profile() {
   const { user, setUser } = useAuth();
+
+  useReveal();
 
   /* ── Perfil ── */
   const [profile, setProfile] = useState<ProfileData>({
@@ -163,12 +167,12 @@ export default function Profile() {
         <p className="profile-page__sub">Gestiona tu información personal y seguridad</p>
       </div>
 
-      <div className="profile-grid">
+      <div className="profile-grid stagger">
 
         {/* ══ DATOS PERSONALES ══ */}
-        <section className="profile-card">
+        <section className="profile-card" data-reveal>
           <div className="profile-card__header">
-            <span className="profile-card__icon">◈</span>
+            <span className="profile-card__icon"><Icon name="user" size={20} /></span>
             <div>
               <h2 className="profile-card__title">Datos personales</h2>
               <p className="profile-card__desc">Tu información básica de cuenta</p>
@@ -204,7 +208,7 @@ export default function Profile() {
 
             {profileMsg && (
               <div className={`profile-msg profile-msg--${profileMsg.type}`}>
-                {profileMsg.type === "ok" ? "✓" : "✗"} {profileMsg.text}
+                <Icon name={profileMsg.type === "ok" ? "check" : "alert"} size={15} /> {profileMsg.text}
               </div>
             )}
 
@@ -216,9 +220,9 @@ export default function Profile() {
         </section>
 
         {/* ══ SEGURIDAD ══ */}
-        <section className="profile-card">
+        <section className="profile-card" data-reveal>
           <div className="profile-card__header">
-            <span className="profile-card__icon profile-card__icon--security">◉</span>
+            <span className="profile-card__icon profile-card__icon--security"><Icon name="shield" size={20} /></span>
             <div>
               <h2 className="profile-card__title">Seguridad</h2>
               <p className="profile-card__desc">Cambia tu contraseña de forma segura</p>
@@ -233,7 +237,7 @@ export default function Profile() {
               </p>
 
               <div className="pw-email-preview">
-                <span className="pw-email-preview__icon">✉</span>
+                <span className="pw-email-preview__icon"><Icon name="send" size={18} /></span>
                 <div className="pw-email-preview__text">
                   <strong>Se enviará a:</strong>
                   <span>{maskEmail(profile.email)}</span>
@@ -303,7 +307,7 @@ export default function Profile() {
                   placeholder="Repite la contraseña" />
                 {confirmPassword.length > 0 && (
                   <span className={`pw-match ${newPassword === confirmPassword ? "ok" : "fail"}`}>
-                    {newPassword === confirmPassword ? "✓ Coinciden" : "✗ No coinciden"}
+                    {newPassword === confirmPassword ? "Coinciden" : "No coinciden"}
                   </span>
                 )}
               </div>
@@ -324,7 +328,7 @@ export default function Profile() {
           {/* SUCCESS */}
           {pwStep === "success" && (
             <div className="profile-form pw-success">
-              <div className="pw-success__icon">✓</div>
+              <div className="pw-success__icon"><Icon name="check" size={28} strokeWidth={2} /></div>
               <p className="pw-success__text">Contraseña cambiada correctamente</p>
               <p className="pw-success__sub">Las demás sesiones activas han sido cerradas por seguridad.</p>
             </div>

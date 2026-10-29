@@ -1,0 +1,188 @@
+/* ══════════════════════════════════════════════════════════
+   MIS ENTRENOS — vista del cliente
+
+   Se consulta en el gimnasio, con el móvil en la mano y entre
+   series. De ahí que los datos de cada ejercicio vayan en bloques
+   grandes en vez de en una tabla: una tabla de cinco columnas en
+   un móvil obliga a hacer scroll lateral justo cuando menos apetece.
+   ══════════════════════════════════════════════════════════ */
+
+.mw__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.mw__item {
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  transition: border-color var(--dur) var(--ease-out);
+}
+.mw__item--abierto { border-color: var(--border-brand); }
+
+/* ── Cabecera pulsable ── */
+.mw__cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-4) var(--sp-5);
+  font-family: var(--font-body);
+  text-align: left;
+  color: var(--text-1);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.mw__cab:hover { background: var(--surface-3); }
+
+.mw__cab-texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.mw__cab-titulo-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.mw__titulo {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: var(--ls-wide);
+}
+.mw__meta {
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+
+.mw__chevron {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--text-3);
+  transition: transform var(--dur) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.mw__chevron--abierto {
+  transform: rotate(90deg);
+  color: var(--brand-400);
+}
+
+/* ── Cuerpo ── */
+.mw__cuerpo {
+  padding: 0 var(--sp-5) var(--sp-5);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--sp-4);
+}
+
+.mw__notas {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-3);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  color: var(--text-2);
+  background: var(--accent-glow);
+  border-left: 2px solid var(--brand-500);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+}
+.mw__notas svg { flex-shrink: 0; margin-top: 2px; }
+
+.mw__sin-ejercicios {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-4);
+}
+
+/* ── Ejercicios ── */
+.mw__ejercicios {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: ejercicio;
+}
+
+.mw__ej {
+  counter-increment: ejercicio;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+}
+
+.mw__ej-nombre {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: var(--ls-wide);
+  color: var(--text-1);
+}
+.mw__ej-nombre::before {
+  content: counter(ejercicio);
+  flex-shrink: 0;
+  min-width: 22px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--brand-400);
+}
+
+.mw__ej-datos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-2);
+}
+.mw__dato {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-2);
+  text-align: center;
+  background: var(--surface-4);
+  border-radius: var(--r-sm);
+}
+.mw__dato-label {
+  font-family: var(--font-condensed);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+.mw__dato-valor {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+/* El peso es el dato que se busca de un vistazo entre series. */
+.mw__dato--peso .mw__dato-valor { color: var(--brand-300); }
+
+.mw__ej-nota {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  color: var(--text-3);
+}
+
+@media (max-width: 560px) {
+  .mw__cab { padding: var(--sp-4); }
+  .mw__cuerpo { padding-left: var(--sp-4); padding-right: var(--sp-4); }
+  .mw__ej-datos { grid-template-columns: repeat(2, 1fr); }
+}

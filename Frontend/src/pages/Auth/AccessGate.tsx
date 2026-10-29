@@ -2,20 +2,11 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import type { Variants } from "framer-motion";
 import logoImg from "../../assets/icons/logo-bw.jpg";
+import Icon from "../../components/ui/Icon";
 import "./Auth.css";
 
 const ACCESS_CODE = "DIVA";
-
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i = 0) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.1, duration: 0.55, ease: "easeOut" },
-  }),
-};
 
 export default function AccessGate() {
   const navigate = useNavigate();
@@ -44,7 +35,7 @@ export default function AccessGate() {
       </div>
 
       <div className="auth-container">
-        <motion.div className="auth-card" variants={fadeUp} initial="hidden" animate="visible" custom={1}>
+        <div className="auth-card rise rise--1">
           <div className="auth-card__bg-logo">
             <img src={logoImg} alt="" aria-hidden="true" />
           </div>
@@ -80,21 +71,19 @@ export default function AccessGate() {
               </button>
             </form>
           ) : (
-            <div className="auth-form" style={{ alignItems: "center", padding: "2rem 2.4rem" }}>
-              <div className="auth-success-icon">✓</div>
-              <p style={{ color: "var(--primary)", fontFamily: "var(--font-condensed)", letterSpacing: "0.08em" }}>
-                Acceso concedido
-              </p>
+            <div className="auth-form auth-form--centered">
+              <div className="auth-success-icon"><Icon name="check" size={28} strokeWidth={2} /></div>
+              <p className="auth-status">Acceso concedido</p>
             </div>
           )}
 
           <div className="auth-card__footer">
-            <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", textAlign: "center", lineHeight: "1.5" }}>
+            <p className="auth-hint">
               Si no tienes código, contacta con David por Instagram o en el centro de Benidorm.
             </p>
-            <a href="/" className="auth-back">← Volver a la web</a>
+            <a href="/" className="auth-back"><Icon name="arrow-left" size={13} /> Volver a la web</a>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

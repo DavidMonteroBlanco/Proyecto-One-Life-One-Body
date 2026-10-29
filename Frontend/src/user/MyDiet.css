@@ -1,0 +1,91 @@
+/* ══════════════════════════════════════════════════════════
+   MI DIETA — plan de alimentación del cliente
+   ══════════════════════════════════════════════════════════ */
+
+.diet { max-width: 800px; }
+
+/* ── Cabecera del plan ── */
+.diet__plan-head {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-5);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}
+.diet__plan-head::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--brand-500), var(--brand-400), transparent);
+}
+.diet__plan-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  letter-spacing: 0.03em;
+  color: var(--text-1);
+}
+.diet__plan-notes {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
+  color: var(--text-2);
+}
+.diet__plan-badge { margin-top: var(--sp-3); }
+
+/* ── Comidas ── */
+.diet__meals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.diet__meal {
+  padding: var(--sp-5);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  transition: border-color var(--dur) var(--ease-out), background var(--dur) var(--ease-out);
+}
+.diet__meal:hover {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+}
+
+.diet__meal-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.diet__meal-icon { display: flex; color: var(--brand-400); }
+.diet__meal-name {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--brand-400);
+}
+.diet__meal-macros {
+  margin-left: auto;
+  font-family: var(--font-condensed);
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-wide);
+  text-align: right;
+  color: var(--text-3);
+}
+.diet__meal-foods {
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
+  white-space: pre-line;
+  color: var(--text-2);
+}
+
+@media (max-width: 480px) {
+  .diet__meal { padding: var(--sp-4); }
+  .diet__meal-head { flex-wrap: wrap; }
+  .diet__meal-macros { margin-left: 0; width: 100%; text-align: left; }
+}

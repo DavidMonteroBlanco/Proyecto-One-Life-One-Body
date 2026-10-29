@@ -27,10 +27,13 @@ const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const Profile = lazy(() => import("./user/Profile"));
 const Tracking = lazy(() => import("./user/Tracking"));
 const MyDiet = lazy(() => import("./user/MyDiet"));
+const MyWorkouts = lazy(() => import("./user/MyWorkouts"));
 const MyAppointments = lazy(() => import("./user/MyAppointments"));
 
 const AdminUsersWeight = lazy(() => import("./pages/admin/AdminUsersWeight"));
+const AdminWorkouts = lazy(() => import("./pages/admin/AdminWorkouts"));
 const AdminDiets = lazy(() => import("./pages/admin/AdminDiets"));
+const AdminIncidents = lazy(() => import("./pages/admin/AdminIncidents"));
 const ServicesAdmin = lazy(() => import("./pages/admin/ServicesAdmin"));
 const ExerciseLibrary = lazy(() => import("./pages/ExerciseLibrary"));
 
@@ -39,17 +42,8 @@ const LegalPages = lazy(() => import("./pages/Legal/LegalPages"));
 
 function PageLoader() {
   return (
-    <div style={{
-      display: "flex", alignItems: "center", justifyContent: "center",
-      minHeight: "60vh", gap: "0.8rem",
-      fontFamily: "var(--font-condensed)", color: "var(--text-muted)",
-      fontSize: "0.9rem", letterSpacing: "0.1em",
-    }}>
-      <span style={{
-        width: 18, height: 18, border: "2px solid var(--primary)",
-        borderTopColor: "transparent", borderRadius: "50%",
-        animation: "spin 0.6s linear infinite",
-      }} />
+    <div className="route-loader" role="status" aria-live="polite">
+      <span className="spinner" aria-hidden="true" />
       Cargando...
     </div>
   );
@@ -75,12 +69,15 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/my-profile" element={<Profile />} />
           <Route path="/my-tracking" element={<Tracking />} />
+          <Route path="/my-workouts" element={<MyWorkouts />} />
           <Route path="/my-diet" element={<MyDiet />} />
           <Route path="/my-appointments" element={<MyAppointments />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
 
           <Route path="/admin/users-weight" element={<AdminRoute><AdminUsersWeight /></AdminRoute>} />
+          <Route path="/admin/workouts" element={<AdminRoute><AdminWorkouts /></AdminRoute>} />
           <Route path="/admin/diets" element={<AdminRoute><AdminDiets /></AdminRoute>} />
+          <Route path="/admin/incidents" element={<AdminRoute><AdminIncidents /></AdminRoute>} />
           <Route path="/admin/services" element={<AdminRoute><ServicesAdmin /></AdminRoute>} />
         </Route>
 

@@ -1,0 +1,147 @@
+/* ══════════════════════════════════════════════════════════
+   GRÁFICA DE EVOLUCIÓN
+   ══════════════════════════════════════════════════════════ */
+
+.ev__lienzo {
+  position: relative;
+  width: 100%;
+}
+
+.ev__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  border-radius: var(--r-sm);
+  outline: none;
+  /* El arrastre horizontal recorre la gráfica, el vertical sigue
+     haciendo scroll en la página. Con `none` el móvil se quedaría
+     atrapado dentro del recuadro. */
+  touch-action: pan-y;
+  cursor: crosshair;
+}
+.ev__svg:focus-visible {
+  outline: 2px solid var(--border-brand);
+  outline-offset: 4px;
+}
+
+/* ── Rejilla y ejes ── */
+.ev__rejilla {
+  stroke: var(--brand-400);
+  stroke-opacity: 0.08;
+  stroke-width: 1;
+}
+.ev__eje-y,
+.ev__eje-x {
+  font-family: var(--font-condensed);
+  font-size: 11px;
+  fill: var(--text-4);
+}
+.ev__eje-y { text-anchor: end; }
+.ev__eje-x { text-anchor: middle; }
+
+/* ── Curva ── */
+.ev__linea {
+  fill: none;
+  stroke: var(--brand-400);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ev__tendencia {
+  stroke: var(--text-4);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 5;
+  stroke-opacity: 0.45;
+}
+
+/* ── Puntos ── */
+.ev__punto {
+  fill: var(--surface-1);
+  stroke: var(--brand-400);
+  stroke-width: 2;
+  /* Solo el radio: animar `fill` o `r` de 20 puntos a la vez es
+     barato, pero animar filtros o sombras no lo sería. */
+  transition: r var(--dur-fast) var(--ease-out);
+}
+.ev__punto--activo {
+  fill: var(--brand-400);
+  stroke: var(--surface-1);
+  stroke-width: 3;
+}
+
+.ev__cruz {
+  stroke: var(--brand-400);
+  stroke-opacity: 0.3;
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.ev__extremo {
+  font-family: var(--font-condensed);
+  font-size: 10.5px;
+  font-weight: 700;
+  fill: var(--text-3);
+  text-anchor: middle;
+}
+
+/* ── Globo de datos ── */
+.ev__globo {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 150px;
+  padding: var(--sp-2) var(--sp-3);
+  pointer-events: none;
+  background: var(--surface-1);
+  border: 1px solid var(--border-brand);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-2);
+}
+.ev__globo-fecha {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-wide);
+  text-transform: capitalize;
+  color: var(--text-3);
+}
+.ev__globo-valor {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  line-height: var(--lh-tight);
+  color: var(--text-1);
+}
+.ev__globo-valor small {
+  margin-left: 2px;
+  font-family: var(--font-condensed);
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+.ev__globo-delta {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  color: var(--text-4);
+}
+.ev__globo-delta--bien { color: var(--success); }
+.ev__globo-delta--mal  { color: var(--warning); }
+
+.ev__pista {
+  margin: var(--sp-3) 0 0;
+  font-size: var(--fs-xs);
+  text-align: center;
+  color: var(--text-4);
+}
+
+/* En pantallas sin puntero fino la pista sobra: ya se entiende que
+   se toca, y el globo aparece al primer toque. */
+@media (hover: none) {
+  .ev__pista { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ev__punto { transition: none; }
+}

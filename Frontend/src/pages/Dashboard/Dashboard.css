@@ -1,204 +1,188 @@
-/* ================================================================
-   DASHBOARD — User home page
-   ================================================================ */
+/* ══════════════════════════════════════════════════════════
+   PANEL DEL CLIENTE — pantalla de inicio privada
+   ══════════════════════════════════════════════════════════ */
 
 .dash { max-width: 900px; }
 
-/* ── Header ── */
+/* ── Cabecera ── */
 .dash__header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
   flex-wrap: wrap;
-  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
 }
-
 .dash__greeting {
   font-family: var(--font-condensed);
-  font-size: 1rem;
+  font-size: var(--fs-md);
   font-weight: 500;
-  color: var(--text-muted);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
 }
-
 .dash__name {
+  margin-top: var(--sp-1);
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 6vw, 4rem);
-  letter-spacing: 0.04em;
-  color: var(--text-primary);
-  line-height: 1;
-  margin-top: 0.2rem;
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  letter-spacing: 0.03em;
+  color: var(--text-1);
 }
-
 .dash__date {
+  padding-top: var(--sp-1);
   font-family: var(--font-condensed);
-  font-size: 0.85rem;
-  color: var(--text-muted);
+  font-size: var(--fs-md);
   text-transform: capitalize;
-  padding-top: 0.3rem;
+  color: var(--text-3);
 }
 
-/* ── Motivational quote ── */
+/* ── Frase motivacional ── */
 .dash__quote {
-  background: linear-gradient(135deg, rgba(126, 232, 232, 0.04), rgba(126, 232, 232, 0.01));
-  border: 1px solid rgba(126, 232, 232, 0.1);
-  border-radius: 14px;
-  padding: 1.5rem 2rem;
-  margin-bottom: 2rem;
   position: relative;
   overflow: hidden;
+  margin-bottom: var(--sp-6);
+  padding: var(--sp-5) var(--sp-6);
+  background: linear-gradient(135deg, rgba(111, 222, 220, 0.045), rgba(111, 222, 220, 0.01));
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
 }
-
 .dash__quote::before {
   content: "";
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 3px;
   height: 100%;
-  background: linear-gradient(to bottom, var(--primary), transparent);
+  background: linear-gradient(to bottom, var(--brand-400), transparent);
 }
-
 .dash__quote-mark {
-  font-family: var(--font-display);
-  font-size: 4rem;
-  color: var(--primary);
-  opacity: 0.15;
   position: absolute;
   top: -0.2rem;
-  left: 1rem;
+  left: var(--sp-4);
+  font-family: var(--font-display);
+  font-size: 4rem;
   line-height: 1;
+  color: var(--brand-400);
+  opacity: 0.15;
 }
-
 .dash__quote-text {
-  font-family: var(--font-condensed);
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  letter-spacing: 0.02em;
-  line-height: 1.5;
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xl);
+  font-weight: 500;
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-tight);
+  color: var(--text-1);
 }
-
 .dash__quote-author {
   display: block;
+  margin-top: var(--sp-2);
   font-family: var(--font-condensed);
-  font-size: 0.78rem;
-  color: var(--primary-dim);
-  margin-top: 0.5rem;
-  letter-spacing: 0.06em;
+  font-size: var(--fs-sm);
+  letter-spacing: var(--ls-wide);
+  color: var(--brand-500);
 }
 
-/* ── Stats ── */
+/* ── Métricas ── */
 .dash__stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
 }
 
 .dash__stat {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1.4rem 1.5rem;
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  position: relative;
+  gap: var(--sp-1);
   overflow: hidden;
+  padding: var(--sp-5);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
 }
-
 .dash__stat::before {
   content: "";
   position: absolute;
-  top: 0; left: 0; right: 0;
+  inset: 0 0 auto 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--accent), transparent);
+  background: linear-gradient(90deg, var(--brand-500), transparent);
 }
-
-.dash__stat--big {
-  grid-column: span 1;
-}
+.dash__stat--big { grid-column: span 1; }
 
 .dash__stat-label {
   font-family: var(--font-condensed);
-  font-size: 0.65rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: var(--ls-widest);
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text-3);
 }
-
 .dash__stat-value {
   font-family: var(--font-display);
   font-size: 2.2rem;
-  color: var(--text-primary);
-  letter-spacing: 0.02em;
   line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--text-1);
 }
-
 .dash__stat-value small {
-  font-size: 0.9rem;
-  color: var(--text-muted);
   margin-left: 2px;
+  font-size: var(--fs-base);
+  color: var(--text-3);
 }
-
-.dash__stat-value--green { color: #6ee7b7; }
-.dash__stat-value--red { color: #fca5a5; }
-.dash__stat-value--amber { color: #fbbf24; }
+.dash__stat-value--green { color: var(--success); }
+.dash__stat-value--red   { color: var(--danger); }
+.dash__stat-value--amber { color: var(--warning); }
 
 .dash__stat-change {
   font-family: var(--font-condensed);
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--ls-wide);
 }
-
-.dash__stat-change--good { color: #6ee7b7; }
-.dash__stat-change--bad { color: #fca5a5; }
+.dash__stat-change--good { color: var(--success); }
+.dash__stat-change--bad  { color: var(--danger); }
 
 .dash__stat-sub {
-  font-size: 0.72rem;
-  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  color: var(--text-3);
 }
 
-/* ── Chart card ── */
+/* ── Gráfica ── */
 .dash__chart-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
   overflow: hidden;
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-5);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
 }
-
 .dash__chart-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
 }
-
 .dash__chart-header h2 {
   font-family: var(--font-condensed);
-  font-size: 0.9rem;
+  font-size: var(--fs-md);
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--text-primary);
+  letter-spacing: var(--ls-wide);
+  text-transform: uppercase;
+  color: var(--text-1);
 }
-
 .dash__chart-link {
   font-family: var(--font-condensed);
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
-  color: var(--primary);
+  letter-spacing: var(--ls-wide);
+  color: var(--brand-400);
   text-decoration: none;
-  letter-spacing: 0.04em;
-  transition: opacity 0.2s;
+  transition: opacity var(--dur-fast) var(--ease-out);
 }
-
 .dash__chart-link:hover { opacity: 0.7; }
 
 .dash-chart__svg {
@@ -207,147 +191,138 @@
   max-height: 100px;
 }
 
-/* ── Info row ── */
+/* ── Fila informativa ── */
 .dash__info-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
 }
-
 .dash__info-card {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  background: var(--bg-card);
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1rem 1.2rem;
+  border-radius: var(--r-md);
 }
-
-.dash__info-icon { font-size: 1.3rem; }
-
+.dash__info-icon { display: flex; color: var(--brand-400); }
 .dash__info-label {
   display: block;
   font-family: var(--font-condensed);
-  font-size: 0.62rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: var(--ls-wider);
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text-3);
 }
-
 .dash__info-value {
   display: block;
   font-family: var(--font-condensed);
-  font-size: 1rem;
+  font-size: var(--fs-md);
   font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--ls-tight);
+  color: var(--text-1);
 }
 
-/* ── Quick links ── */
+/* ── Accesos rápidos ── */
 .dash__links {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: var(--sp-4);
 }
-
 .dash__link-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1.5rem 1rem;
-  text-decoration: none;
+  gap: var(--sp-2);
+  padding: var(--sp-5) var(--sp-4);
   text-align: center;
-  transition: all 0.25s;
+  text-decoration: none;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  transition:
+    border-color var(--dur) var(--ease-out),
+    background var(--dur) var(--ease-out),
+    transform var(--dur) var(--ease-out);
 }
-
 .dash__link-card:hover {
-  border-color: rgba(126, 232, 232, 0.2);
+  background: var(--surface-3);
+  border-color: var(--border-strong);
   transform: translateY(-3px);
 }
-
-.dash__link-icon { font-size: 1.6rem; }
-
+.dash__link-icon { display: flex; color: var(--brand-400); }
 .dash__link-title {
   font-family: var(--font-condensed);
-  font-size: 0.9rem;
+  font-size: var(--fs-md);
   font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--ls-wide);
+  color: var(--text-1);
 }
-
 .dash__link-sub {
-  font-size: 0.72rem;
-  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  color: var(--text-3);
 }
 
-/* ── Empty state ── */
+/* ── Estado vacío ── */
 .dash__empty {
+  margin-bottom: var(--sp-6);
+  padding: var(--sp-8) var(--sp-6);
   text-align: center;
-  padding: 4rem 2rem;
-  background: var(--bg-card);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  margin-bottom: 2rem;
+  border-radius: var(--r-lg);
 }
-
 .dash__empty-icon {
-  display: block;
-  font-size: 3rem;
-  opacity: 0.3;
-  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--sp-4);
+  color: var(--text-3);
+  opacity: 0.35;
 }
-
 .dash__empty h2 {
+  margin-bottom: var(--sp-2);
   font-family: var(--font-display);
-  font-size: 2rem;
-  color: var(--text-primary);
-  letter-spacing: 0.04em;
-  margin-bottom: 0.5rem;
+  font-size: var(--fs-xl);
+  letter-spacing: 0.03em;
+  color: var(--text-1);
 }
-
 .dash__empty p {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  max-width: 400px;
-  margin: 0 auto 1.5rem;
-  line-height: 1.6;
+  max-width: 44ch;
+  margin: 0 auto var(--sp-5);
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
+  color: var(--text-2);
 }
-
 .dash__empty-links {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
   flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-4);
 }
 
-/* ── Loading ── */
+/* ── Carga ── */
 .dash__loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.8rem;
-  padding: 4rem 2rem;
+  gap: var(--sp-3);
+  padding: var(--sp-8) var(--sp-6);
   font-family: var(--font-condensed);
-  color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: var(--fs-md);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
 }
-
 .dash__spinner {
-  width: 20px; height: 20px;
-  border: 2px solid var(--primary);
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--brand-400);
   border-top-color: transparent;
-  border-radius: 50%;
+  border-radius: var(--r-full);
   animation: spin 0.6s linear infinite;
 }
-
-@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Responsive ── */
 @media (max-width: 700px) {
@@ -355,7 +330,7 @@
   .dash__info-row { grid-template-columns: 1fr; }
   .dash__links { grid-template-columns: 1fr; }
 }
-
 @media (max-width: 480px) {
   .dash__stats { grid-template-columns: 1fr; }
+  .dash__quote { padding: var(--sp-4); }
 }

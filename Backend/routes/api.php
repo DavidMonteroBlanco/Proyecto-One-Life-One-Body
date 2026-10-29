@@ -17,8 +17,12 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\AdminWeightController;
 use App\Http\Controllers\AdminDietController;
+use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\UserDietController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\AdminWorkoutController;
+use App\Http\Controllers\AdminIncidentController;
+use App\Http\Controllers\NotificationController;
 
 // ══════════════════════════════════════════════════════════════════
 // HEALTH CHECK
@@ -81,6 +85,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/appointments/book',                   [AppointmentController::class, 'book']);
     Route::patch('/appointments/{appointment}/cancel',  [AppointmentController::class, 'cancel']);
 
+    // Avisos dentro de la web
+    Route::get('/notifications',                        [NotificationController::class, 'index']);
+    Route::patch('/notifications/{notification}/read',  [NotificationController::class, 'markRead']);
+    Route::post('/notifications/read-all',              [NotificationController::class, 'markAllRead']);
+
     // Workouts
     Route::get('/workouts',              [WorkoutController::class, 'index']);
     Route::post('/workouts',             [WorkoutController::class, 'store']);
@@ -95,7 +104,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // ══════════════════════════════════════════════════════════
     // ADMIN
     // ══════════════════════════════════════════════════════════
-    Route::middleware(['admin', 'throttle:sensitive'])->group(function () {
+    Route::middleware(['admin', 'throttle:admin'])->group(function () {
 
         Route::apiResource('services',      ServiceController::class)->except(['show']);
         Route::apiResource('method-steps',  MethodStepController::class)->except(['show']);
@@ -107,6 +116,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/admin/reports/workouts.pdf',   [AdminReportController::class, 'workoutsPdf']);
         Route::post('/admin/users/{user}/workouts', [AdminUserWorkoutController::class, 'store']);
+
+        // ── Entrenos desde el panel ──
+        Route::get('/admin/workouts/users',               [AdminWorkoutController::class, 'users']);
+        Route::get('/admin/workouts/users/{user}',        [AdminWorkoutController::class, 'index']);
+        Route::post('/admin/workouts/users/{user}',       [AdminWorkoutController::class, 'store']);
+        Route::put('/admin/workouts/{workout}',           [AdminWorkoutController::class, 'update']);
+        Route::delete('/admin/workouts/{workout}',        [AdminWorkoutController::class, 'destroy']);
+        Route::post('/admin/workouts/{workout}/duplicate', [AdminWorkoutController::class, 'duplicate']);
+        Route::post('/admin/workouts/{workout}/send',     [AdminWorkoutController::class, 'send']);
+        Route::get('/admin/workouts/{workout}/pdf',       [AdminWorkoutController::class, 'exportPdf']);
+
+        // ── Incidencias: lo que falló y no se pudo arreglar solo ──
+        Route::get('/admin/incidents',                    [AdminIncidentController::class, 'index']);
+        Route::post('/admin/incidents/{incident}/retry',  [AdminIncidentController::class, 'retry']);
+        Route::post('/admin/incidents/{incident}/dismiss', [AdminIncidentController::class, 'dismiss']);
 
         // Gestión de usuarios y pesajes
         Route::get('/admin/users',                             [AdminWeightController::class, 'users']);
@@ -124,14 +148,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/admin/diet/plans/{dietPlan}',          [AdminDietController::class, 'updatePlan']);
         Route::delete('/admin/diet/plans/{dietPlan}',       [AdminDietController::class, 'destroyPlan']);
         Route::patch('/admin/diet/plans/{dietPlan}/toggle', [AdminDietController::class, 'toggleActive']);
+        Route::get('/admin/diet/plans/{dietPlan}/pdf',      [AdminDietController::class, 'exportPdf']);
+        Route::post('/admin/diet/plans/{dietPlan}/send',    [AdminDietController::class, 'sendPlan']);
+
+        // Asistente de IA del panel (límite propio: son llamadas caras)
+        Route::middleware('throttle:ai')->group(function () {
+            Route::post('/admin/ai/chat',  [AiAssistantController::class, 'chat']);
+            Route::post('/admin/ai/draft', [AiAssistantController::class, 'draft']);
+        });
 
         // Gestión de reservas
         Route::get('/admin/appointments',                        [AppointmentController::class, 'adminIndex']);
         Route::patch('/admin/appointments/{appointment}/status', [AppointmentController::class, 'adminUpdateStatus']);
     });
 });
-
-// ══════════════════════════════════════════════════════════════════
-// PDF EXPORT — Fuera del middleware auth (se abre en nueva pestaña)
-// ══════════════════════════════════════════════════════════════════
-Route::get('/admin/users/{user}/weight-records/pdf', [AdminWeightController::class, 'exportPdf']);

@@ -47,7 +47,12 @@ return [
     |
     */
 
-    'expiration' => null,
+    /*
+     * 7 días. Estaba en null, es decir, los tokens no caducaban nunca:
+     * uno robado del localStorage servía para siempre. Ahora el token
+     * muere solo y la sesión se renueva al volver a entrar.
+     */
+    'expiration' => (int) env('SANCTUM_TOKEN_EXPIRATION', 60 * 24 * 7),
 
     /*
     |--------------------------------------------------------------------------

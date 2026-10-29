@@ -2,20 +2,11 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import type { Variants } from "framer-motion";
 import { register } from "../../services/auth";
 import { useAuth } from "../../context/Authcontext";
 import logoImg from "../../assets/icons/logo-bw.jpg";
+import Icon from "../../components/ui/Icon";
 import "./Auth.css";
-
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i = 0) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.1, duration: 0.55, ease: "easeOut" },
-  }),
-};
 
 interface PasswordStrength {
   score: number;
@@ -35,11 +26,11 @@ function getPasswordStrength(password: string): PasswordStrength {
   const score = Object.values(checks).filter(Boolean).length;
   const levels = [
     { label: "",           color: "transparent" },
-    { label: "Muy débil",  color: "#e25555" },
-    { label: "Débil",      color: "#e28855" },
-    { label: "Aceptable",  color: "#e2c455" },
-    { label: "Segura",     color: "#55b8e2" },
-    { label: "Muy segura", color: "#55e2a0" },
+    { label: "Muy débil",  color: "var(--strength-1)" },
+    { label: "Débil",      color: "var(--strength-2)" },
+    { label: "Aceptable",  color: "var(--strength-3)" },
+    { label: "Segura",     color: "var(--strength-4)" },
+    { label: "Muy segura", color: "var(--strength-5)" },
   ];
   return { score, ...levels[score], checks };
 }
@@ -140,7 +131,7 @@ export default function Register() {
       </div>
 
       <div className="auth-container auth-container--wide">
-        <motion.div className="auth-card" variants={fadeUp} initial="hidden" animate="visible" custom={1}>
+        <div className="auth-card rise rise--1">
           <div className="auth-card__bg-logo">
             <img src={logoImg} alt="" aria-hidden="true" />
           </div>
@@ -159,7 +150,7 @@ export default function Register() {
                 placeholder="David Montero" value={form.name} onChange={handleChange}
                 required maxLength={50} />
               {form.name.length > 40 && (
-                <span style={{ fontFamily: "var(--font-condensed)", fontSize: "0.72rem", color: form.name.length >= 50 ? "#e25555" : "var(--text-muted)", marginTop: "0.2rem" }}>
+                <span className={`field__counter ${form.name.length >= 50 ? "field__counter--limit" : ""}`}>
                   {form.name.length}/50 caracteres
                 </span>
               )}
@@ -178,15 +169,15 @@ export default function Register() {
                 placeholder="612345678" value={form.phone} onChange={handleChange}
                 maxLength={9} inputMode="numeric" />
               {form.phone.length > 0 && form.phone.length < 9 && (
-                <span style={{ fontFamily: "var(--font-condensed)", fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+                <span className="field__counter">
                   {form.phone.length}/9 dígitos
                 </span>
               )}
               {form.phone.length === 9 && /^[6789]/.test(form.phone) && (
-                <span className="pw-match ok">✓ Teléfono válido</span>
+                <span className="pw-match ok"><Icon name="check" size={13} /> Teléfono válido</span>
               )}
               {form.phone.length === 9 && !/^[6789]/.test(form.phone) && (
-                <span className="pw-match fail">✗ Debe empezar por 6, 7, 8 o 9</span>
+                <span className="pw-match fail">Debe empezar por 6, 7, 8 o 9</span>
               )}
             </div>
 
@@ -218,7 +209,7 @@ export default function Register() {
                       [pwStrength.checks.special,    "Un símbolo (!@#...)"],
                     ] as [boolean, string][]).map(([ok, text]) => (
                       <li key={text} className={`pw-checklist__item ${ok ? "ok" : ""}`}>
-                        <span className="pw-checklist__icon">{ok ? "✓" : "○"}</span>{text}
+                        <span className="pw-checklist__icon">{ok ? <Icon name="check" size={12} strokeWidth={2.4} /> : <Icon name="toggle-off" size={11} />}</span>{text}
                       </li>
                     ))}
                   </ul>
@@ -233,7 +224,7 @@ export default function Register() {
                 value={form.password_confirmation} onChange={handleChange} required />
               {form.password_confirmation.length > 0 && (
                 <span className={`pw-match ${form.password === form.password_confirmation ? "ok" : "fail"}`}>
-                  {form.password === form.password_confirmation ? "✓ Las contraseñas coinciden" : "✗ No coinciden"}
+                  {form.password === form.password_confirmation ? "Las contraseñas coinciden" : "No coinciden"}
                 </span>
               )}
             </div>
@@ -253,9 +244,9 @@ export default function Register() {
 
           <div className="auth-card__footer">
             <p>¿Ya tienes cuenta? <Link to="/login" className="auth-link">Inicia sesión</Link></p>
-            <Link to="/" className="auth-back">← Volver a la web</Link>
+            <Link to="/" className="auth-back"><Icon name="arrow-left" size={13} /> Volver a la web</Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

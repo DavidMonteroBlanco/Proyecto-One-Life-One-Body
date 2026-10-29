@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/Authcontext";
 import api from "../../services/api";
+import Icon from "../../components/ui/Icon";
 import "./Dashboard.css";
+import { useReveal } from "../../lib/motion";
 
 type Stats = {
   total_records: number;
@@ -74,7 +76,7 @@ function MiniChart({ records }: { records: WeightRecord[] }) {
         </linearGradient>
       </defs>
       <polygon points={areaPoints} fill="url(#chartGrad)" />
-      <polyline points={points.join(" ")} fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+      <polyline points={points.join(" ")} fill="none" stroke="var(--brand-400)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" pathLength={1} className="chart-svg__line" />
       {sorted.length <= 12 && points.map((p, i) => {
         const [cx, cy] = p.split(",");
         return <circle key={i} cx={cx} cy={cy} r="3" fill="var(--bg-deep)" stroke="var(--primary)" strokeWidth="1.5" />;
@@ -96,6 +98,9 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [records, setRecords] = useState<WeightRecord[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Revela las tarjetas cuando terminan de llegar los datos
+  useReveal(loading);
   const quote = getDailyQuote();
 
   useEffect(() => {
@@ -145,7 +150,7 @@ export default function Dashboard() {
       ) : !hasData ? (
         /* ── Sin datos ── */
         <div className="dash__empty">
-          <span className="dash__empty-icon">⚖</span>
+          <span className="dash__empty-icon"><Icon name="scale" size={44} strokeWidth={1.2} /></span>
           <h2>Tu viaje empieza aqui</h2>
           <p>Tu entrenador registrara tu primer pesaje pronto. Mientras tanto, contacta con David para empezar.</p>
           <div className="dash__empty-links">
@@ -156,8 +161,8 @@ export default function Dashboard() {
       ) : (
         <>
           {/* ── Stats cards ── */}
-          <div className="dash__stats">
-            <div className="dash__stat dash__stat--big">
+          <div className="dash__stats stagger">
+            <div data-reveal className="dash__stat dash__stat--big">
               <span className="dash__stat-label">Peso actual</span>
               <span className="dash__stat-value">{n(stats.current_weight).toFixed(1)}<small>kg</small></span>
               {stats.last_week_change !== null && (
@@ -167,7 +172,7 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="dash__stat">
+            <div className="dash__stat" data-reveal>
               <span className="dash__stat-label">Cambio total</span>
               <span className={`dash__stat-value ${n(stats.total_change) <= 0 ? "dash__stat-value--green" : "dash__stat-value--red"}`}>
                 {n(stats.total_change) > 0 ? "+" : ""}{n(stats.total_change).toFixed(1)}<small>kg</small>
@@ -176,14 +181,14 @@ export default function Dashboard() {
             </div>
 
             {stats.current_fat !== null && (
-              <div className="dash__stat">
+              <div className="dash__stat" data-reveal>
                 <span className="dash__stat-label">Grasa corporal</span>
                 <span className="dash__stat-value dash__stat-value--amber">{n(stats.current_fat).toFixed(1)}<small>%</small></span>
               </div>
             )}
 
             {stats.current_muscle !== null && (
-              <div className="dash__stat">
+              <div className="dash__stat" data-reveal>
                 <span className="dash__stat-label">Masa muscular</span>
                 <span className="dash__stat-value dash__stat-value--green">{n(stats.current_muscle).toFixed(1)}<small>%</small></span>
               </div>
@@ -195,24 +200,24 @@ export default function Dashboard() {
             <div className="dash__chart-card">
               <div className="dash__chart-header">
                 <h2>Evolucion de peso</h2>
-                <Link to="/my-tracking" className="dash__chart-link">Ver completo →</Link>
+                <Link to="/my-tracking" className="dash__chart-link">Ver completo <Icon name="arrow-right" size={14} /></Link>
               </div>
               <MiniChart records={records.slice(0, 20)} />
             </div>
           )}
 
           {/* ── Info row ── */}
-          <div className="dash__info-row">
-            <div className="dash__info-card">
-              <span className="dash__info-icon">📅</span>
+          <div className="dash__info-row stagger">
+            <div className="dash__info-card" data-reveal>
+              <span className="dash__info-icon"><Icon name="calendar" size={20} /></span>
               <div>
                 <span className="dash__info-label">Total pesajes</span>
                 <span className="dash__info-value">{stats.total_records}</span>
               </div>
             </div>
 
-            <div className="dash__info-card">
-              <span className="dash__info-icon">⏱</span>
+            <div className="dash__info-card" data-reveal>
+              <span className="dash__info-icon"><Icon name="clock" size={20} /></span>
               <div>
                 <span className="dash__info-label">Ultimo pesaje</span>
                 <span className="dash__info-value">
@@ -223,8 +228,8 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="dash__info-card">
-              <span className="dash__info-icon">🎯</span>
+            <div className="dash__info-card" data-reveal>
+              <span className="dash__info-icon"><Icon name="target" size={20} /></span>
               <div>
                 <span className="dash__info-label">Peso inicial</span>
                 <span className="dash__info-value">{n(stats.start_weight).toFixed(1)} kg</span>
@@ -235,19 +240,19 @@ export default function Dashboard() {
       )}
 
       {/* ── Quick links ── */}
-      <div className="dash__links">
-        <Link to="/my-tracking" className="dash__link-card">
-          <span className="dash__link-icon">📊</span>
+      <div className="dash__links stagger">
+        <Link to="/my-tracking" className="dash__link-card" data-reveal>
+          <span className="dash__link-icon"><Icon name="chart" size={24} /></span>
           <span className="dash__link-title">Seguimiento</span>
           <span className="dash__link-sub">Grafica y historial</span>
         </Link>
-        <Link to="/my-profile" className="dash__link-card">
-          <span className="dash__link-icon">👤</span>
+        <Link to="/my-profile" className="dash__link-card" data-reveal>
+          <span className="dash__link-icon"><Icon name="user" size={24} /></span>
           <span className="dash__link-title">Mi perfil</span>
           <span className="dash__link-sub">Datos y contraseña</span>
         </Link>
-        <a href="https://wa.me/34631986391" target="_blank" rel="noreferrer" className="dash__link-card">
-          <span className="dash__link-icon">💬</span>
+        <a href="https://wa.me/34631986391" target="_blank" rel="noreferrer" className="dash__link-card" data-reveal>
+          <span className="dash__link-icon"><Icon name="whatsapp" size={24} /></span>
           <span className="dash__link-title">WhatsApp</span>
           <span className="dash__link-sub">Contacta con Muky</span>
         </a>

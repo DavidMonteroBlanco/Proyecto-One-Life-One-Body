@@ -1,0 +1,303 @@
+===========================================================
+  ONE LIFE ONE BODY — GUION DE LA DEMO
+  Para leer mientras se la ensenas al cliente
+===========================================================
+
+
+-----------------------------------------------------------
+  LAS DOS CUENTAS
+-----------------------------------------------------------
+
+  ENTRENADOR (lo que usara David en el dia a dia)
+    Correo       entrenador@onelifeonebody.demo
+    Contrasena   Demo2026!Olob
+
+  CLIENTE (lo que ve la persona que entrena)
+    Correo       cliente@onelifeonebody.demo
+    Contrasena   Demo2026!Olob
+
+  La misma contrasena para las dos, para no liarse en directo.
+
+  CODIGO DE ACCESO AL REGISTRO:  DIVA
+    La web no deja registrarse a cualquiera. Antes de ver el
+    formulario hay que meter ese codigo en /access. Es lo que
+    evita que entre gente de la calle.
+
+
+  CONSEJO PRACTICO
+    Abre las dos cuentas en DOS VENTANAS distintas del
+    navegador (una normal y otra de incognito). Asi puedes
+    mandar un entreno desde la del entrenador y ensenar como
+    le llega al cliente sin estar entrando y saliendo.
+
+
+-----------------------------------------------------------
+  POR DONDE EMPEZAR
+-----------------------------------------------------------
+
+  Ensenale primero la parte del CLIENTE, que es la que
+  justifica el producto, y despues la del ENTRENADOR, que es
+  la que justifica el precio.
+
+
+===========================================================
+  PARTE 1 — LO QUE VE EL CLIENTE
+===========================================================
+
+  Entra con cliente@onelifeonebody.demo
+
+
+  1. LA CAMPANA (arriba a la derecha)
+     Tiene un aviso sin leer. Pulsala.
+
+     Que contar: cuando el entrenador le manda algo, al
+     cliente le llega un correo Y le aparece aqui. Si el
+     correo se pierde o cae en spam, el aviso sigue estando
+     en la web. No se queda sin enterarse.
+
+
+  2. SEGUIMIENTO  (menu izquierdo)
+     Es la pantalla estrella. Tomate tiempo aqui.
+
+     - El peso de hoy, arriba y grande. El numero CUENTA
+       hasta su valor al entrar.
+     - Debajo, la silueta de su evolucion.
+     - La pastilla de color dice si va en la buena direccion.
+
+     LA GRAFICA — pasale el raton por encima (o el dedo en el
+     movil). Se engancha a cada pesaje y sale un globo con la
+     fecha, el peso y cuanto cambio respecto al anterior.
+
+     - Pestanas PESO / GRASA / MUSCULO
+     - Pestanas 1 MES / 3 MESES / 6 MESES / TODO
+
+     Dato para presumir: en este cliente de ejemplo son 14
+     pesajes, de 84,6 kg a unos 75. Nueve kilos y medio, y se
+     ve de un golpe de vista.
+
+     ANILLO DE COMPOSICION CORPORAL — grasa y musculo, que
+     crece al entrar.
+
+     CONSTANCIA — las ultimas 12 semanas. Encendida la semana
+     que hubo pesaje, apagada la que no. Esto es lo que una
+     grafica de peso no cuenta: si vino o no vino.
+
+     HISTORIAL — cada pesaje con una barra proporcional a lo
+     que cambio. Los que tienen nota del entrenador se
+     despliegan.
+
+
+  3. MIS ENTRENOS
+     Su sesion, con series, repeticiones, PESO y descanso.
+
+     Que contar: esto esta pensado para mirarlo con el movil
+     en la mano entre series. De ahi que los datos vayan en
+     bloques grandes y no en una tabla con scroll lateral.
+
+     El mas reciente viene ya desplegado.
+
+
+  4. MI DIETA
+     El plan de alimentacion, comida por comida, con calorias
+     y macros.
+
+
+  5. RESERVAS
+     El calendario de pesaje semanal. Los fines de semana
+     estan bloqueados. Puedes reservar un hueco en directo y
+     despues cancelarlo.
+
+
+  6. EJERCICIOS
+     Biblioteca con video. El corazon guarda favoritos.
+
+
+===========================================================
+  PARTE 2 — LO QUE VE EL ENTRENADOR
+===========================================================
+
+  Entra con entrenador@onelifeonebody.demo
+  Le aparece una seccion ADMINISTRACION en el menu.
+
+
+  1. ENTRENOS   <-- EMPIEZA POR AQUI, es lo mas vendible
+     Elige el cliente de la izquierda.
+
+     Vera dos entrenos: uno con la insignia ENVIADO y otro
+     SIN ENVIAR. Eso ya cuenta la historia solo.
+
+     AHORA ENSENA LOS ATAJOS, que es donde esta el valor:
+
+     a) Boton REPETIR EL ULTIMO
+        Sale un entreno nuevo con los mismos ejercicios y el
+        titulo ya subido de numero ("semana 4" -> "semana 5").
+
+        Que contar: esto es lo que se hace CADA SEMANA. Antes
+        era rellenar ocho filas a mano otra vez.
+
+     b) Botones +2,5  +5  -2,5  (encima de la tabla)
+        Suben el peso de TODOS los ejercicios de golpe.
+
+        Fijate en un detalle y cuentalo, porque gusta: el
+        ejercicio que dice "corporal" NO cambia. Solo toca los
+        numeros y respeta el texto. Y sale "42,5 kg", con
+        coma, no con punto.
+
+     c) PLANTILLAS: Empuje / Tiron / Pierna / Cuerpo completo
+        Un clic y la tabla se rellena con seis ejercicios.
+        Para un cliente nuevo.
+
+     d) El nombre del ejercicio se AUTOCOMPLETA con los que
+        ya ha usado con ESE cliente.
+
+     e) DUPLICAR, y el PDF.
+
+     Pulsa DESCARGAR PDF: sale con la cabecera oscura y el
+     logo de One Life One Body. Pesa 36 kB, se manda por
+     correo sin problema.
+
+     Pulsa ENVIAR AL CLIENTE y vete a la ventana del cliente:
+     le ha aparecido el aviso en la campana.
+
+
+  2. DIETAS
+     Lo mismo: crear, PDF con el logo, y enviar.
+
+     Tiene un ASISTENTE DE IA para montar el borrador del
+     plan. (Ojo: necesita una clave de Google Gemini
+     configurada; mira el apartado de limitaciones.)
+
+     IMPORTANTE QUE LO DIGAS TU ANTES DE QUE LO PREGUNTEN:
+     no hay "enviar a todos". Siempre a una persona y a mano.
+     Son datos de salud: un error multiplicado por toda la
+     cartera no tiene vuelta atras. Es una decision tomada a
+     proposito, no una funcion que falte.
+
+
+  3. USUARIOS Y PESAJES
+     Aqui el entrenador apunta el pesaje semanal. Lo que mete
+     aqui es lo que el cliente ve en su grafica.
+
+     Hay boton de informe en PDF.
+
+
+  4. INCIDENCIAS
+     Aqui saldra vacio: "Todo ha salido."
+
+     Que contar (esto suele gustar): si un correo no sale, el
+     sistema NO lo da por perdido. Lo guarda y lo reintenta
+     solo a los 2, 10, 60 y 240 minutos. Si despues de eso
+     sigue fallando, aparece en esta pantalla con el error y
+     un boton para relanzarlo.
+
+     Y mientras tanto el cliente YA lo ve en la web, porque el
+     aviso se crea antes de intentar el correo.
+
+
+  5. SERVICIOS
+     Para cambiar los textos y la oferta de la web publica
+     sin tocar codigo.
+
+
+===========================================================
+  SI TE PREGUNTAN POR SEGURIDAD
+===========================================================
+
+  - Un cliente no puede entrar en el panel del entrenador.
+    Probado: devuelve 403. Puedes ensenarlo poniendo
+    /admin/workouts en la ventana del cliente.
+
+  - El registro esta cerrado con codigo (DIVA).
+
+  - Seis intentos de login fallidos y bloquea.
+
+  - Las contrasenas no se guardan, se guarda su huella.
+
+  - Cabeceras de seguridad en todas las respuestas y una
+    politica que bloquea la ejecucion de codigo ajeno.
+
+
+===========================================================
+  LIMITACIONES — DILO TU ANTES DE QUE LO DESCUBRAN
+===========================================================
+
+  Es mejor que salga de ti. Da confianza.
+
+  1. CORREOS
+     En la demo el envio esta en modo "registro": el sistema
+     hace todo el recorrido y deja el correo escrito en el
+     servidor, pero NO sale a internet. Hay que conectar una
+     cuenta de correo real.
+
+     Para que funcione de verdad hacen falta:
+       - Los datos SMTP de la cuenta del centro
+       - El correo del gimnasio que recibe los avisos de
+         reservas (ahora mismo esta vacio: si alguien reserva,
+         no se avisa a nadie)
+
+  2. ASISTENTE DE IA DE LAS DIETAS
+     Necesita una clave de Google Gemini. Sin ella, el boton
+     esta pero no responde. Es gratis de dar de alta.
+
+  3. REINTENTOS AUTOMATICOS
+     El panel de Incidencias funciona, pero para que los
+     reintentos salgan SOLOS hace falta una linea programada
+     en el servidor. En Hostinger son dos minutos de
+     configuracion.
+
+  4. LOS DATOS SON DE EJEMPLO
+     Maria Garcia no existe. Los 14 pesajes estan generados.
+     Dilo al empezar y nadie se confunde.
+
+  5. SI ES UN HOSTING GRATUITO
+     La primera vez que se abre puede tardar medio minuto en
+     responder, porque el servidor estaba dormido. Abrela TU
+     cinco minutos antes de la reunion para despertarla.
+
+
+===========================================================
+  SI ALGO SE ROMPE EN DIRECTO
+===========================================================
+
+  LA PAGINA SALE EN BLANCO
+     Recarga con Ctrl+F5. Si fue justo despues de un
+     despliegue, el navegador se habia quedado con la version
+     vieja.
+
+  NO ME DEJA ENTRAR
+     Comprueba que no te sobra un espacio al final del correo
+     al pegarlo. Si pone "demasiados intentos", espera un
+     minuto: es el bloqueo por intentos fallidos.
+
+  UNA PANTALLA SALE VACIA
+     Entra con el ENTRENADOR y comprueba que el cliente que
+     tienes seleccionado es el de la demo.
+
+  PLAN B QUE NUNCA FALLA
+     Tienes la web funcionando en tu propio portatil. Si el
+     hosting da guerra, ensenasela desde ahi:
+
+       Ventana 1:  cd Backend
+                   php artisan serve
+
+       Y abres:    http://127.0.0.1:8000
+
+     Eso ya sirve la web entera, no solo la API. Probado hoy.
+
+
+===========================================================
+  DESPUES DE LA DEMO
+===========================================================
+
+  Cuando te den el OK y pase a Hostinger, hay que:
+
+    1. BORRAR las dos cuentas de demo. Son de ensenar, no de
+       trabajar, y su contrasena esta escrita en este fichero.
+    2. Conectar el correo de verdad.
+    3. Poner el correo del gimnasio para los avisos.
+    4. Anadir la linea programada de los reintentos.
+    5. Cambiar el codigo de acceso (DIVA) por otro.
+
+  Los pasos estan en:
+    DEMO - Desplegar.txt
+    OnelifeOnebody/Entregas a Clientes - 2026-10-08.md

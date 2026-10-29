@@ -1,19 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import type { Variants } from "framer-motion";
 import { login } from "../../services/auth";
 import { useAuth } from "../../context/Authcontext";
 import logoImg from "../../assets/icons/logo-bw.jpg";
+import Icon from "../../components/ui/Icon";
 import "./Auth.css";
-
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i = 0) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.1, duration: 0.55, ease: "easeOut" },
-  }),
-};
 
 export default function Login() {
   const navigate = useNavigate();
@@ -51,7 +42,7 @@ export default function Login() {
       </div>
 
       <div className="auth-container">
-        <motion.div className="auth-card" variants={fadeUp} initial="hidden" animate="visible" custom={1}>
+        <div className="auth-card rise rise--1">
           <div className="auth-card__bg-logo">
             <img src={logoImg} alt="" aria-hidden="true" />
           </div>
@@ -84,9 +75,9 @@ export default function Login() {
 
           <div className="auth-card__footer">
             <p>¿No tienes cuenta? <Link to="/register" className="auth-link">Regístrate aquí</Link></p>
-            <Link to="/" className="auth-back">← Volver a la web</Link>
+            <Link to="/" className="auth-back"><Icon name="arrow-left" size={13} /> Volver a la web</Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

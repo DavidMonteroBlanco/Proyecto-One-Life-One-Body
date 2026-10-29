@@ -1,0 +1,274 @@
+/* ══════════════════════════════════════════════════════════
+   ENTRENOS — panel del entrenador
+
+   La tabla es lo único con estilos propios de peso: es donde se
+   pasa el tiempo, así que las celdas son compactas y los campos
+   numéricos estrechos para que la fila entera entre de un vistazo.
+   El resto reutiliza AdminPages.css.
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Cabecera del panel ── */
+.wk__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+}
+.wk__head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* ── Atajos: plantillas y pesos ── */
+.wk__chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+}
+.wk__chips-label {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.wk__chip {
+  padding: var(--sp-1) var(--sp-3);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: var(--ls-wide);
+  color: var(--text-2);
+  background: var(--surface-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+.wk__chip:hover {
+  color: var(--brand-300);
+  background: var(--accent-glow);
+  border-color: var(--border-brand);
+}
+.wk__chip--peso {
+  min-width: 48px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Cabecera de la tabla ── */
+.wk__tabla-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin: var(--sp-6) 0 var(--sp-3);
+}
+.wk__tabla-titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.wk__contador {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text-on-brand);
+  background: var(--brand-600);
+  border-radius: var(--r-full);
+}
+.wk__pesos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* ── Tabla de ejercicios ── */
+.wk__tabla-wrap {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--brand-700) transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+}
+
+.wk__tabla {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: var(--fs-base);
+}
+.wk__tabla th {
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: var(--ls-wider);
+  text-transform: uppercase;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--text-3);
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.wk__tabla td {
+  padding: var(--sp-1) var(--sp-2);
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+.wk__tabla tbody tr:last-child td { border-bottom: none; }
+
+.wk__th-num, .wk__td-num { width: 34px; text-align: center; }
+.wk__td-num {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-sm);
+  color: var(--text-4);
+}
+.wk__th-mini { width: 92px; }
+.wk__th-acc  { width: 132px; }
+
+/* Los campos van sin marco dentro de la celda: con siete recuadros
+   por fila la tabla se vuelve ilegible. El borde aparece al enfocar. */
+.wk__tabla input {
+  width: 100%;
+  padding: var(--sp-2);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  color: var(--text-1);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  outline: none;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+.wk__tabla input:hover { background: var(--surface-3); }
+.wk__tabla input:focus {
+  background: var(--surface-4);
+  border-color: var(--border-brand);
+}
+.wk__tabla input::placeholder { color: var(--text-4); }
+.wk__tabla input[type="number"] {
+  font-variant-numeric: tabular-nums;
+}
+
+.wk__td-acc {
+  display: flex;
+  gap: 2px;
+  justify-content: flex-end;
+}
+
+/* Las flechas de orden son chevrones girados: en vertical se leen
+   como subir y bajar sin necesidad de dos iconos más. */
+.wk__td-acc .admin-item__btn:nth-child(1) svg { transform: rotate(90deg); }
+.wk__td-acc .admin-item__btn:nth-child(2) svg { transform: rotate(90deg); }
+
+.wk__add { margin-top: var(--sp-3); }
+
+/* ── Tabla en modo lectura (listado) ── */
+.wk__tabla--lectura {
+  min-width: 520px;
+  font-size: var(--fs-sm);
+}
+.wk__tabla--lectura td {
+  padding: var(--sp-2) var(--sp-3);
+  color: var(--text-2);
+}
+.wk__ex-nota {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  color: var(--text-4);
+}
+
+/* ── Listado de entrenos ── */
+.wk__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.wk__item {
+  padding: var(--sp-4);
+  background: var(--surface-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+}
+.wk__item-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.wk__item-id {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.wk__item-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.wk__item-title {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: var(--ls-wide);
+  color: var(--text-1);
+}
+.wk__item-meta {
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+.wk__item-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 2px;
+}
+.wk__item-notes {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
+  color: var(--text-2);
+  background: var(--surface-4);
+  border-left: 2px solid var(--brand-500);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+}
+
+/* ── Campos cortos de la cabecera ── */
+.wk__field--corta { max-width: 180px; }
+
+@media (max-width: 700px) {
+  .wk__field--corta { max-width: none; }
+  .wk__item-actions { width: 100%; justify-content: flex-start; }
+}
