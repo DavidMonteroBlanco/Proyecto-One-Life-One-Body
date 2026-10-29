@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class ChatbotController extends Controller
 {
@@ -61,9 +62,22 @@ class ChatbotController extends Controller
         // Llamar a Gemini API
         $apiKey = config('services.gemini.api_key');
 
-        if (!$apiKey) {
+        /*
+         * Sin clave el chat contestaba lo mismo a todo, y no quedaba
+         * constancia en ninguna parte: desde fuera parecía que el
+         * asistente estaba roto, cuando lo que faltaba era configurarlo.
+         *
+         * Ahora queda en el registro con una causa concreta. El visitante
+         * sigue viendo un mensaje amable, porque el problema no es suyo.
+         */
+        if (! $apiKey) {
+            Log::warning('CHATBOT_SIN_CONFIGURAR', [
+                'causa' => 'Falta GEMINI_API_KEY en el entorno del servidor.',
+            ]);
+
             return response()->json([
-                'reply' => 'El asistente no está disponible en este momento. Contacta con David por Instagram o email.',
+                'reply' => 'Ahora mismo no puedo responderte por aquí. '
+                         . 'Escríbele a David por Instagram (@one.life.one.body.benidorm) y te contesta él.',
             ]);
         }
 
@@ -95,14 +109,39 @@ class ChatbotController extends Controller
                 }
             }
 
-            // Fallback si falla
+            /*
+             * Aquí se llega con dos cosas distintas: que Gemini respondiera
+             * un error, o que respondiera bien pero sin texto (le pasa
+             * cuando corta la respuesta por el filtro de contenido).
+             *
+             * Antes las dos acababan en el mismo mensaje y sin registrar
+             * nada, así que no había forma de saber cuál de las dos era.
+             */
+            Log::warning('CHATBOT_SIN_RESPUESTA', [
+                'http'   => $response->status(),
+                'motivo' => $response->successful()
+                    ? 'Respuesta correcta pero sin texto utilizable.'
+                    : 'Gemini devolvió un error.',
+                // El cuerpo recortado: lo suficiente para ver la causa sin
+                // llenar el registro ni volcar la conversación entera.
+                'cuerpo' => mb_substr($response->body(), 0, 400),
+            ]);
+
             return response()->json([
                 'reply' => 'Perdona, no he podido procesar tu mensaje. ¿Puedes reformularlo o contactar directamente con David?',
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            // \Throwable y no \Exception: un fallo de red o de tipos llega
+            // como Error, y antes se escapaba del catch y tiraba la
+            // petición entera con un 500.
+            Log::error('CHATBOT_CAIDO', [
+                'error' => $e->getMessage(),
+            ]);
+
             return response()->json([
-                'reply' => 'El asistente no está disponible en este momento. Contacta con David por Instagram o email.',
+                'reply' => 'Ahora mismo no puedo responderte por aquí. '
+                         . 'Escríbele a David por Instagram (@one.life.one.body.benidorm) y te contesta él.',
             ]);
         }
     }
