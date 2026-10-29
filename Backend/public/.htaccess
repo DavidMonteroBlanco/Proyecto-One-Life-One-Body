@@ -1,20 +1,49 @@
+# ══════════════════════════════════════════════════════════
+# Apache para One Life One Body
+#
+# TODO pasa por index.php, que es el único punto de entrada de
+# Laravel. Laravel decide luego qué devolver: la API para /api/*
+# y el index.html de React para el resto (ver SpaController).
+#
+# OJO, esto estuvo roto y costó caro:
+#
+# Antes este fichero era de una instalación en cPanel. Mandaba las
+# rutas /api/* a un "laravel.php" que esperaba encontrar Laravel en
+# public/backend/, que es como se montaba allí. En el servidor actual
+# Laravel está en la raíz, así que ese fichero no encontraba el
+# autoload y TODA la API respondía con un error fatal de PHP en HTML
+# y un 200. El navegador recibía HTML donde esperaba JSON, y la
+# pantalla de acceso lo mostraba como "contraseña incorrecta".
+#
+# Si alguna vez se vuelve a desplegar en cPanel con Laravel dentro de
+# una subcarpeta, se cambia aquí y solo aquí. No en la aplicación.
+# ══════════════════════════════════════════════════════════
+
 <IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
     RewriteEngine On
 
-    # Pasar el header Authorization a PHP (necesario para tokens Bearer)
+    # El header Authorization no llega a PHP por su cuenta, y sin él no
+    # funciona ningún token Bearer: toda el área privada daría 401.
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Pasar x-xsrf-token a PHP (Sanctum)
+    # Lo mismo para el token de Sanctum.
     RewriteCond %{HTTP:x-xsrf-token} .
-    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:x-xsrf-token}]
 
-    # Rutas /api/* y /sanctum/* → Laravel gateway
-    RewriteCond %{REQUEST_URI} ^/(api|sanctum)(/|$) [NC]
-    RewriteRule ^ laravel.php [L,QSA]
-
-    # React SPA — cualquier ruta que no sea un archivo real → index.html
-    RewriteCond %{REQUEST_FILENAME} !-f
+    # Quitar la barra final cuando no es una carpeta.
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.html [L]
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Todo lo que no sea un fichero real, a index.php.
+    # Los ficheros que SÍ existen (assets/*.js, img/*, videos/*) los
+    # sirve Apache directamente, sin pasar por PHP.
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
 </IfModule>
