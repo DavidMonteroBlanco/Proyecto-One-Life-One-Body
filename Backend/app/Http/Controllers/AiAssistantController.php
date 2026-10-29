@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DietPlan;
 use App\Models\User;
 use App\Models\WeightRecord;
 use Illuminate\Http\Request;
@@ -195,7 +196,59 @@ class AiAssistantController extends Controller
         })->implode("\n");
 
         return "\n\nCLIENTE: " . explode(' ', $user->name)[0]
-            . "\nÚLTIMOS PESAJES (del más reciente al más antiguo):\n" . $lines;
+            . "\nÚLTIMOS PESAJES (del más reciente al más antiguo):\n" . $lines
+            . $this->dietaActual($user);
+    }
+
+    /**
+     * El plan que el cliente tiene ahora mismo.
+     *
+     * Sin esto, pedirle "súbele las proteínas del desayuno" o "quítale
+     * el pescado" no servía de nada: el asistente no sabía qué come hoy
+     * y se inventaba un plan desde cero cada vez.
+     */
+    private function dietaActual(User $user): string
+    {
+        $plan = DietPlan::where('user_id', $user->id)
+            ->where('active', true)
+            ->with('meals')
+            ->latest()
+            ->first();
+
+        if (! $plan) {
+            return "\n\nPLAN ACTUAL: ninguno. Es el primer plan de este cliente.";
+        }
+
+        $comidas = $plan->meals
+            ->sortBy('sort_order')
+            ->map(function ($m) {
+                $extra = array_filter([$m->calories, $m->macros]);
+
+                return '- ' . ($this->etiquetasComidas()[$m->meal_type] ?? $m->meal_type)
+                     . ': ' . $m->foods
+                     . ($extra ? ' (' . implode(' / ', $extra) . ')' : '');
+            })
+            ->implode("\n");
+
+        return "\n\nPLAN ACTUAL: «{$plan->title}»"
+            . ($plan->notes ? "\nNotas: {$plan->notes}" : '')
+            . "\n{$comidas}"
+            . "\n\nSi el entrenador pide un ajuste, parte de ESTE plan y cambia"
+            . ' solo lo que te diga. No lo rehagas entero sin que te lo pida.';
+    }
+
+    /** Nombres legibles de los tipos de comida, para el contexto. */
+    private function etiquetasComidas(): array
+    {
+        return [
+            'desayuno'     => 'Desayuno',
+            'media_manana' => 'Media mañana',
+            'comida'       => 'Comida',
+            'merienda'     => 'Merienda',
+            'pre_entreno'  => 'Pre-entreno',
+            'post_entreno' => 'Post-entreno',
+            'cena'         => 'Cena',
+        ];
     }
 
     private function systemPrompt(string $clientContext): string

@@ -33,6 +33,7 @@ const MyAppointments = lazy(() => import("./user/MyAppointments"));
 const AdminUsersWeight = lazy(() => import("./pages/admin/AdminUsersWeight"));
 const AdminWorkouts = lazy(() => import("./pages/admin/AdminWorkouts"));
 const AdminDiets = lazy(() => import("./pages/admin/AdminDiets"));
+const AdminNutritionAI = lazy(() => import("./pages/admin/AdminNutritionAI"));
 const AdminIncidents = lazy(() => import("./pages/admin/AdminIncidents"));
 const ServicesAdmin = lazy(() => import("./pages/admin/ServicesAdmin"));
 
@@ -75,6 +76,7 @@ export default function App() {
           <Route path="/admin/users-weight" element={<AdminRoute><AdminUsersWeight /></AdminRoute>} />
           <Route path="/admin/workouts" element={<AdminRoute><AdminWorkouts /></AdminRoute>} />
           <Route path="/admin/diets" element={<AdminRoute><AdminDiets /></AdminRoute>} />
+          <Route path="/admin/nutricion-ia" element={<AdminRoute><AdminNutritionAI /></AdminRoute>} />
           <Route path="/admin/incidents" element={<AdminRoute><AdminIncidents /></AdminRoute>} />
           <Route path="/admin/services" element={<AdminRoute><ServicesAdmin /></AdminRoute>} />
         </Route>

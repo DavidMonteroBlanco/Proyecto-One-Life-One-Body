@@ -144,6 +144,7 @@ const adminLinks: SidebarItem[] = [
   { to: "/admin/users-weight", icon: "scale",    label: "Usuarios y pesajes", sub: "Gestionar clientes" },
   { to: "/admin/workouts",     icon: "dumbbell", label: "Entrenos",           sub: "Sesiones y pesos" },
   { to: "/admin/diets",        icon: "plate",    label: "Dietas",             sub: "Planes de alimentación" },
+  { to: "/admin/nutricion-ia", icon: "chat",     label: "Nutrición IA",       sub: "Crear dietas hablando" },
   { to: "/admin/incidents",    icon: "alert",    label: "Incidencias",        sub: "Envíos que han fallado" },
   { to: "/admin/services",     icon: "settings", label: "Servicios",          sub: "Gestión de oferta" },
 ];
