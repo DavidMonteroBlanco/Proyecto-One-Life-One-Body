@@ -84,7 +84,12 @@ return [
     // sacaba los meses en inglés ("Plan definición · October 2026").
     'locale' => env('APP_LOCALE', 'es'),
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'es'),
+    // La reserva es inglés a propósito, no español. La reserva es el
+    // idioma al que se acude cuando falta una traducción, así que tiene
+    // que ser uno que las tenga TODAS, y el único es el que trae Laravel.
+    // Con 'es' aquí, en el servidor (sin .env) los errores de formulario
+    // salían como "validation.required" en vez de con un mensaje.
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'es_ES'),
 
