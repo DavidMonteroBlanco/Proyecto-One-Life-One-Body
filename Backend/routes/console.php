@@ -30,8 +30,16 @@ Artisan::command('inspire', function () {
  * SEMANAL, con el cron activo cada cliente habría recibido un email
  * cada sesenta segundos. Lunes a las 9:00, que es cuando tiene sentido
  * recordar el pesaje de la semana.
+ *
+ * Se ejecuta en el momento ('sync'), no se manda a la cola.
+ *
+ * WeeklyReminderJob es un trabajo "de cola", y con la cola en base de
+ * datos solo se envía si hay un proceso `queue:work` encendido todo el
+ * rato. En hosting compartido no lo hay, y en Render tampoco: el
+ * recordatorio se guardaba cada lunes y no salía nunca, sin dar ningún
+ * error. Así lo envía la propia tarea programada, en cualquier hosting.
  */
-Schedule::job(new WeeklyReminderJob)
+Schedule::job(new WeeklyReminderJob, connection: 'sync')
     ->weeklyOn(1, '09:00')
     ->withoutOverlapping();
 
