@@ -35,6 +35,64 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | IA gratuita: Groq + Cloudflare Workers AI
+    |--------------------------------------------------------------------------
+    |
+    | La usa App\Services\Ia (chat de la web, asistente de dietas y
+    | borrador de dieta en JSON). Se prueban en el orden de
+    | IA_PROVEEDORES, y dentro de cada uno sus modelos en orden.
+    | Un proveedor sin su clave puesta se salta solo.
+    |
+    | Groq va primero porque es el más rápido, y en un hosting
+    | compartido cada petición tiene un tiempo máximo.
+    |
+    | Los dos tienen plan gratuito: al acabarse el cupo devuelven un
+    | error (y se pasa al siguiente), nunca un cargo.
+    |
+    | Si un modelo deja de existir, se cambia la lista aquí o en el
+    | .env, sin tocar código. Modelos disponibles:
+    |   Groq:        https://console.groq.com/docs/models
+    |   Cloudflare:  https://developers.cloudflare.com/workers-ai/models/
+    |
+    | Gemini ya no se usa por defecto. Para meterlo como último
+    | recurso: IA_PROVEEDORES=groq,cloudflare,gemini y GEMINI_API_KEY.
+    */
+    'ia' => [
+        'proveedores' => array_filter(array_map('trim', explode(',', (string) env(
+            'IA_PROVEEDORES',
+            'groq,cloudflare'
+        )))),
+
+        'groq' => [
+            'api_key' => env('GROQ_API_KEY'),
+
+            'modelos' => array_filter(array_map('trim', explode(',', (string) env(
+                'GROQ_MODELOS',
+                'llama-3.3-70b-versatile,openai/gpt-oss-120b'
+            )))),
+
+            // Tope de palabras por respuesta. En el plan gratuito el límite
+            // es por minuto, y un plan de dieta completo cabe de sobra.
+            'max_tokens' => (int) env('GROQ_MAX_TOKENS', 4096),
+        ],
+
+        'cloudflare' => [
+            'account_id' => env('CLOUDFLARE_ACCOUNT_ID'),
+            'api_token'  => env('CLOUDFLARE_API_TOKEN'),
+
+            'modelos' => array_filter(array_map('trim', explode(',', (string) env(
+                'CLOUDFLARE_MODELOS',
+                '@cf/meta/llama-3.3-70b-instruct-fp8-fast,@cf/meta/llama-4-scout-17b-16e-instruct'
+            )))),
+        ],
+    ],
+
+    /*
+    | Gemini: solo como recurso opcional (ver arriba). Su plan gratuito
+    | no está permitido en aplicaciones para usuarios de Europa.
+    */
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
 

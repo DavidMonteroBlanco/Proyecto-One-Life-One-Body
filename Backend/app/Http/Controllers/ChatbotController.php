@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Gemini;
+use App\Services\Ia;
 use Illuminate\Http\Request;
 
 /**
  * Chat de la web pública.
  *
- * Contesta dudas de visitantes sobre el centro. La llamada a Google
- * la hace el servicio Gemini, que es quien reintenta y cambia de
- * modelo si el principal está saturado.
+ * Contesta dudas de visitantes sobre el centro. La llamada a la IA
+ * la hace el servicio Ia (Groq y, de reserva, Cloudflare), que es
+ * quien reintenta y cambia de modelo o de proveedor si falla.
  *
  * El límite de mensajes (20 por hora y visitante) lo pone el
  * middleware throttle:chatbot en la ruta. Antes había además un
@@ -20,7 +20,7 @@ use Illuminate\Http\Request;
 class ChatbotController extends Controller
 {
     public function __construct(
-        private Gemini $gemini,
+        private Ia $ia,
     ) {}
 
     public function chat(Request $request)
@@ -41,7 +41,7 @@ class ChatbotController extends Controller
         }
         $contenidos[] = ['role' => 'user', 'parts' => [['text' => $data['message']]]];
 
-        $r = $this->gemini->generar(
+        $r = $this->ia->generar(
             sistema: $this->instrucciones(),
             contenidos: $contenidos,
             config: [

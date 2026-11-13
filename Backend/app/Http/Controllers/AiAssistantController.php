@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DietPlan;
 use App\Models\User;
 use App\Models\WeightRecord;
-use App\Services\Gemini;
+use App\Services\Ia;
 use Illuminate\Http\Request;
 
 /**
@@ -23,7 +23,7 @@ use Illuminate\Http\Request;
 class AiAssistantController extends Controller
 {
     public function __construct(
-        private Gemini $gemini,
+        private Ia $ia,
     ) {}
 
     /** Tipos de comida admitidos. Debe coincidir con Frontend/src/lib/meals.ts */
@@ -46,7 +46,7 @@ class AiAssistantController extends Controller
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
 
-        $r = $this->gemini->generar(
+        $r = $this->ia->generar(
             sistema: $this->systemPrompt($this->clientContext($data['user_id'] ?? null)),
             contenidos: $this->buildContents($data),
             config: [
@@ -82,7 +82,7 @@ class AiAssistantController extends Controller
         // Se pide la respuesta como JSON con esquema fijo. Así no hay
         // que rascar el plan de dentro de un texto en prosa, que es
         // donde estas integraciones se rompen.
-        $r = $this->gemini->generar(
+        $r = $this->ia->generar(
             sistema: $this->systemPrompt($this->clientContext($data['user_id'] ?? null))
                 . "\n\nDevuelve ÚNICAMENTE el plan en el formato JSON solicitado.",
             contenidos: $this->buildContents($data),
@@ -136,7 +136,10 @@ class AiAssistantController extends Controller
     // INTERNOS
     // ══════════════════════════════════════════════════════════
 
-    /** Convierte el historial validado al formato de contenidos de Gemini. */
+    /**
+     * Convierte el historial validado al formato de contenidos de Gemini.
+     * El servicio Ia lo traduce después al formato de Groq y Cloudflare.
+     */
     private function buildContents(array $data): array
     {
         $contents = [];
@@ -322,17 +325,19 @@ class AiAssistantController extends Controller
      *
      * Aquí quien lee es David, no un visitante, así que se le dice qué
      * pasa de verdad y qué puede hacer. Antes todo era "el asistente ha
-     * devuelto un error", tanto si faltaba la clave como si Google estaba
-     * saturado, y no había forma de saber si esperar o llamar a alguien.
+     * devuelto un error", tanto si faltaba la clave como si el servicio
+     * estaba saturado, y no había forma de saber si esperar o llamar a
+     * alguien.
      */
     private function errorParaDavid(string $motivo)
     {
         [$estado, $mensaje] = match ($motivo) {
-            'sin_clave' => [503, 'El asistente no está configurado: falta GEMINI_API_KEY en el servidor.'],
-            'clave'     => [503, 'Google rechaza la clave de Gemini. Revisa GEMINI_API_KEY en el panel del hosting.'],
-            'bloqueado' => [422, 'El filtro de contenido de Google ha bloqueado la respuesta. Prueba a reformularlo.'],
+            'sin_clave' => [503, 'El asistente no está configurado: falta GROQ_API_KEY (o CLOUDFLARE_ACCOUNT_ID y CLOUDFLARE_API_TOKEN) en el servidor.'],
+            'clave'     => [503, 'Groq y Cloudflare rechazan las claves. Revisa GROQ_API_KEY, CLOUDFLARE_ACCOUNT_ID y CLOUDFLARE_API_TOKEN en el panel del hosting.'],
+            'cupo'      => [503, 'Se ha agotado el cupo gratuito de la IA por ahora. Si es el límite por minuto, prueba en un par de minutos; el cupo diario se renueva cada noche.'],
+            'bloqueado' => [422, 'El filtro de contenido ha bloqueado la respuesta. Prueba a reformularlo.'],
             'vacio'     => [502, 'El asistente no ha devuelto una respuesta completa. Prueba otra vez o sé más concreto.'],
-            default     => [503, 'Los servidores de Google están saturados ahora mismo. Vuelve a intentarlo en un minuto.'],
+            default     => [503, 'Los servicios de IA están saturados ahora mismo. Vuelve a intentarlo en un minuto.'],
         };
 
         return response()->json(['message' => $mensaje], $estado);

@@ -80,7 +80,8 @@ Una plataforma web centralizada con roles diferenciados (admin/cliente), seguimi
 ### Servicios externos
 | Servicio | Uso |
 |---|---|
-| **Google Gemini 2.5 Flash** | Chatbot IA con contexto del negocio |
+| **Groq** (gratis) | IA del chatbot, del asistente y del borrador de dietas |
+| **Cloudflare Workers AI** (gratis) | IA de reserva si Groq falla o se acaba su cupo |
 | **wger REST API** | Biblioteca de ejercicios (800+ ejercicios) |
 | **YouTube Data API v3** | Vídeos de demostración para ejercicios |
 | **Wikipedia API** | Imágenes de respaldo para ejercicios |
@@ -94,7 +95,7 @@ Una plataforma web centralizada con roles diferenciados (admin/cliente), seguimi
 - **Landing page** con animación 3D (Three.js), secciones de método, servicios, testimonios y contacto
 - **Mapa interactivo** de Google Maps con la localización exacta del centro (C/ de Goya, 37, Benidorm)
 - **Página de Entrenamiento Online** con vídeo hero y características del servicio
-- **Chatbot IA** flotante conectado a Google Gemini con system prompt personalizado del negocio
+- **Chatbot IA** flotante con IA gratuita (Groq, con Cloudflare de reserva) y system prompt personalizado del negocio
 - **Código de acceso** para proteger el área de clientes
 
 ### Panel de usuario
@@ -247,7 +248,9 @@ MAIL_PASSWORD=tu-app-password-gmail
 MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=tu-email@gmail.com
 
-GEMINI_API_KEY=                   # Obtener en: https://aistudio.google.com
+GROQ_API_KEY=                     # Gratis en: https://console.groq.com/keys
+CLOUDFLARE_ACCOUNT_ID=            # Cloudflare → AI → Workers AI → Use REST API
+CLOUDFLARE_API_TOKEN=             # (mismo sitio: botón para crear el token)
 YOUTUBE_API_KEY=                  # Google Cloud Console → habilitar YouTube Data API v3
 ```
 
@@ -290,7 +293,7 @@ YOUTUBE_API_KEY=                  # Google Cloud Console → habilitar YouTube D
 |---|---|---|
 | `GET` | `/api/public/external/wger/exercises` | Listado de ejercicios |
 | `GET` | `/api/public/external/wger/exerciseinfo/{id}` | Detalle + vídeo YouTube |
-| `POST` | `/api/chatbot` | Chat con Gemini IA |
+| `POST` | `/api/chatbot` | Chat con la IA (Groq / Cloudflare) |
 
 ---
 
