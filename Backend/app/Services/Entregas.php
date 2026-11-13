@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Workout;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 /**
  * ══════════════════════════════════════════════════════════
@@ -291,20 +292,35 @@ class Entregas
      * comprimir, y el PDF se iba al megabyte. Con la ruta reutiliza el
      * JPEG original tal cual.
      *
+     * Vive en resources/ y no en public/ porque dompdf tiene un
+     * "chroot": solo abre ficheros que estén dentro de la carpeta de la
+     * aplicación. En hosting compartido la carpeta pública va FUERA de
+     * la aplicación (public_html, al lado), así que un logo en public/
+     * quedaba fuera del chroot y los PDF salían sin él, sin dar ningún
+     * error. Dentro de resources/ funciona en cualquier estructura.
+     *
+     * Tampoco necesita ser público: solo lo usa esta clase.
+     *
      * Si el fichero no estuviera, se devuelve null y el documento sale
      * con el nombre en texto en vez de reventar.
      */
     private function logoEnBase64(): ?string
     {
-        $ruta = public_path('img/logo-olob.jpg');
+        $ruta = resource_path('img/logo-olob.jpg');
 
         return is_readable($ruta) ? $ruta : null;
     }
 
+    /**
+     * Nombre del cliente apto para el nombre del fichero adjunto.
+     *
+     * Str::slug translitera antes de limpiar: "María García" queda
+     * "maria-garcia". La versión anterior quitaba todo lo que no fuera
+     * a-z sin convertirlo, así que la tilde se volvía un guion y el
+     * cliente recibía "plan-alimentacion-mar-a-garc-a.pdf".
+     */
     private function slug(?string $nombre): string
     {
-        $slug = preg_replace('/[^a-z0-9]+/', '-', strtolower($nombre ?? 'cliente'));
-
-        return trim($slug, '-') ?: 'cliente';
+        return Str::slug($nombre ?? '') ?: 'cliente';
     }
 }
