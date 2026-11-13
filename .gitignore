@@ -37,3 +37,6 @@ Thumbs.db
 # David, no en el repositorio.
 DEMO - Guion y Cuentas.txt
 DEMO - Desplegar.txt
+
+# Paquete generado por deploy/cpanel/empaquetar.sh: se regenera, no se versiona.
+deploy/cpanel/salida/

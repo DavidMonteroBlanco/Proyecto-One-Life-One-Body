@@ -1,5 +1,8 @@
 # ══════════════════════════════════════════════════════════
-# Apache para One Life One Body
+# One Life One Body · reglas del servidor web
+#
+# Vale para Apache (Docker/Render) y para LiteSpeed (cPanel:
+# LucusHost, Namecheap, Hostinger), que lee este fichero igual.
 #
 # TODO pasa por index.php, que es el único punto de entrada de
 # Laravel. Laravel decide luego qué devolver: la API para /api/*
@@ -7,16 +10,13 @@
 #
 # OJO, esto estuvo roto y costó caro:
 #
-# Antes este fichero era de una instalación en cPanel. Mandaba las
-# rutas /api/* a un "laravel.php" que esperaba encontrar Laravel en
-# public/backend/, que es como se montaba allí. En el servidor actual
-# Laravel está en la raíz, así que ese fichero no encontraba el
-# autoload y TODA la API respondía con un error fatal de PHP en HTML
-# y un 200. El navegador recibía HTML donde esperaba JSON, y la
-# pantalla de acceso lo mostraba como "contraseña incorrecta".
-#
-# Si alguna vez se vuelve a desplegar en cPanel con Laravel dentro de
-# una subcarpeta, se cambia aquí y solo aquí. No en la aplicación.
+# Antes este fichero era de una instalación vieja en cPanel. Mandaba
+# las rutas /api/* a un "laravel.php" que esperaba encontrar Laravel
+# en public/backend/. No lo encontraba, y TODA la API respondía con un
+# error fatal de PHP en HTML y un 200. El navegador recibía HTML donde
+# esperaba JSON, y la pantalla de acceso lo mostraba como "contraseña
+# incorrecta". Para cPanel, la ruta a la aplicación se cambia en
+# deploy/cpanel/index.php, no aquí.
 # ══════════════════════════════════════════════════════════
 
 <IfModule mod_rewrite.c>
@@ -25,6 +25,19 @@
     </IfModule>
 
     RewriteEngine On
+
+    # ── Forzar HTTPS ──────────────────────────────────────────
+    # Desactivado a propósito hasta que el certificado esté activo.
+    # Si se activa antes, la web redirige a https:// sin certificado
+    # y el navegador la bloquea con un aviso de seguridad.
+    #
+    # Cuando https://tudominio cargue con el candado, quita la # de
+    # estas tres líneas. La segunda condición evita un bucle infinito
+    # en servidores que ponen un proxy delante (como Render).
+    #
+    # RewriteCond %{HTTPS} off
+    # RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
     # El header Authorization no llega a PHP por su cuenta, y sin él no
     # funciona ningún token Bearer: toda el área privada daría 401.
@@ -42,8 +55,40 @@
 
     # Todo lo que no sea un fichero real, a index.php.
     # Los ficheros que SÍ existen (assets/*.js, img/*, videos/*) los
-    # sirve Apache directamente, sin pasar por PHP.
+    # sirve el servidor directamente, sin pasar por PHP.
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+# ── Caché del navegador ───────────────────────────────────
+# Los ficheros de assets/ llevan un código en el nombre
+# (index-ABC123.js) que cambia cada vez que se recompila: se pueden
+# guardar un año sin riesgo de servir una versión vieja. El resto
+# (imágenes, vídeos) una semana.
+#
+# El index.html NO se cachea: es el que apunta a los assets nuevos,
+# y si el navegador se quedara con uno viejo, tras cada subida la web
+# saldría en blanco. Laravel ya lo sirve con "no-cache".
+<IfModule mod_headers.c>
+    <FilesMatch "^(index-|vendor-|[A-Za-z0-9_-]+-)[A-Za-z0-9_-]{8}\.(js|css|woff2?)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    <FilesMatch "\.(jpe?g|png|webp|svg|gif|ico|mp4|webm)$">
+        Header set Cache-Control "public, max-age=604800"
+    </FilesMatch>
+</IfModule>
+
+# ── Ficheros que nunca deben servirse ─────────────────────
+# Por si alguien sube por error un .env, un backup o un log a la
+# carpeta pública.
+#
+# Todo este fichero va dentro de comprobaciones <IfModule> a
+# propósito: si el servidor no reconoce un módulo, se salta ese
+# bloque. Sin ellas, una sola directiva desconocida tumba la web
+# entera con un "Error 500".
+<IfModule mod_authz_core.c>
+    <FilesMatch "^\.(env|git|htpasswd)|\.(log|sql|sqlite|bak|swp)$">
+        Require all denied
+    </FilesMatch>
 </IfModule>
