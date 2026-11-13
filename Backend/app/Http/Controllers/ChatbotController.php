@@ -2,192 +2,118 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Gemini;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
+/**
+ * Chat de la web pública.
+ *
+ * Contesta dudas de visitantes sobre el centro. La llamada a Google
+ * la hace el servicio Gemini, que es quien reintenta y cambia de
+ * modelo si el principal está saturado.
+ *
+ * El límite de mensajes (20 por hora y visitante) lo pone el
+ * middleware throttle:chatbot en la ruta. Antes había además un
+ * contador hecho a mano aquí dentro que lo duplicaba, y que contaba
+ * también los mensajes que habían fallado.
+ */
 class ChatbotController extends Controller
 {
-    /**
-     * Proxy público para el chatbot de la landing.
-     * Rate limit: 20 mensajes por IP por hora.
-     */
+    public function __construct(
+        private Gemini $gemini,
+    ) {}
+
     public function chat(Request $request)
     {
         $data = $request->validate([
-            'message' => ['required', 'string', 'max:500'],
-            'history' => ['nullable', 'array', 'max:20'],
+            'message'        => ['required', 'string', 'max:500'],
+            'history'        => ['nullable', 'array', 'max:20'],
+            'history.*.role' => ['required_with:history', 'string', 'in:user,model'],
+            'history.*.text' => ['required_with:history', 'string', 'max:2000'],
         ]);
 
-        // Rate limit por IP (20 mensajes/hora)
-        $ip = $request->ip();
-        $cacheKey = 'chatbot_rate_' . md5($ip);
-        $count = Cache::get($cacheKey, 0);
-
-        if ($count >= 20) {
-            return response()->json([
-                'reply' => 'Has enviado muchos mensajes. Espera un poco o contacta directamente con David por Instagram.',
-            ]);
-        }
-
-        Cache::put($cacheKey, $count + 1, now()->addHour());
-
-        // System prompt con toda la info de OLOB
-        $systemPrompt = $this->getSystemPrompt();
-
-        // Construir historial de conversación
-        $contents = [];
-
-        // Añadir historial previo si existe
-        if (!empty($data['history'])) {
-            foreach ($data['history'] as $msg) {
-                $role = ($msg['role'] ?? '') === 'user' ? 'user' : 'model';
-                $text = $msg['text'] ?? '';
-                if ($text) {
-                    $contents[] = [
-                        'role' => $role,
-                        'parts' => [['text' => $text]],
-                    ];
-                }
+        $contenidos = [];
+        foreach ($data['history'] ?? [] as $msg) {
+            $texto = trim($msg['text']);
+            if ($texto !== '') {
+                $contenidos[] = ['role' => $msg['role'], 'parts' => [['text' => $texto]]];
             }
         }
+        $contenidos[] = ['role' => 'user', 'parts' => [['text' => $data['message']]]];
 
-        // Añadir mensaje actual del usuario
-        $contents[] = [
-            'role' => 'user',
-            'parts' => [['text' => $data['message']]],
-        ];
+        $r = $this->gemini->generar(
+            sistema: $this->instrucciones(),
+            contenidos: $contenidos,
+            config: [
+                'temperature'     => 0.7,
+                // Holgado a propósito. El prompt ya pide 2-3 frases, y un
+                // modelo que no piensa se para solo mucho antes. Este margen
+                // es para los modelos de reserva que sí piensan: con 300
+                // gastaban casi todo pensando y la respuesta salía cortada.
+                'maxOutputTokens' => 1024,
+            ],
+            uso: 'chat-web',
+        );
 
-        // Llamar a Gemini API
-        $apiKey = config('services.gemini.api_key');
-
-        /*
-         * Sin clave el chat contestaba lo mismo a todo, y no quedaba
-         * constancia en ninguna parte: desde fuera parecía que el
-         * asistente estaba roto, cuando lo que faltaba era configurarlo.
-         *
-         * Ahora queda en el registro con una causa concreta. El visitante
-         * sigue viendo un mensaje amable, porque el problema no es suyo.
-         */
-        if (! $apiKey) {
-            Log::warning('CHATBOT_SIN_CONFIGURAR', [
-                'causa' => 'Falta GEMINI_API_KEY en el entorno del servidor.',
-            ]);
-
-            return response()->json([
-                'reply' => 'Ahora mismo no puedo responderte por aquí. '
-                         . 'Escríbele a David por Instagram (@one.life.one.body.benidorm) y te contesta él.',
-            ]);
+        if ($r['ok']) {
+            return response()->json(['reply' => $r['texto']]);
         }
 
-        try {
-            // La clave viaja en cabecera, no en la query string: así no
-            // queda escrita en los logs de acceso ni en las trazas de error.
-            $response = Http::timeout(15)
-                ->withHeaders(['x-goog-api-key' => $apiKey])
-                ->post(
-                'https://generativelanguage.googleapis.com/v1beta/models/'
-                    . config('services.gemini.model') . ':generateContent',
-                [
-                    'system_instruction' => [
-                        'parts' => [['text' => $systemPrompt]],
-                    ],
-                    'contents' => $contents,
-                    'generationConfig' => [
-                        'temperature' => 0.7,
-                        'maxOutputTokens' => 300,
-                    ],
-                ]
-            );
-
-            if ($response->successful()) {
-                $body = $response->json();
-                $reply = $body['candidates'][0]['content']['parts'][0]['text'] ?? null;
-
-                if ($reply) {
-                    return response()->json(['reply' => trim($reply)]);
-                }
-            }
-
-            /*
-             * Aquí se llega con dos cosas distintas: que Gemini respondiera
-             * un error, o que respondiera bien pero sin texto (le pasa
-             * cuando corta la respuesta por el filtro de contenido).
-             *
-             * Antes las dos acababan en el mismo mensaje y sin registrar
-             * nada, así que no había forma de saber cuál de las dos era.
-             */
-            Log::warning('CHATBOT_SIN_RESPUESTA', [
-                'http'   => $response->status(),
-                'motivo' => $response->successful()
-                    ? 'Respuesta correcta pero sin texto utilizable.'
-                    : 'Gemini devolvió un error.',
-                // El cuerpo recortado: lo suficiente para ver la causa sin
-                // llenar el registro ni volcar la conversación entera.
-                'cuerpo' => mb_substr($response->body(), 0, 400),
-            ]);
-
-            return response()->json([
-                'reply' => 'Perdona, no he podido procesar tu mensaje. ¿Puedes reformularlo o contactar directamente con David?',
-            ]);
-
-        } catch (\Throwable $e) {
-            // \Throwable y no \Exception: un fallo de red o de tipos llega
-            // como Error, y antes se escapaba del catch y tiraba la
-            // petición entera con un 500.
-            Log::error('CHATBOT_CAIDO', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'reply' => 'Ahora mismo no puedo responderte por aquí. '
-                         . 'Escríbele a David por Instagram (@one.life.one.body.benidorm) y te contesta él.',
-            ]);
-        }
+        // El visitante no tiene por qué saber qué ha fallado por dentro;
+        // la causa concreta ya ha quedado en el registro.
+        return response()->json([
+            'reply' => 'Ahora mismo no puedo responderte por aquí. Escríbele a David por Instagram ('
+                     . '@' . config('olob.instagram') . ') o llama al '
+                     . config('olob.telefono') . ' y te atiende él.',
+        ]);
     }
 
     /**
-     * System prompt con toda la información del negocio.
+     * Lo que el asistente sabe del centro.
+     *
+     * Los datos de contacto salen de config/olob.php, no van escritos
+     * aquí. Con solo "Benidorm", el modelo se inventaba una dirección
+     * cuando le preguntaban dónde estáis.
      */
-    private function getSystemPrompt(): string
+    private function instrucciones(): string
     {
-        return <<<PROMPT
-Eres el asistente virtual de ONE LIFE ONE BODY, un centro de fitness y entrenamiento personal en Benidorm, Alicante (España). Tu nombre es "Asistente OLOB".
+        $c = config('olob');
 
-INFORMACIÓN DEL NEGOCIO:
-- Nombre: One Life One Body — Fitness Center
-- Ubicación: Benidorm, Alicante, España
-- Entrenador principal: David "DabukyLifestyle"
-- Instagram: @one.life.one.body.benidorm
-- Web: onelifeonebody.es
+        return <<<PROMPT
+Eres el asistente virtual de ONE LIFE ONE BODY, un centro de fitness y entrenamiento personal en Benidorm (Alicante, España). Te llamas "Asistente OLOB".
+
+DATOS DEL CENTRO (úsalos tal cual, no inventes otros):
+- Dirección: {$c['direccion']}
+- Teléfono: {$c['telefono']}
+- Instagram: @{$c['instagram']}
+- Web: {$c['web']}
+- Entrenador principal: David
 
 SERVICIOS:
-1. Entrenamiento Personal Presencial — Sesiones individuales adaptadas a cada persona en el centro de Benidorm.
-2. Control de Peso — Seguimiento semanal con registro histórico, pesajes y gráficas de evolución en la app.
-3. Entrenos Online — Rutinas diseñadas por David con vídeos HD, progresión semanal y seguimiento directo desde cualquier lugar.
-4. Plan 360° (Premium) — Entrenamiento + nutrición + seguimiento + comunidad. La experiencia completa.
+1. Entrenamiento personal presencial: sesiones individuales adaptadas a cada persona, en el centro.
+2. Control de peso: pesaje semanal con historial y gráficas de evolución en la app del cliente.
+3. Entrenos online: rutinas diseñadas por David con progresión semanal, desde cualquier sitio.
+4. Plan 360°: entrenamiento, nutrición y seguimiento juntos. La experiencia completa.
 
 MÉTODO:
-1. Evaluación inicial — Análisis de composición corporal y objetivos reales.
-2. Plan personalizado — Entrenamiento y nutrición ajustados a la vida del cliente.
-3. Seguimiento continuo — Pesajes semanales con historial en la app.
-4. Evolución real — Resultados medibles, visibles y sostenibles.
+1. Evaluación inicial de composición corporal y objetivos.
+2. Plan personalizado de entrenamiento y nutrición.
+3. Seguimiento continuo con pesajes semanales.
+4. Resultados medibles y sostenibles.
 
-DATOS CLAVE:
+DATOS CLAVE (los mismos que en la portada):
 - +200 clientes transformados
 - 5+ años de experiencia
-- 98% tasa de adherencia
+- 98% de tasa de adherencia
 
-REGLAS DE COMPORTAMIENTO:
-- Responde SIEMPRE en español.
-- Sé amable, profesional y cercano. Usa un tono motivador pero no exagerado.
-- Respuestas CORTAS y directas (máximo 2-3 frases). No hagas listas largas.
-- Si te preguntan precios concretos, di que contacten con David por Instagram o email para un presupuesto personalizado.
-- Si te preguntan algo que no sabes o que no es sobre fitness/OLOB, di amablemente que solo puedes ayudar con temas relacionados con One Life One Body.
-- Nunca inventes información que no tengas.
-- Si el usuario quiere registrarse, dile que puede hacerlo en la web en el botón "Área cliente".
-- Anima a la gente a dar el primer paso y contactar con David.
+CÓMO RESPONDES:
+- Siempre en español, amable, cercano y profesional. Motivador sin exagerar.
+- Respuestas cortas: 2-3 frases. Sin listas largas.
+- Precios: no los des. Di que cada plan es personalizado y que contacten con David por Instagram o por teléfono para un presupuesto.
+- Si no sabes algo o no es sobre el centro o el fitness, dilo con amabilidad y ofrece contactar con David.
+- Nunca inventes datos: horarios, precios, direcciones o nombres que no estén aquí.
+- Para registrarse: botón "Área cliente" de la web.
+- No das consejos médicos. Ante lesiones, embarazo o patologías, recomienda consultar con un profesional sanitario y hablar con David.
 PROMPT;
     }
 }

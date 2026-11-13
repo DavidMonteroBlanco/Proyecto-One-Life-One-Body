@@ -5,9 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\DietPlan;
 use App\Models\User;
 use App\Models\WeightRecord;
+use App\Services\Gemini;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 /**
  * Asistente de IA del panel de administración.
@@ -23,7 +22,9 @@ use Illuminate\Support\Facades\Log;
  */
 class AiAssistantController extends Controller
 {
-    private const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/';
+    public function __construct(
+        private Gemini $gemini,
+    ) {}
 
     /** Tipos de comida admitidos. Debe coincidir con Frontend/src/lib/meals.ts */
     private const MEAL_TYPES = [
@@ -45,22 +46,23 @@ class AiAssistantController extends Controller
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
 
-        $contents = $this->buildContents($data);
-
-        $result = $this->callGemini(
-            systemPrompt: $this->systemPrompt($this->clientContext($data['user_id'] ?? null)),
-            contents: $contents,
-            generationConfig: [
-                'temperature' => 0.6,
-                'maxOutputTokens' => 1200,
+        $r = $this->gemini->generar(
+            sistema: $this->systemPrompt($this->clientContext($data['user_id'] ?? null)),
+            contenidos: $this->buildContents($data),
+            config: [
+                'temperature'     => 0.6,
+                // Con 1200, los modelos de reserva que "piensan" se gastaban
+                // 1150 pensando y la propuesta salía cortada a las 40 palabras.
+                'maxOutputTokens' => 4096,
             ],
+            uso: 'asistente',
         );
 
-        if (!$result['ok']) {
-            return response()->json(['message' => $result['message']], $result['status']);
+        if (! $r['ok']) {
+            return $this->errorParaDavid($r['motivo']);
         }
 
-        return response()->json(['reply' => $result['text']]);
+        return response()->json(['reply' => $r['texto']]);
     }
 
     // ══════════════════════════════════════════════════════════
@@ -77,18 +79,19 @@ class AiAssistantController extends Controller
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
 
-        $contents = $this->buildContents($data);
-
         // Se pide la respuesta como JSON con esquema fijo. Así no hay
         // que rascar el plan de dentro de un texto en prosa, que es
         // donde estas integraciones se rompen.
-        $result = $this->callGemini(
-            systemPrompt: $this->systemPrompt($this->clientContext($data['user_id'] ?? null))
+        $r = $this->gemini->generar(
+            sistema: $this->systemPrompt($this->clientContext($data['user_id'] ?? null))
                 . "\n\nDevuelve ÚNICAMENTE el plan en el formato JSON solicitado.",
-            contents: $contents,
-            generationConfig: [
+            contenidos: $this->buildContents($data),
+            uso: 'borrador',
+            config: [
                 'temperature' => 0.4,
-                'maxOutputTokens' => 2400,
+                // Un JSON cortado a medias no se puede leer, así que aquí el
+                // margen importa más que en ningún sitio.
+                'maxOutputTokens' => 8192,
                 'responseMimeType' => 'application/json',
                 'responseSchema' => [
                     'type' => 'OBJECT',
@@ -114,11 +117,11 @@ class AiAssistantController extends Controller
             ],
         );
 
-        if (!$result['ok']) {
-            return response()->json(['message' => $result['message']], $result['status']);
+        if (! $r['ok']) {
+            return $this->errorParaDavid($r['motivo']);
         }
 
-        $plan = json_decode($result['text'], true);
+        $plan = json_decode($r['texto'], true);
 
         if (!is_array($plan) || empty($plan['meals'])) {
             return response()->json([
@@ -315,62 +318,23 @@ class AiAssistantController extends Controller
     }
 
     /**
-     * Llamada a Gemini.
+     * Cada causa de fallo con su propio mensaje.
      *
-     * La clave va en la cabecera x-goog-api-key y no en la query string,
-     * para que no acabe escrita en los logs de acceso ni en las trazas
-     * de error de la petición saliente.
+     * Aquí quien lee es David, no un visitante, así que se le dice qué
+     * pasa de verdad y qué puede hacer. Antes todo era "el asistente ha
+     * devuelto un error", tanto si faltaba la clave como si Google estaba
+     * saturado, y no había forma de saber si esperar o llamar a alguien.
      */
-    private function callGemini(string $systemPrompt, array $contents, array $generationConfig): array
+    private function errorParaDavid(string $motivo)
     {
-        $apiKey = config('services.gemini.api_key');
+        [$estado, $mensaje] = match ($motivo) {
+            'sin_clave' => [503, 'El asistente no está configurado: falta GEMINI_API_KEY en el servidor.'],
+            'clave'     => [503, 'Google rechaza la clave de Gemini. Revisa GEMINI_API_KEY en el panel del hosting.'],
+            'bloqueado' => [422, 'El filtro de contenido de Google ha bloqueado la respuesta. Prueba a reformularlo.'],
+            'vacio'     => [502, 'El asistente no ha devuelto una respuesta completa. Prueba otra vez o sé más concreto.'],
+            default     => [503, 'Los servidores de Google están saturados ahora mismo. Vuelve a intentarlo en un minuto.'],
+        };
 
-        if (!$apiKey) {
-            return [
-                'ok' => false,
-                'status' => 503,
-                'message' => 'El asistente no está configurado: falta GEMINI_API_KEY en el servidor.',
-            ];
-        }
-
-        try {
-            $response = Http::timeout(45)
-                ->withHeaders(['x-goog-api-key' => $apiKey])
-                ->post(self::ENDPOINT . config('services.gemini.model') . ':generateContent', [
-                    'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
-                    'contents' => $contents,
-                    'generationConfig' => $generationConfig,
-                ]);
-        } catch (\Throwable $e) {
-            Log::error('AI_ASSISTANT_TRANSPORT_ERROR', ['error' => $e->getMessage()]);
-            return [
-                'ok' => false,
-                'status' => 504,
-                'message' => 'No se ha podido contactar con el asistente. Inténtalo de nuevo.',
-            ];
-        }
-
-        if (!$response->successful()) {
-            // Se registra el código, nunca el cuerpo: podría venir con
-            // fragmentos del prompt y datos del cliente.
-            Log::error('AI_ASSISTANT_HTTP_ERROR', ['status' => $response->status()]);
-            return [
-                'ok' => false,
-                'status' => 502,
-                'message' => 'El asistente ha devuelto un error. Inténtalo de nuevo en un momento.',
-            ];
-        }
-
-        $text = $response->json('candidates.0.content.parts.0.text');
-
-        if (!is_string($text) || trim($text) === '') {
-            return [
-                'ok' => false,
-                'status' => 502,
-                'message' => 'El asistente no ha devuelto respuesta. Reformula la petición.',
-            ];
-        }
-
-        return ['ok' => true, 'text' => trim($text)];
+        return response()->json(['message' => $mensaje], $estado);
     }
 }

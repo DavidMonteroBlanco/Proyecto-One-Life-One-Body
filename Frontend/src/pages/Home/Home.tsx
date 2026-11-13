@@ -84,22 +84,36 @@ function ChatBot() {
     setLoading(true);
 
     try {
-      // Build history for context (skip initial bot messages)
+      /*
+       * El historial es lo que se habló ANTES de este mensaje.
+       *
+       * Se saltan los dos saludos del principio (no los escribió la IA,
+       * son texto fijo) y NO se incluye el mensaje actual: el servidor ya
+       * lo añade al final. Antes iba también aquí, así que cada pregunta
+       * le llegaba a Gemini dos veces seguidas.
+       */
       const history = messages
         .slice(2)
-        .concat(userMsg)
         .map((m) => ({ role: m.role === "user" ? "user" : "model", text: m.text }));
 
       const { data } = await api.post("/chatbot", {
         message: text,
-        history: history.slice(-16), // Last 16 messages max
+        history: history.slice(-16),
       });
 
       setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
-    } catch {
+    } catch (err) {
+      // Si el servidor explica qué pasa (p. ej. demasiados mensajes en
+      // una hora), se enseña eso en vez de un error genérico.
+      const delServidor = (err as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message;
       setMessages((prev) => [
         ...prev,
-        { role: "bot", text: "Perdona, ha habido un error. Inténtalo de nuevo o contacta con David por Instagram." },
+        {
+          role: "bot",
+          text: delServidor
+            ?? "Perdona, ha habido un error. Inténtalo de nuevo o contacta con David por Instagram.",
+        },
       ]);
     } finally {
       setLoading(false);

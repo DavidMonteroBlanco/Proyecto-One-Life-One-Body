@@ -39,16 +39,39 @@ return [
         'api_key' => env('GEMINI_API_KEY'),
 
         /*
-        | El modelo va aquí y no escrito dentro de los controladores.
+        | Modelo principal y modelos de reserva.
         |
-        | Google retira modelos con el tiempo: el 29/10/2026,
-        | gemini-2.5-flash dejó de aceptar claves nuevas y devolvía un
-        | 404 pidiendo usar otro. Estaba puesto a mano en dos sitios, así
-        | que la única salida era tocar código y volver a desplegar.
+        | Probado el 13/11/2026 con una clave del plan gratuito:
         |
-        | Con esto, el día que vuelva a pasar se cambia la variable
-        | GEMINI_MODEL en el panel del hosting y listo.
+        |   gemini-2.5-*            404, retirados para claves nuevas
+        |   gemini-3.5/3.8-flash    503 casi siempre: saturados en gratis
+        |   *-pro                   429, sin cuota en el plan gratuito
+        |   gemini-3.6-flash        responde, pero tardó 163 s
+        |   gemini-3.5-flash-lite   responde en ~1 s y no "piensa"
+        |
+        | Por eso el principal es un "lite": no es el más listo, pero
+        | contesta, y completa las tres cosas que pide el proyecto (chat
+        | de la web, asistente y borrador de dieta en JSON).
+        |
+        | Los modelos que "piensan" antes de contestar quedan solo de
+        | reserva: con presupuestos de tokens ajustados gastaban casi todo
+        | pensando y la respuesta salía cortada.
+        |
+        | Si Google retira alguno, se cambia la variable en el panel del
+        | hosting, sin tocar código:
+        |
+        |   GEMINI_MODEL=gemini-3.5-flash-lite
+        |   GEMINI_FALLBACK_MODELS=gemini-flash-lite-latest,gemini-3.1-flash-lite
+        |
+        | El alias "-latest" va el primero de la reserva a propósito:
+        | Google lo mantiene apuntando al lite vigente, así que sobrevive a
+        | las retiradas de versiones concretas.
         */
-        'model' => env('GEMINI_MODEL', 'gemini-3.8-flash'),
+        'model' => env('GEMINI_MODEL', 'gemini-3.5-flash-lite'),
+
+        'fallback_models' => array_filter(array_map('trim', explode(',', (string) env(
+            'GEMINI_FALLBACK_MODELS',
+            'gemini-flash-lite-latest,gemini-3.1-flash-lite,gemini-3-flash-preview'
+        )))),
     ],
 ];
